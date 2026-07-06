@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moat Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>Moat <span class="subtitle">AI 编码护城河</span></h1>
+    <div class="status-bar">
+      <span id="status-indicator" class="indicator green"></span>
+      <span id="status-text">监控中</span>
+      <button onclick="runCheck()" class="btn">运行检查</button>
+      <button onclick="saveBaseline()" class="btn btn-secondary">保存基线</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary">
+      <div class="card">
+        <h3>错误</h3>
+        <p class="big" id="error-count">0</p>
+      </div>
+      <div class="card">
+        <h3>警告</h3>
+        <p class="big" id="warn-count">0</p>
+      </div>
+      <div class="card">
+        <h3>项目</h3>
+        <p class="big" id="project-name">-</p>
+      </div>
+      <div class="card">
+        <h3>基线</h3>
+        <p class="big" id="baseline-status">-</p>
+      </div>
+    </section>
+
+    <section class="errors">
+      <h2>实时错误</h2>
+      <div class="toolbar">
+        <select id="level-filter" onchange="loadErrors()">
+          <option value="ERROR">ERROR</option>
+          <option value="ERROR|WARNING">ERROR + WARN</option>
+          <option value="ERROR|WARNING|INFO">全部</option>
+        </select>
+        <span id="last-update"></span>
+      </div>
+      <div id="error-list" class="error-list"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

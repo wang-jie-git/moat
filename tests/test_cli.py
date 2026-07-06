@@ -1,0 +1,56 @@
+"""Moat CLI 测试"""
+import pytest
+from pathlib import Path
+from moat.cli import build_parser
+
+
+class TestCLI:
+    def test_parser_created(self):
+        """CLI 解析器能创建"""
+        parser = build_parser()
+        assert parser is not None
+        assert parser.prog == "moat"
+
+    def test_parser_has_all_commands(self):
+        """所有子命令都存在"""
+        parser = build_parser()
+        # 所有子命令名
+        commands = {"check", "watch", "init", "baseline", "dashboard", "adapter"}
+        choices = parser._subparsers._group_actions[0].choices
+        for cmd in commands:
+            assert cmd in choices, f"缺少子命令: {cmd}"
+
+    def test_check_command_args(self):
+        """check 命令参数"""
+        parser = build_parser()
+        args = parser.parse_args(["check"])
+        assert args.command == "check"
+        assert args.project == "."
+
+    def test_watch_command_args(self):
+        """watch 命令参数"""
+        parser = build_parser()
+        args = parser.parse_args(["watch", "--log", "test.log"])
+        assert args.command == "watch"
+        assert args.log == "test.log"
+
+    def test_adapter_command_args(self):
+        """adapter 命令参数"""
+        parser = build_parser()
+        args = parser.parse_args(["adapter", "claude"])
+        assert args.command == "adapter"
+        assert args.type == "claude"
+
+    def test_baseline_command_args(self):
+        """baseline 命令参数"""
+        parser = build_parser()
+        args = parser.parse_args(["baseline", "save"])
+        assert args.command == "baseline"
+        assert args.action == "save"
+
+    def test_dashboard_command_args(self):
+        """dashboard 命令参数"""
+        parser = build_parser()
+        args = parser.parse_args(["dashboard", "--port", "9999"])
+        assert args.command == "dashboard"
+        assert args.port == 9999
