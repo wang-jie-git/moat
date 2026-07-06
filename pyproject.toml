@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "moat"
+name = "moat-ai"
 version = "0.1.0"
 description = "AI 编码护城河 — 防止 AI 改代码时搞坏系统"
 readme = "README.md"
@@ -31,7 +31,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dashboard = ["fastapi>=0.100", "uvicorn>=0.22"]
-all = ["moat[dashboard]"]
+all = ["moat-ai[dashboard]"]
 
 [project.urls]
 Homepage = "https://github.com/wang-jie-git/moat"

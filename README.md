@@ -13,10 +13,14 @@ AI 改代码很快。AI 搞坏系统也很快。
 ## 安装
 
 ```bash
-pip install moat
+# 从 PyPI（推荐）
+pip install moat-ai
 
 # 或带 Web 看板
-pip install "moat[dashboard]"
+pip install "moat-ai[dashboard]"
+
+# 直接从 GitHub
+pip install git+https://github.com/wang-jie-git/moat.git
 ```
 
 ## 使用
