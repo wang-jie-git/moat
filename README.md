@@ -72,16 +72,62 @@ AI 改代码很快。AI 搞坏系统也很快。
 
 ## 安装
 
+### 基础安装
+
 ```bash
-# 从 PyPI（推荐）
+# 从 PyPI 安装（核心功能）
 pip install moat-ai
 
-# 或带 Web 看板
-pip install "moat-ai[dashboard]"
-
-# 直接从 GitHub
+# 直接从 GitHub 安装最新版
 pip install git+https://github.com/wang-jie-git/moat.git
 ```
+
+### 完整安装（推荐）
+
+```bash
+# 一键安装所有功能
+pip install "moat-ai[all]"
+```
+
+包括：Web 看板 + Sidecar 守护进程 + VS Code 插件辅助
+
+### 按需安装
+
+```bash
+# Web 看板（FastAPI + 前端界面）
+pip install "moat-ai[dashboard]"
+
+# Sidecar 守护进程（实时文件监控 + REST API）
+pip install "moat-ai[sidecar]"
+
+# VS Code 插件辅助（剪贴板复制）
+pip install "moat-ai[vscode]"
+```
+
+### 功能对比
+
+| 功能 | 基础安装 | 完整安装 |
+|------|---------|---------|
+| 四层门禁检查 | ✅ | ✅ |
+| Pain Score 评分 | ✅ | ✅ |
+| AI 辅助修复 | ✅ | ✅ |
+| 进化指标系统 | ✅ | ✅ |
+| 实时文件监控 | ❌ | ✅ |
+| Sidecar REST API | ❌ | ✅ |
+| Web 看板 | ❌ | ✅ |
+| 剪贴板复制 | ❌ | ✅ |
+
+### 依赖说明
+
+**核心依赖**（自动安装）：
+- Python 3.10+
+- httpx >= 0.27
+
+**可选依赖**（按需安装）：
+- **watchdog** — Sidecar 文件监控
+- **fastapi + uvicorn** — Web 看板 + Sidecar API
+- **pyperclip** — 剪贴板复制
+
 
 ## 使用
 

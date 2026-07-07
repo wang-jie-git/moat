@@ -31,8 +31,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Web 看板依赖
 dashboard = ["fastapi>=0.100", "uvicorn>=0.22"]
-all = ["moat-ai[dashboard]"]
+# Sidecar 守护进程依赖（实时监控 + REST API）
+sidecar = ["watchdog>=3.0", "fastapi>=0.100", "uvicorn>=0.22"]
+# VS Code 插件辅助（剪贴板复制）
+vscode = ["pyperclip>=1.8"]
+# 全部功能
+all = ["moat-ai[dashboard,sidecar,vscode]"]
 
 [project.urls]
 Homepage = "https://github.com/wang-jie-git/moat"
