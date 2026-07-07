@@ -1,12 +1,21 @@
 # Moat: 多语言感知 + 深度记忆 + 智能进化 🚀
 
 > [中文](https://github.com/wang-jie-git/moat/blob/main/README.zh.md) | English
+> **当前版本**: v0.6.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases/tag/v0.6.1)
 
 Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语言智能神经系统"**。
 在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够：
 - 感知**多语言**代码变更（Python/TypeScript/Go/Rust）
 - 记住**架构教训**（One Memory 深度集成）
 - 随项目演进而**自我进化**（知识图谱 + 智能提示）
+
+## 🎉 最新更新 (v0.6.1)
+
+- ✅ **Sidecar Bug 修复**: watchdog 和 Pydantic 可选依赖优雅降级
+- ✅ **测试覆盖增强**: 81/81 单元测试通过 (100%)
+- ✅ **自举测试优化**: moat check 通过率 21/21 (100%)
+
+[查看完整更新日志 →](CHANGELOG.md)
 
 ## 🛡️ 为什么需要 Moat？
 
@@ -128,13 +137,35 @@ pip install "moat-ai[vscode]"
 | v0.2 | 神经突触 | AST 增量感知与痛觉评分 |
 | v0.3 | 具身进化 | AI 辅助修复 + VS Code 集成 + Sidecar 守护进程 |
 | v0.4 | 自我进化 | 进化指标系统 + 神经衰弱防护 + 智能自适应调整 |
-| **v0.5** | **多语言感知** | **Tree-sitter 多语言 + One Memory 深度集成 + 知识图谱** |
+| v0.5 | 多语言感知 | Tree-sitter 多语言 + One Memory 深度集成 + 知识图谱 |
+| **v0.6** | **稳定与优化** | **Sidecar Bug 修复 + 可选依赖优雅降级 + 测试覆盖增强** |
+
+### v0.6.x 版本说明
+
+#### v0.6.1 (2026-07-07) — Sidecar Bug 修复
+- ✅ **watchdog 可选依赖修复**: 延迟导入 + 优雅降级
+- ✅ **Pydantic BaseModel 跳过**: 检测并跳过需要必填字段的模型实例化
+- ✅ **测试覆盖增强**: 81/81 单元测试通过 (100%)
+- ✅ **自举测试优化**: moat check 通过率提升至 21/21 (100%)
+
+#### v0.6.0 (2026-07-07) — 多语言感知 + 深度记忆 + 智能进化
+- 🌐 **Tree-sitter 多语言支持**: Python/TypeScript/Go/Rust
+- 💾 **One Memory 深度集成**: 梦境引擎 + 双向同步
+- 🧬 **知识图谱记忆扩展**: 修复历史 + 薄弱点识别 + 智能提示
+- 📊 **进化指标自动采集**: 配置自动调整 + 神经衰弱检测
 
 ## 🤝 社区共创
 
 Moat 是一个由 AI 驱动、开发者治理的实验性项目。我们坚信：**代码质量不应靠死板的规则维持，而应靠系统的"智能免疫"来保障**。
 
 如果你对 AI 工程化、具身智能开发环境感兴趣，欢迎加入我们。即使你只是提交一个 Bug 报告，也是在参与这个数字生命的进化过程。
+
+### 近期更新
+
+- **v0.6.1** (2026-07-07) — Sidecar Bug 修复（watchdog + Pydantic 可选依赖优雅降级）
+- **v0.6.0** (2026-07-07) — 多语言感知 + 深度记忆 + 智能进化（Tree-sitter + One Memory + 知识图谱）
+- **v0.5.0** (2026-07-07) — 多语言感知 + 深度记忆 + 智能进化
+- **v0.4.0** (2026-07-07) — 第一个自我进化的 AI 编码守护者
 
 ---
 
@@ -649,7 +680,25 @@ moat/
 │   ├── dashboard/
 │   │   ├── server.py       # FastAPI Web Dashboard
 │   │   └── static/         # Frontend
-│   └── adapters/
+│   ├── ast/                  # AST 感知层
+│   │   ├── builder.py       # 骨架图构建器
+│   │   ├── diff.py          # AST 增量对比器
+│   │   └── tree_sitter.py   # Tree-sitter 多语言支持
+│   ├── pain/                 # 痛觉评分层
+│   │   ├── scorer.py        # Pain Score 算法
+│   │   └── feedback.py      # 自我校准机制
+│   ├── memory/               # 记忆层
+│   │   ├── filter.py        # 记忆写入过滤器
+│   │   ├── bridge.py        # SQLite 共享桥接器
+│   │   └── sync.py          # One Memory 双向同步
+│   ├── evolution.py          # 元知识反向驱动
+│   ├── dashboard/            # Web 看板
+│   │   ├── server.py       # FastAPI Web Dashboard
+│   │   └── static/         # Frontend
+│   ├── sidecar/              # Sidecar 守护进程
+│   │   ├── watcher.py      # 文件监控
+│   │   └── daemon.py       # REST API
+│   └── adapters/             # AI 工具适配器
 │       └── __init__.py     # AI Adapters
 ├── pyproject.toml           # Build Config
 ├── README.md
