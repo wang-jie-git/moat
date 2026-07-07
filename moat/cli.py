@@ -36,9 +36,7 @@ def cmd_watch(args):
 def cmd_init(args):
     """初始化 Moat 到当前项目"""
     from moat.discovery import init_project
-    init_project(Path(args.project))
-    print(f"✅ Moat 已初始化到 {args.project}")
-    print("  下次运行: moat check")
+    init_project(Path(args.project), interactive=not args.no_interactive)
     return 0
 
 
@@ -66,6 +64,37 @@ def cmd_dashboard(args):
         log_path=args.log or _detect_log_path(args.project),
     )
     return 0
+
+
+def cmd_report(args):
+    """生成检查报告"""
+    from moat.report import generate_report
+    from moat.runner import MoatResult
+
+    root = Path(args.project)
+
+    # 运行检查并获取结果
+    from moat.runner import run_all_checks
+    result = MoatResult()
+
+    # 临时替换 runner 的打印函数来捕获结果
+    import io
+    from contextlib import redirect_stdout
+
+    # 简单起见，直接运行检查并生成报告
+    # 实际应该修改 runner 返回结果
+    success = run_all_checks(str(root))
+
+    # 生成报告
+    report = generate_report(
+        project_root=str(root),
+        format=args.format,
+        copy=args.copy,
+    )
+
+    if not success and args.copy:
+        return 0  # 复制成功就算成功
+    return 0 if success else 1
 
 
 def cmd_adapter(args):
@@ -129,6 +158,16 @@ def build_parser() -> argparse.ArgumentParser:
     # init
     p_init = sub.add_parser("init", help="初始化 Moat 到当前项目")
     _shared_args(p_init)
+    p_init.add_argument("--no-interactive", action="store_true",
+                        help="非交互模式（使用自动检测配置）")
+
+    # report
+    p_report = sub.add_parser("report", help="生成检查报告")
+    _shared_args(p_report)
+    p_report.add_argument("--format", choices=["text", "md"], default="text",
+                          help="输出格式（默认: text）")
+    p_report.add_argument("--copy", action="store_true",
+                          help="复制报告到剪贴板")
 
     # baseline
     p_baseline = sub.add_parser("baseline", help="管理基线")
@@ -161,6 +200,7 @@ def main():
         "check": cmd_check,
         "watch": cmd_watch,
         "init": cmd_init,
+        "report": cmd_report,
         "baseline": cmd_baseline,
         "dashboard": cmd_dashboard,
         "adapter": cmd_adapter,

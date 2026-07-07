@@ -15,7 +15,7 @@ class TestCLI:
         """所有子命令都存在"""
         parser = build_parser()
         # 所有子命令名
-        commands = {"check", "watch", "init", "baseline", "dashboard", "adapter"}
+        commands = {"check", "watch", "init", "report", "baseline", "dashboard", "adapter"}
         choices = parser._subparsers._group_actions[0].choices
         for cmd in commands:
             assert cmd in choices, f"缺少子命令: {cmd}"
@@ -47,6 +47,28 @@ class TestCLI:
         args = parser.parse_args(["baseline", "save"])
         assert args.command == "baseline"
         assert args.action == "save"
+
+    def test_report_command_args(self):
+        """report 命令参数"""
+        parser = build_parser()
+        args = parser.parse_args(["report"])
+        assert args.command == "report"
+        assert args.format == "text"
+        assert args.copy is False
+
+    def test_report_command_with_copy(self):
+        """report --copy 参数"""
+        parser = build_parser()
+        args = parser.parse_args(["report", "--copy"])
+        assert args.command == "report"
+        assert args.copy is True
+
+    def test_report_command_with_format(self):
+        """report --format 参数"""
+        parser = build_parser()
+        args = parser.parse_args(["report", "--format", "md"])
+        assert args.command == "report"
+        assert args.format == "md"
 
     def test_dashboard_command_args(self):
         """dashboard 命令参数"""
