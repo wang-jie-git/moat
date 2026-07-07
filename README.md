@@ -34,16 +34,88 @@ Moat 解决这一切。它通过实时 AST 感知、痛觉评分系统（Pain Sc
 
 ## 🚀 快速上手
 
-```bash
-# 1. 安装
-pip install moat-ai
+### 安装
 
-# 2. 初始化你的守护者
+#### 一键安装（推荐）⭐
+
+```bash
+# 安装所有功能（包括 Web 看板、Sidecar、VS Code 辅助）
+pip install "moat-ai[all]"
+```
+
+#### 基础安装
+
+```bash
+# 仅核心功能
+pip install moat-ai
+```
+
+#### 从 GitHub 安装
+
+```bash
+# 最新版
+pip install git+https://github.com/wang-jie-git/moat.git
+
+# 完整版
+pip install "git+https://github.com/wang-jie-git/moat.git[all]"
+```
+
+### 开始使用
+
+```bash
+# 1. 初始化项目
+cd your-project
 moat init
 
-# 3. 开始你的 AI 协作
-# Moat 会在后台感知变动，并通过 VS Code 插件提供实时反馈
+# 2. 运行检查
+moat check
+
+# 3. 查看进化报告
+moat evolution report
+
+# 4. 获取 AI 修复建议
+moat fix
 ```
+
+**说明**: Moat 会在后台感知变动，并通过 VS Code 插件提供实时反馈。
+
+---
+
+## 📦 安装选项对比
+
+| 功能 | 基础版 | 完整版 |
+|------|--------|--------|
+| 四层门禁检查 | ✅ | ✅ |
+| Pain Score 评分 | ✅ | ✅ |
+| AST 增量感知 | ✅ | ✅ |
+| AI 辅助修复 | ✅ | ✅ |
+| 进化指标系统 | ✅ | ✅ |
+| Web 看板 | ❌ | ✅ |
+| Sidecar 守护进程 | ❌ | ✅ |
+| 剪贴板复制 | ❌ | ✅ |
+| **依赖大小** | ~5MB | ~50MB |
+
+### 按需安装
+
+```bash
+# Web 看板
+pip install "moat-ai[dashboard]"
+
+# Sidecar 守护进程
+pip install "moat-ai[sidecar]"
+
+# VS Code 插件辅助
+pip install "moat-ai[vscode]"
+```
+
+---
+
+## 📚 更多文档
+
+- [安装指南](docs/INSTALLATION.md) — 详细安装选项和常见问题
+- [CHANGELOG](CHANGELOG.md) — 版本更新日志
+- [贡献指南](CONTRIBUTING.md) — 如何贡献代码
+
 
 ## 🌟 演进路线
 
