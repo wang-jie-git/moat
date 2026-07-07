@@ -46,11 +46,15 @@ class ReportGenerator:
         core_areas_config = self._get_core_areas_config()
         pain_result = calculate_total_pain(self.result.errors, core_areas_config)
 
+        # 加载架构意图
+        architecture_intent = self._load_architecture_intent()
+
         # 生成结构化报告
         report_data = {
             "timestamp": datetime.now().isoformat(),
             "project": str(self.project),
             "project_types": {k: v for k, v in self.project_types.items() if v},
+            "architecture_intent": architecture_intent,
             "summary": {
                 "total_checks": self.result.total_checks,
                 "passed": self.result.passed,
@@ -99,6 +103,21 @@ class ReportGenerator:
             except Exception:
                 pass
         return None
+
+    def _load_architecture_intent(self) -> dict[str, Any]:
+        """加载架构意图"""
+        intent_file = self.project / ".moat" / "architecture_intent.md"
+        if intent_file.exists():
+            try:
+                content = intent_file.read_text(encoding="utf-8")
+                return {
+                    "present": True,
+                    "path": str(intent_file.relative_to(self.project)),
+                    "content": content[:2000] + "..." if len(content) > 2000 else content,
+                }
+            except Exception:
+                pass
+        return {"present": False}
 
     def _generate_text(self) -> str:
         lines = [
