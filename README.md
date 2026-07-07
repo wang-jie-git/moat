@@ -1,9 +1,12 @@
-# Moat: The First Self-Evolving AI Coding Guardian 🚀
+# Moat: 多语言感知 + 深度记忆 + 智能进化 🚀
 
-> [中文](https://github.com/wang-jie-git/moat/blob/main/README.md) | English
+> [中文](https://github.com/wang-jie-git/moat/blob/main/README.zh.md) | English
 
-Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"具身智能"神经系统**。
-在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够感知"代码痛觉"、记住"架构教训"、并随项目演进而"自我进化"的守护者。
+Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语言智能神经系统"**。
+在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够：
+- 感知**多语言**代码变更（Python/TypeScript/Go/Rust）
+- 记住**架构教训**（One Memory 深度集成）
+- 随项目演进而**自我进化**（知识图谱 + 智能提示）
 
 ## 🛡️ 为什么需要 Moat？
 
@@ -17,20 +20,20 @@ Moat 解决这一切。它通过实时 AST 感知、痛觉评分系统（Pain Sc
 
 ## ✨ 核心特性
 
-### 🧠 神经感知系统 (Neural Perception)
-基于 AST 的骨架图分析，精准定位每一次变更的影响域（Impact Analysis）。
+### 🌐 多语言感知 (Multi-language Perception)
+基于 Tree-sitter 的多语言 AST 解析，支持 Python/TypeScript/Go/Rust 等。
 
 ### 😣 痛觉评分 (Pain Score)
-自动识别鉴权、竞态、核心 API 等敏感区域，对风险进行 0-100 分量化，让"危险"可视化。
+自动识别鉴权、竞态、核心 API 等敏感区域，对风险进行 0-100 分量化。
 
-### 💾 持久化记忆 (Long-term Memory)
-与 One Memory 无缝集成，像海马体一样记录 Bug 演变与修复历史。
+### 💾 深度记忆 (Deep Memory)
+与 One Memory 无缝集成，自动触发梦境引擎、双向同步、记忆质量报告。
+
+### 🧬 智能进化 (Smart Evolution)
+知识图谱记忆扩展：修复历史追踪、薄弱点识别、修复模式推荐、智能提示。
 
 ### ⚡ 实时守护 (Sidecar Daemon)
-轻量级守护进程，在编辑器（VS Code）中实时反馈，无需人工触发。
-
-### 🧬 自我进化 (Self-Evolution)
-系统不仅检测错误，还会通过进化指标监控"神经衰弱"，并根据重构表现自动调整防御阈值。
+轻量级守护进程，在编辑器（VS Code）中实时反馈。
 
 ## 🚀 快速上手
 
@@ -125,6 +128,7 @@ pip install "moat-ai[vscode]"
 | v0.2 | 神经突触 | AST 增量感知与痛觉评分 |
 | v0.3 | 具身进化 | AI 辅助修复 + VS Code 集成 + Sidecar 守护进程 |
 | v0.4 | 自我进化 | 进化指标系统 + 神经衰弱防护 + 智能自适应调整 |
+| **v0.5** | **多语言感知** | **Tree-sitter 多语言 + One Memory 深度集成 + 知识图谱** |
 
 ## 🤝 社区共创
 
@@ -655,3 +659,4 @@ moat/
 ## License
 
 MIT © 2026 One Team
+# Test change

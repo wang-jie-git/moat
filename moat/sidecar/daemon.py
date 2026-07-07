@@ -27,7 +27,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from moat.sidecar.watcher import FileChangeHandler
+from moat.sidecar.watcher import FileChangeHandler, SidecarWatcher
 
 
 class SidecarDaemon:
@@ -39,7 +39,7 @@ class SidecarDaemon:
         Args:
             project_root: 项目根目录
         """
-        self.project = project_root.resolve()
+        self.project = Path(project_root).resolve()
         self.pid_file = self.project / ".moat" / "sidecar.pid"
         self.log_file = self.project / ".moat" / "sidecar.log"
         self.status_file = self.project / ".moat" / "sidecar.json"
@@ -205,9 +205,12 @@ class SidecarDaemon:
         """
         self._write_pid()
 
+        watcher = None
+        exit_code = 0
+
         try:
-            handler = FileChangeHandler(str(self.project))
-            handler.start()
+            watcher = SidecarWatcher(str(self.project))
+            watcher.start()
 
             print(f"✅ Sidecar 已启动")
             print(f"   监控目录: {self.project}")
@@ -220,13 +223,18 @@ class SidecarDaemon:
 
         except KeyboardInterrupt:
             print(f"\n🛑 收到停止信号")
+        except Exception as e:
+            print(f"❌ 错误: {e}")
+            exit_code = 1
         finally:
-            try:
-                handler.stop()
-            except Exception:
-                pass
+            if watcher:
+                try:
+                    watcher.stop()
+                except Exception:
+                    pass
             self._cleanup()
-            return 0
+
+        return exit_code
 
     def _run_background(self) -> int:
         """后台运行
@@ -234,41 +242,61 @@ class SidecarDaemon:
         Returns:
             退出码
         """
-        # 使用 subprocess 启动后台进程
+        # 启动后台进程（输出到日志文件）
+        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+
         script = f"""
 import sys
 import os
+import logging
+
+# 设置日志
+logging.basicConfig(
+    filename={str(self.log_file)!r},
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 sys.path.insert(0, {str(self.project)!r})
 
-from moat.sidecar.daemon import SidecarDaemon
+try:
+    from pathlib import Path
+    from moat.sidecar.daemon import SidecarDaemon
 
-daemon = SidecarDaemon({str(self.project)!r})
-sys.exit(daemon._run_foreground())
+    daemon = SidecarDaemon(Path({str(self.project)!r}))
+    sys.exit(daemon._run_foreground())
+except Exception as e:
+    logging.error(f"Sidecar 启动失败: {{e}}", exc_info=True)
+    sys.exit(1)
 """
 
-        # 启动后台进程
-        process = subprocess.Popen(
-            [sys.executable, "-c", script],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
+        # 启动后台进程（输出到日志文件）
+        try:
+            with open(self.log_file, "a") as log_f:
+                process = subprocess.Popen(
+                    [sys.executable, "-c", script],
+                    stdout=log_f,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
 
-        # 等待一下确保启动
-        time.sleep(1)
+            # 等待一下确保启动
+            time.sleep(2)
 
-        # 检查是否成功
-        daemon = SidecarDaemon(self.project)
-        if daemon.is_running():
-            print(f"✅ Sidecar 已启动（后台）")
-            print(f"   PID: {daemon.get_pid()}")
-            print(f"   日志: {self.log_file}")
-            print(f"\n使用 `moat sidecar status` 查看状态")
-            print(f"使用 `moat sidecar stop` 停止")
-            return 0
-        else:
-            print(f"❌ 启动失败")
+            # 检查是否成功
+            daemon = SidecarDaemon(self.project)
+            if daemon.is_running():
+                print(f"✅ Sidecar 已启动（后台）")
+                print(f"   PID: {daemon.get_pid()}")
+                print(f"   日志: {self.log_file}")
+                print(f"\n使用 `moat sidecar status` 查看状态")
+                print(f"使用 `moat sidecar stop` 停止")
+                return 0
+            else:
+                print(f"❌ 启动失败，请检查日志：{self.log_file}")
+                return 1
+        except Exception as e:
+            print(f"❌ 启动失败: {e}")
             return 1
 
     def _write_pid(self) -> None:

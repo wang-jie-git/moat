@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-from moat.checks.base import CheckResult
+from moat.checks.base import Check, CheckResult
 from moat.checks import detect_project_type, create_check_instances
 
 
@@ -67,11 +67,14 @@ class MoatResult:
         return self.failed == 0
 
 
-def run_all_checks(project_root: str = ".") -> bool:
+def run_all_checks(project_root: str = ".") -> MoatResult:
     """运行所有检查（插件化架构）
 
     自动检测项目类型，只运行相关的检查。
     保持向后兼容：Python 检查（旧风格）和新检查（基于 Check 基类）并存。
+
+    Returns:
+        MoatResult 包含完整的检查结果和错误列表
     """
     root = Path(project_root).resolve()
     result = MoatResult()
@@ -97,7 +100,7 @@ def run_all_checks(project_root: str = ".") -> bool:
         print(f"▸ {name}...")
 
         # 检查是基于 Check 基类的实例还是旧风格模块
-        if isinstance(check_or_module, CheckResult):
+        if isinstance(check_or_module, Check):
             # 新风格：Check 基类实例
             check_results = check_or_module.run()
             for r in check_results:
@@ -113,7 +116,10 @@ def run_all_checks(project_root: str = ".") -> bool:
 
     result.end_time = time.time()
 
-    # 5. 输出总结
+    # 5. 自动记录进化指标（v0.5.0 新增）
+    _record_check_metrics(root, result)
+
+    # 6. 输出总结
     print(f"\n{'=' * 50}")
     print(f"  结果: {result.summary()}")
     print(f"{'=' * 50}")
@@ -123,12 +129,12 @@ def run_all_checks(project_root: str = ".") -> bool:
         for e in result.errors:
             if e.get("level") == "ERROR":
                 print(f"   [{e['level']}] {e.get('file', '?')}: {e['message']}")
-        return False
     else:
         if result.warnings > 0:
             print(f"\n⚠️  有 {result.warnings} 个警告（不影响通过）")
         print(f"\n✅ MOAT 全部通过，系统健康。")
-        return True
+
+    return result
 
 
 def _run_legacy_check(module, name: str, root: Path) -> list[dict]:
@@ -195,4 +201,53 @@ def _print_error(e: dict):
         symbol = "·"
     else:
         symbol = "❌"
+
+
+def _record_check_metrics(root: Path, result: MoatResult):
+    """自动记录进化指标（v0.5.0 新增）
+
+    在每次 moat check 后自动记录关键指标。
+
+    Args:
+        root: 项目根目录
+        result: 检查结果
+    """
+    try:
+        from moat.evolution_metrics import EvolutionTracker
+
+        moat_dir = root / ".moat"
+        if not moat_dir.exists():
+            return
+
+        tracker = EvolutionTracker(moat_dir)
+
+        # 记录检查通过/失败指标
+        success_rate = result.passed / max(result.total_checks, 1)
+        tracker.record_refactor_success(
+            files_changed=0,  # moat check 不涉及文件变更
+            tests_passed=result.is_success(),
+            pain_score_before=0.0,
+            pain_score_after=100.0 * (1 - success_rate),
+            context={
+                "source": "moat_check",
+                "total_checks": result.total_checks,
+                "passed": result.passed,
+                "failed": result.failed,
+            },
+        )
+
+        # 如果有失败，记录误报指标（如果可能）
+        if result.failed > 0:
+            for error in result.errors[:3]:  # 最多记录前 3 个错误
+                if error.get("level") == "ERROR":
+                    tracker.record_false_positive(
+                        error_type=error.get("type", "unknown"),
+                        file_path=error.get("file", "unknown"),
+                        context={"source": "moat_check"},
+                    )
+
+    except ImportError:
+        pass  # evolution_metrics 模块不可用
+    except Exception as e:
+        print(f"⚠️  记录进化指标失败: {e}")
     print(f"  {symbol} [{e.get('level', 'ERROR')}] {e.get('file', '?')}: {e.get('message', '')}")

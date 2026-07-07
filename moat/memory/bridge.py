@@ -81,6 +81,67 @@ class SharedStorageBridge:
             )
         """)
 
+        # 修复历史表（v0.5.0 新增）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS fix_history (
+                id TEXT PRIMARY KEY,
+                bug_id TEXT NOT NULL,
+                fix_type TEXT NOT NULL,  -- 'manual' | 'auto' | 'ai_assisted'
+                fixed_by TEXT,  -- 修复者（用户名/commit hash）
+                fix_time_seconds REAL,  -- 修复耗时（秒）
+                success INTEGER DEFAULT 1,  -- 是否成功
+                pain_score_after REAL,  -- 修复后 Pain Score
+                notes TEXT,
+                fixed_at TIMESTAMP NOT NULL,
+                FOREIGN KEY (bug_id) REFERENCES bug_memories(id)
+            )
+        """)
+
+        # 架构薄弱点表（v0.5.0 新增）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS weak_points (
+                id TEXT PRIMARY KEY,
+                file_path TEXT NOT NULL,
+                issue_type TEXT NOT NULL,
+                frequency INTEGER DEFAULT 0,
+                last_occurred TIMESTAMP,
+                recommendation TEXT,
+                priority INTEGER DEFAULT 0,  -- 0-5，越高越重要
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Insight 表（梦境引擎输出）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS insights (
+                id TEXT PRIMARY KEY,
+                type TEXT NOT NULL,
+                module TEXT,
+                pattern TEXT NOT NULL,
+                confidence REAL,
+                evidence_count INTEGER,
+                generated_at TIMESTAMP NOT NULL,
+                applied BOOLEAN DEFAULT 0,
+                applied_at TIMESTAMP,
+                metadata TEXT,
+                created_by TEXT DEFAULT 'one-memory'
+            )
+        """)
+
+        # 修复模式表（v0.5.0 新增）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS fix_patterns (
+                id TEXT PRIMARY KEY,
+                error_signature TEXT NOT NULL,
+                fix_template TEXT,
+                success_rate REAL DEFAULT 0.0,
+                usage_count INTEGER DEFAULT 0,
+                last_used TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # Insight 表（梦境引擎输出）
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS insights (
@@ -109,12 +170,41 @@ class SharedStorageBridge:
             )
         """)
 
+        # 梦境触发表（v0.5.0 新增）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS dream_triggers (
+                id TEXT PRIMARY KEY,
+                triggered_by TEXT DEFAULT 'moat',
+                trigger_type TEXT DEFAULT 'auto',
+                pending_bugs INTEGER,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # 智能提示表（v0.5.0 新增）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS smart_hints (
+                id TEXT PRIMARY KEY,
+                file_path TEXT NOT NULL,
+                line INTEGER,
+                hint_type TEXT NOT NULL,  -- 'repeated_bug' | 'weak_point' | 'suggestion'
+                message TEXT NOT NULL,
+                priority INTEGER DEFAULT 0,
+                shown INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # 索引优化
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_error_type ON bug_memories(error_type)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_file_path ON bug_memories(file_path)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_pain_score ON bug_memories(pain_score)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_fix_bug_id ON fix_history(bug_id)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_weak_point_file ON weak_points(file_path)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_insight_type ON insights(type)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_insight_applied ON insights(applied)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_hint_file_line ON smart_hints(file_path, line)")
 
         self.conn.commit()
 

@@ -60,29 +60,84 @@ def _cmd_adjust(tracker, args) -> int:
     print(f"负向指标占比: {fatigue_status.get('negative_ratio', 0):.1%}")
     print(f"{fatigue_status.get('message', '')}\n")
 
-    # 2. 自动调整
-    if args.auto:
-        recommendations = evaluation.get("recommendation", {}).get("actions", [])
-        if recommendations:
-            print("💡 自动调整建议:")
-            for action in recommendations:
-                print(f"  - [{action['priority']}] {action['description']}")
-                if "config_change" in action:
-                    print(f"    配置变更: {action['config_change']}")
+    # 2. 生成配置调整建议
+    recommendations = evaluation.get("recommendation", {}).get("actions", [])
 
-            # TODO: 实际应用配置变更
-            print("\n⚠️  自动调整功能尚未实现，请手动调整配置")
+    if not recommendations:
+        print("✅ 当前配置良好，无需调整")
+        return 0
+
+    print("💡 建议调整:")
+    for i, action in enumerate(recommendations, 1):
+        print(f"\n{i}. [{action['priority'].upper()}] {action['description']}")
+        if "config_change" in action:
+            print(f"   配置变更: {action['config_change']}")
+
+    # 3. 自动应用（如果 --auto）
+    if args.auto:
+        print(f"\n🚀 自动应用配置调整...")
+        applied = _apply_config_adjustments(recommendations, tracker.moat_dir)
+        if applied:
+            print(f"✅ 已应用 {len(applied)} 项配置调整")
         else:
-            print("✅ 当前配置良好，无需调整")
+            print(f"⚠️  没有可自动应用的配置")
     else:
-        # 手动调整
-        if args.pain_threshold:
-            print(f"调整 Pain Score 阈值: {args.pain_threshold}")
-            # TODO: 更新 .moat/config.json
-        if args.false_positive_tolerance:
-            print(f"调整误报容忍度: {args.false_positive_tolerance}")
+        print(f"\n💡 提示: 使用 --auto 参数自动应用配置调整")
 
     return 0
+
+
+def _apply_config_adjustments(
+    recommendations: list[dict[str, Any]], moat_dir: Path
+) -> list[str]:
+    """应用配置调整（v0.5.0 新增）
+
+    Args:
+        recommendations: 建议列表
+        moat_dir: .moat 目录
+
+    Returns:
+        已应用的调整列表
+    """
+    import json
+
+    config_path = moat_dir / "config.json"
+    if not config_path.exists():
+        return []
+
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+    applied = []
+
+    for action in recommendations:
+        config_change = action.get("config_change", {})
+        if not config_change:
+            continue
+
+        # 应用配置变更
+        for key, value in config_change.items():
+            if isinstance(value, dict):
+                # 嵌套配置（如 weight_adjustment）
+                if key not in config:
+                    config[key] = {}
+                config[key].update(value)
+            else:
+                config[key] = value
+
+        applied.append(action["action"])
+
+    # 保存配置
+    try:
+        config_path.write_text(
+            json.dumps(config, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+    except Exception:
+        return []
+
+    return applied
 
 
 def _cmd_record(tracker, args) -> int:

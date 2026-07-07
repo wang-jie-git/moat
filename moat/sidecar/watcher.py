@@ -111,13 +111,13 @@ class FileChangeHandler(FileSystemEventHandler):
         Returns:
             是否忽略
         """
-        path_str = str(path)
-
         # 检查是否在项目内
         try:
-            path_str.relative_to(str(self.project))
+            path.relative_to(self.project)
         except ValueError:
             return True
+
+        path_str = str(path)
 
         # 检查忽略模式
         for pattern in self.ignore_patterns:

@@ -84,8 +84,8 @@ def cmd_check(args):
 
     else:
         # 完整检查模式
-        success = run_all_checks(args.project)
-        return 0 if success else 1
+        result = run_all_checks(args.project)
+        return 0 if result.is_success() else 1
 
 
 def cmd_watch(args):
@@ -148,7 +148,7 @@ def cmd_report(args):
 
     # 简单起见，直接运行检查并生成报告
     # 实际应该修改 runner 返回结果
-    success = run_all_checks(str(root))
+    result = run_all_checks(str(root))
 
     # 生成报告
     report = generate_report(
@@ -157,9 +157,9 @@ def cmd_report(args):
         copy=args.copy,
     )
 
-    if not success and args.copy:
+    if not result.is_success() and args.copy:
         return 0  # 复制成功就算成功
-    return 0 if success else 1
+    return 0 if result.is_success() else 1
 
 
 def cmd_adapter(args):
@@ -178,26 +178,25 @@ def cmd_adapter(args):
 def cmd_fix(args):
     """AI 辅助修复"""
     from moat.fixer import generate_fix_report
-    from moat.runner import MoatResult, run_all_checks
+    from moat.runner import run_all_checks
 
     root = Path(args.project)
 
     # 先运行检查获取错误列表
     print(f"\n🔍 运行检查以获取错误列表...")
-    success = run_all_checks(str(root))
+    result = run_all_checks(str(root))
 
-    if success:
+    if result.is_success():
         print("\n✅ 未发现错误，无需修复")
         return 0
 
-    # 从 runner 获取错误列表
-    # 注意：这里需要修改 runner 返回结果
-    # 临时方案：从 report 或直接调用 runner
+    # 使用检查结果中的错误列表
     print(f"\n🔧 生成修复建议...")
 
-    # 生成修复报告
+    # 生成修复报告（传入错误列表）
     report = generate_fix_report(
         project_root=str(root),
+        errors=result.errors,
         dry_run=not args.no_dry_run,
         format=args.format,
     )

@@ -239,16 +239,26 @@ def generate_fix_report(
     Returns:
         格式化后的报告
     """
-    from moat.runner import run_all_checks, MoatResult
 
     root = Path(project_root)
 
-    # 如果没有提供错误列表，则运行检查
+    # 如果没有提供错误列表，则运行检查并获取结果
     if errors is None:
-        result = MoatResult()
-        # 这里应该从 runner 获取结果
-        # 简化版本：直接返回提示
-        return "错误：请先运行 `moat check` 获取错误列表"
+        from moat.runner import run_all_checks, MoatResult
+
+        print("\n🔍 运行检查以获取错误列表...")
+        # 运行检查并获取完整结果
+        result = run_all_checks(project_root)
+
+        # 使用检查结果中的错误列表
+        if isinstance(result, MoatResult):
+            errors = result.errors
+        else:
+            # 如果返回的是布尔值（旧版本兼容），返回提示
+            return "错误：无法获取错误列表，请使用 `moat report --format json > errors.json` 然后 `moat fix --errors errors.json`"
+
+        if not errors:
+            return "✅ 未发现错误，无需修复"
 
     # 创建修复引擎
     engine = FixEngine(root, dry_run=dry_run)
