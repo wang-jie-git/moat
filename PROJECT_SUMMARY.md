@@ -3,9 +3,9 @@
 ## 📊 项目概况
 
 **名称**: Moat (moat-ai) — AI 编码护城河
-**版本**: v0.3.0
+**版本**: v0.4.0
 **GitHub**: https://github.com/wang-jie-git/moat
-**定位**: 防止 AI 改代码时"越改越乱"
+**定位**: 第一个自我进化的 AI 编码守护者
 
 ---
 
