@@ -206,7 +206,6 @@ class SidecarDaemon:
         self._write_pid()
 
         try:
-            # 启动文件监控
             handler = FileChangeHandler(str(self.project))
             handler.start()
 
@@ -222,7 +221,10 @@ class SidecarDaemon:
         except KeyboardInterrupt:
             print(f"\n🛑 收到停止信号")
         finally:
-            handler.stop()
+            try:
+                handler.stop()
+            except Exception:
+                pass
             self._cleanup()
             return 0
 
