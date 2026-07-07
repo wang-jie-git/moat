@@ -231,7 +231,7 @@ def build_parser() -> argparse.ArgumentParser:
     # report
     p_report = sub.add_parser("report", help="生成检查报告")
     _shared_args(p_report)
-    p_report.add_argument("--format", choices=["text", "md"], default="text",
+    p_report.add_argument("--format", choices=["text", "md", "json"], default="text",
                           help="输出格式（默认: text）")
     p_report.add_argument("--copy", action="store_true",
                           help="复制报告到剪贴板")

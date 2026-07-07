@@ -36,8 +36,71 @@ class ReportGenerator:
             return self._generate_markdown()
         return self._generate_text()
 
+    def _generate_json(self) -> str:
+        """生成 JSON 报告"""
+        from datetime import datetime
+
+        # 计算 Pain Score
+        from moat.pain.scorer import calculate_total_pain
+
+        core_areas_config = self._get_core_areas_config()
+        pain_result = calculate_total_pain(self.result.errors, core_areas_config)
+
+        # 生成结构化报告
+        report_data = {
+            "timestamp": datetime.now().isoformat(),
+            "project": str(self.project),
+            "project_types": {k: v for k, v in self.project_types.items() if v},
+            "summary": {
+                "total_checks": self.result.total_checks,
+                "passed": self.result.passed,
+                "failed": self.result.failed,
+                "warnings": self.result.warnings,
+                "skipped": self.result.skipped,
+                "duration": round(self.result.duration, 2),
+            },
+            "pain_score": {
+                "total": pain_result["total_score"],
+                "level": pain_result["overall_level"],
+                "error_count": pain_result["error_count"],
+                "recommended_action": pain_result["recommended_action"],
+            },
+            "errors": [
+                {
+                    "type": error.get("type", "unknown"),
+                    "file": error.get("file", ""),
+                    "line": error.get("line"),
+                    "message": error.get("message", ""),
+                    "level": error.get("level", "ERROR"),
+                    "pain_score": score["score"],
+                    "pain_level": score["level"],
+                    "impact": self._analyze_impact(error),
+                    "ai_suggestion": self._get_ai_suggestion(error),
+                }
+                for error, score in zip(self.result.errors, pain_result["scores"])
+            ],
+            "actions": {
+                "view_details": f"moat check --project {self.project} --verbose",
+                "baseline_diff": f"moat baseline diff --project {self.project}",
+                "save_baseline": f"moat baseline save --project {self.project}",
+                "generate_report": f"moat report --copy --project {self.project}",
+            },
+        }
+
+        return json.dumps(report_data, indent=2, ensure_ascii=False)
+
+    def _get_core_areas_config(self) -> list[dict] | None:
+        """获取核心业务区域配置"""
+        config_path = self.project / ".moat" / "config.json"
+        if config_path.exists():
+            try:
+                config = json.loads(config_path.read_text(encoding="utf-8"))
+                return config.get("core_areas")
+            except Exception:
+                pass
+        return None
+
     def _generate_text(self) -> str:
-        """生成纯文本报告"""
         lines = [
             "=" * 60,
             "  Moat Check 失败报告",
@@ -279,7 +342,7 @@ def generate_report(project_root: str = ".", result: MoatResult | None = None,
     Args:
         project_root: 项目根目录
         result: MoatResult 对象（如果为 None，则重新运行检查）
-        format: 输出格式（text / md）
+        format: 输出格式（text / md / json）
         copy: 是否复制到剪贴板
 
     Returns:
@@ -290,12 +353,18 @@ def generate_report(project_root: str = ".", result: MoatResult | None = None,
     # 如果没有提供结果，运行检查
     if result is None:
         from moat.runner import run_all_checks
-        run_all_checks(str(root))
+        success = run_all_checks(str(root))
         # 注意：这里应该捕获结果，暂时简化处理
         result = MoatResult()
 
     generator = ReportGenerator(root, result)
-    report = generator.generate(format)
+
+    if format == "json":
+        report = generator._generate_json()
+    elif format == "md":
+        report = generator.generate(format="md")
+    else:
+        report = generator.generate(format="text")
 
     if copy:
         _copy_to_clipboard(report)

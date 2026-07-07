@@ -248,6 +248,26 @@ def _interactive_setup(root: Path, project_types: dict[str, bool]) -> dict[str, 
         if custom_log:
             config["log_path"] = custom_log
 
+    # 核心业务探测
+    print(f"\n⚡ 核心业务探测:")
+    from moat.core_areas import detect_core_areas, CoreAreaDetector
+
+    core_areas = detect_core_areas(str(root), auto_confirm=False)
+
+    if core_areas:
+        print(f"   检测到 {len(core_areas)} 个核心区域:")
+        for area in core_areas:
+            print(f"     ✓ {area.pattern} ({area.name}) — {area.description}")
+
+        use_core = input(f"\n   是否启用核心区域保护？(Y/n): ").strip().lower()
+        if use_core != "n":
+            from moat.core_areas import CoreAreaDetector
+            detector = CoreAreaDetector(root)
+            config.update(detector.to_config(core_areas))
+            print(f"   ✓ 核心区域保护已启用")
+    else:
+        print(f"   ⚠️  未检测到核心业务区域")
+
     # 保存配置供未来使用
     config.setdefault("project_name", root.name)
     config.setdefault("check_on_commit", True)
