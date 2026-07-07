@@ -250,4 +250,3 @@ def _record_check_metrics(root: Path, result: MoatResult):
         pass  # evolution_metrics 模块不可用
     except Exception as e:
         print(f"⚠️  记录进化指标失败: {e}")
-    print(f"  {symbol} [{e.get('level', 'ERROR')}] {e.get('file', '?')}: {e.get('message', '')}")
