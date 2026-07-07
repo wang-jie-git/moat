@@ -19,8 +19,73 @@ from pathlib import Path
 def cmd_check(args):
     """运行四层门禁检查"""
     from moat.runner import run_all_checks
-    success = run_all_checks(args.project)
-    return 0 if success else 1
+
+    if args.diff:
+        # 增量检查模式
+        from moat.ast.diff import diff_project
+        from moat.ast.builder import build_skeleton
+        from moat.pain.scorer import calculate_total_pain
+
+        root = Path(args.project)
+
+        # 1. 构建骨架图
+        print(f"\n🔨 构建项目骨架图...")
+        skeleton = build_skeleton(str(root))
+        print(f"   ✅ {skeleton.to_dict()['stats']['total_functions']} 个函数, "
+              f"{skeleton.to_dict()['stats']['total_calls']} 个调用")
+
+        # 2. 对比变更
+        print(f"\n📊 分析代码变更...")
+        changes = diff_project(str(root))
+
+        if not changes:
+            print(f"   ✅ 未检测到变更")
+            return 0
+
+        print(f"   ⚡ 检测到 {len(changes)} 个变更:\n")
+        for change in changes:
+            print(f"   {change['type']:10s} | {change['file']}:{change.get('line', '?')} "
+                  f"::{change.get('function', '?')}")
+
+        # 3. 影响域分析
+        print(f"\n💡 影响域分析:")
+        impacts = skeleton.analyze_impacts(changes, skeleton.to_dict())
+
+        if impacts:
+            for impact in impacts:
+                change = impact["change"]
+                print(f"\n   📍 {change['file']}::{change['function']}")
+                print(f"      影响 {len(impact['callers'])} 个调用方:")
+                for caller in impact["callers"][:5]:  # 最多显示 5 个
+                    print(f"        - {caller}")
+                if len(impact["callers"]) > 5:
+                    print(f"        ... 还有 {len(impact['callers']) - 5} 个")
+                print(f"      风险等级: {impact['risk_level']}")
+        else:
+            print(f"   ✅ 未检测到直接影响")
+
+        # 4. Pain Score 评估
+        print(f"\n😣 痛觉评估:")
+        errors_as_dict = [{"type": c["type"], "file": c["file"], "message": c.get("function", "")}
+                          for c in changes]
+        pain_result = calculate_total_pain(errors_as_dict)
+
+        print(f"   总分: {pain_result['total_score']}/100 ({pain_result['overall_level']})")
+        print(f"   建议: {pain_result['recommended_action']}")
+
+        # 5. 返回建议
+        if pain_result['overall_level'] in ('CRITICAL', 'HIGH'):
+            print(f"\n⚠️  建议: 运行完整检查以确保没有引入问题")
+            print(f"   moat check")
+            return 1
+        else:
+            print(f"\n✅ 变更风险较低，但仍建议运行完整检查")
+            return 0
+
+    else:
+        # 完整检查模式
+        success = run_all_checks(args.project)
+        return 0 if success else 1
 
 
 def cmd_watch(args):
@@ -145,6 +210,8 @@ def build_parser() -> argparse.ArgumentParser:
     # check
     p_check = sub.add_parser("check", help="运行四层门禁检查")
     _shared_args(p_check)
+    p_check.add_argument("--diff", action="store_true",
+                         help="增量检查模式（对比 Git 变更）")
 
     # watch
     p_watch = sub.add_parser("watch", help="实时监控日志错误")
