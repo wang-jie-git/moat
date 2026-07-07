@@ -28,6 +28,26 @@ def run_modules_check(project_root: Path) -> list[dict]:
                         "message": f"{mod_name} 中没有 {class_name}",
                     })
                     continue
+
+                # 检查构造函数参数
+                sig = inspect.signature(cls.__init__)
+                required_params = [
+                    p for p in sig.parameters.values()
+                    if p.default == inspect.Parameter.empty and p.name != 'self'
+                ]
+
+                # 跳过检查类（需要 project_root/config 参数）
+                if required_params and any(
+                    p.name in ('project_root', 'config') for p in required_params
+                ):
+                    errors.append({
+                        "file": mod_name.replace(".", "/"),
+                        "level": "L1",
+                        "type": "module_skipped_ok",
+                        "message": f"{class_name} 是检查类（需要 project_root/config），跳过实例化",
+                    })
+                    continue
+
                 # 尝试实例化
                 if inspect.isclass(cls) and not inspect.isabstract(cls):
                     try:
@@ -65,7 +85,7 @@ def _discover_core_modules(project_root: Path) -> list[tuple[str, str | None]]:
         rel = f.relative_to(project_root)
         parts = rel.parts
         if any(p in (".venv", "venv", "__pycache__", ".git", "node_modules",
-                      "build", "dist") for p in parts):
+                      "build", "dist", "tests", "moat/checks") for p in parts):
             continue
         if f.name.startswith("_"):
             continue
