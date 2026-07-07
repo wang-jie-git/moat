@@ -32,6 +32,24 @@ class FunctionInfo:
         }
 
 
+class Edge:
+    """依赖边（带置信度）"""
+
+    def __init__(self, source: str, target: str, edge_type: str, confidence: float = 1.0):
+        self.source = source
+        self.target = target
+        self.edge_type = edge_type  # "direct_call" | "event_bus" | "config_read" | "import"
+        self.confidence = confidence  # 0.0-1.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source": self.source,
+            "target": self.target,
+            "type": self.edge_type,
+            "confidence": self.confidence,
+        }
+
+
 class ProjectSkeleton:
     """项目骨架图"""
 
@@ -40,6 +58,7 @@ class ProjectSkeleton:
         self.functions: dict[str, FunctionInfo] = {}
         self.call_graph: dict[str, list[str]] = {}  # caller -> [callees]
         self.reverse_graph: dict[str, list[str]] = {}  # callee -> [callers]
+        self.edges: list[Edge] = []  # 带置信度的边
 
     def build(self, language: str = "python") -> dict[str, Any]:
         """构建项目骨架图
@@ -134,8 +153,38 @@ class ProjectSkeleton:
                             self.reverse_graph[callee] = []
                         self.reverse_graph[callee].append(caller_key)
 
+                        # 添加带置信度的边
+                        confidence = self._detect_call_confidence(child, callee)
+                        self.edges.append(Edge(
+                            source=caller_key,
+                            target=callee,
+                            edge_type="direct_call" if confidence >= 0.8 else "indirect_call",
+                            confidence=confidence,
+                        ))
+
         except Exception:
             pass
+
+    def _detect_call_confidence(self, call_node: ast.Call, callee_name: str) -> float:
+        """检测调用的置信度（0.0-1.0）
+
+        规则：
+        - 直接函数调用：1.0
+        - 通过对象方法调用：0.9
+        - 通过事件总线/回调：0.5
+        - 通过配置/字符串动态调用：0.3
+        """
+        if isinstance(call_node.func, ast.Name):
+            # func()
+            return 1.0
+        elif isinstance(call_node.func, ast.Attribute):
+            # obj.method() 或 module.func()
+            return 0.9
+        elif isinstance(call_node.func, ast.Subscript):
+            # config[func_name]() — 动态调用
+            return 0.3
+        else:
+            return 0.7  # 其他情况默认 0.7
 
     def find_callers(self, func_name: str) -> list[FunctionInfo]:
         """查找调用某个函数的所有位置
@@ -185,7 +234,7 @@ class ProjectSkeleton:
         return impacts
 
     def analyze_impacts(self, changes: list[dict], skeleton_dict: dict) -> list[dict[str, Any]]:
-        """分析变更影响
+        """分析变更影响（基于置信度权重）
 
         Args:
             changes: 变更列表（字典列表）
@@ -197,22 +246,50 @@ class ProjectSkeleton:
         impacts = []
 
         call_graph = skeleton_dict.get("call_graph", {})
+        edges = skeleton_dict.get("edges", [])
 
+        # 构建函数到 caller 的映射
         for change in changes:
             func_name = change.get("function")
-            if func_name:
-                # 查找所有调用者
-                callers = []
-                for caller, callees in call_graph.items():
-                    if func_name in callees:
-                        callers.append(caller)
+            if not func_name:
+                continue
 
-                if callers:
-                    impacts.append({
-                        "change": change,
-                        "callers": callers,
-                        "risk_level": "high" if len(callers) > 3 else "medium",
-                    })
+            # 查找直接调用者
+            direct_callers = []
+            indirect_callers = []
+
+            for caller, callees in call_graph.items():
+                if func_name in callees:
+                    # 检查置信度
+                    edge = next((e for e in edges if e["target"] == func_name
+                                 and e["source"] == caller), None)
+                    confidence = edge["confidence"] if edge else 1.0
+
+                    if confidence >= 0.8:
+                        direct_callers.append({"caller": caller, "confidence": confidence})
+                    else:
+                        indirect_callers.append({"caller": caller, "confidence": confidence})
+
+            # 计算风险等级
+            total_callers = len(direct_callers) + len(indirect_callers)
+            confidence_weight = sum(c["confidence"] for c in direct_callers + indirect_callers)
+
+            if len(direct_callers) >= 5 or confidence_weight >= 4.0:
+                risk_level = "high"
+            elif len(direct_callers) >= 2 or total_callers >= 5:
+                risk_level = "medium"
+            else:
+                risk_level = "low"
+
+            if direct_callers or indirect_callers:
+                impacts.append({
+                    "change": change,
+                    "direct_callers": direct_callers,
+                    "indirect_callers": indirect_callers,
+                    "total_callers": total_callers,
+                    "confidence_weight": round(confidence_weight, 2),
+                    "risk_level": risk_level,
+                })
 
         return impacts
 
@@ -221,9 +298,13 @@ class ProjectSkeleton:
         return {
             "functions": [f.to_dict() for f in self.functions.values()],
             "call_graph": self.call_graph,
+            "edges": [e.to_dict() for e in self.edges],
             "stats": {
                 "total_functions": len(self.functions),
                 "total_calls": sum(len(v) for v in self.call_graph.values()),
+                "total_edges": len(self.edges),
+                "avg_confidence": round(sum(e.confidence for e in self.edges) / len(self.edges), 2)
+                if self.edges else 0.0,
             },
         }
 
