@@ -13,6 +13,7 @@
 """
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 from typing import Any
@@ -72,8 +73,7 @@ class TreeSitterBuilder:
     def _build_language(self, language: str):
         """构建指定语言的骨架图"""
         try:
-            import tree_sitter
-            from tree_sitter import Language, Parser
+            from tree_sitter import Parser
         except ImportError:
             raise ImportError(
                 "tree-sitter 未安装。请运行：\n"
@@ -105,9 +105,9 @@ class TreeSitterBuilder:
 
         # 创建解析器
         try:
-            lang_module = self._load_language(language)
+            language_module = self._load_language(language)
             parser = Parser()
-            parser.set_language(language_module)
+            parser.language = language_module
         except Exception as e:
             print(f"⚠️  无法加载 {language} 解析器: {e}")
             return
@@ -135,7 +135,7 @@ class TreeSitterBuilder:
 
     def _load_language(self, language: str) -> Any:
         """加载 tree-sitter 语言模块"""
-        import importlib
+        from tree_sitter import Language
 
         module_map = {
             "python": "tree_sitter_python",

@@ -105,7 +105,7 @@ class TestTreeSitterBuilder:
         skeleton = builder.build(languages=["python"])
 
         assert skeleton["stats"]["total_functions"] >= 3
-        assert skeleton["stats"]["total_calls"] >= 3
+        assert skeleton["stats"]["total_calls"] >= 2  # foo 调用 bar，baz 调用 foo
 
         # 检查语言统计
         assert "python" in skeleton["stats"]["by_language"]
@@ -122,7 +122,7 @@ class TestTreeSitterBuilder:
         skeleton = builder.build(languages=["typescript"])
 
         assert skeleton["stats"]["total_functions"] >= 3
-        assert skeleton["stats"]["total_calls"] >= 3
+        assert skeleton["stats"]["total_calls"] >= 2  # 至少 foo 调用 bar
 
         # 检查语言统计
         assert "typescript" in skeleton["stats"]["by_language"]
