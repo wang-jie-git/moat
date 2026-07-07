@@ -1,16 +1,16 @@
 # Moat 发布流程
 
-## v0.2.0 发布清单
+## v0.6.1 发布清单
 
 ### ✅ 已完成
 
-- [x] 版本号更新：0.1.0 → 0.2.0 (`pyproject.toml`)
-- [x] CHANGELOG.md 更新
-- [x] README.md 更新（TypeScript 支持说明）
-- [x] README.en.md 更新（TypeScript support）
-- [x] 所有测试通过（27/27 ✅）
-- [x] CodeGraph 语义检查集成
-- [x] Git 提交：686eb53
+- [x] 版本号更新：0.6.0 → 0.6.1 (`pyproject.toml`, `moat/__init__.py`)
+- [x] CHANGELOG.md 更新（新增 v0.6.1 章节）
+- [x] Bug 修复：watchdog 可选依赖延迟导入
+- [x] Bug 修复：Pydantic BaseModel 实例化跳过
+- [x] 所有测试通过（81/81 ✅）
+- [x] moat check 自举测试通过（21 通过，0 失败）
+- [x] Git 提交：056f5a0
 
 ### 📦 发布步骤
 
@@ -28,8 +28,8 @@ python3 -m build
 ```
 
 这会生成：
-- `dist/moat_ai-0.2.0-py3-none-any.whl`
-- `dist/moat_ai-0.2.0.tar.gz`
+- `dist/moat_ai-0.6.1-py3-none-any.whl`
+- `dist/moat_ai-0.6.1.tar.gz`
 
 #### 3. 检查分发包
 
@@ -42,7 +42,7 @@ twine check dist/*
 ```bash
 # 在测试目录安装
 cd /tmp/test-moat
-pip install /Users/mac/Desktop/moat/dist/moat_ai-0.2.0-py3-none-any.whl
+pip install /Users/mac/Desktop/moat/dist/moat_ai-0.6.1-py3-none-any.whl
 
 # 验证
 moat --version
@@ -63,7 +63,7 @@ twine upload --repository testpypi dist/*
 
 ```bash
 # 安装刚发布的版本
-pip install moat-ai==0.2.0
+pip install moat-ai==0.6.1
 
 # 验证
 moat --version
@@ -72,9 +72,9 @@ moat --version
 #### 7. 创建 GitHub Release
 
 在 GitHub 仓库创建 Release：
-- Tag: `v0.2.0`
-- Title: `Moat v0.2.0 — TypeScript Support + Semantic Analysis`
-- 复制 `CHANGELOG_v0.2.0.md` 内容作为 Release Notes
+- Tag: `v0.6.1`
+- Title: `Moat v0.6.1 — Sidecar Bug 修复`
+- 复制 `CHANGELOG.md` v0.6.1 章节作为 Release Notes
 
 ### 📝 发布后检查清单
 
@@ -90,12 +90,16 @@ moat --version
 ```bash
 # 1. 修复问题
 # 2. 发布新版本
-twine upload dist/moat_ai-0.2.1-py3-none-any.whl
+twine upload dist/moat_ai-0.6.2-py3-none-any.whl
 
-# 3. 在 GitHub Release 中标记 v0.2.0 为 "Yanked"
+# 3. 在 GitHub Release 中标记 v0.6.1 为 "Yanked"
 ```
 
 ### 📊 版本历史
 
+- **v0.6.1** (2026-07-07) — Sidecar Bug 修复（watchdog + Pydantic）
+- **v0.6.0** (2026-07-07) — TypeScript/Go 专项检查规则
+- **v0.5.0** (2026-07-07) — Tree-sitter 多语言 + One Memory + 知识图谱
+- **v0.4.0** (2026-07-07) — 进化指标系统 + AI 辅助修复 + Sidecar
 - **v0.2.0** (2026-07-07) — TypeScript 支持 + CodeGraph 语义分析
 - **v0.1.0** (2025-07-07) — 初始发布

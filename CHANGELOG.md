@@ -3,9 +3,39 @@
 所有 Moat 项目的重要变更都会记录在此文件中。
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
-## [0.5.0] - 2026-07-07
+## [0.6.1] - 2026-07-07
+
+### 🐛 Bug 修复
+
+#### Sidecar 可选依赖修复
+
+- **watchdog 延迟导入**: `moat/sidecar/watcher.py` 改为 try-except 保护
+- **条件继承**: `FileChangeHandler` 根据 watchdog 可用性条件继承
+- **启动检查**: `SidecarWatcher.start()` 增加 watchdog 可用性检查
+- **Pydantic BaseModel 跳过**: `moat/checks/l1_modules.py` 检测并跳过 Pydantic 模型实例化
+
+**修复的问题**:
+- ❌ `ModuleNotFoundError: No module named 'watchdog'` → ✅ 优雅降级
+- ❌ `CheckRequest() 实例化失败` → ✅ Pydantic 模型检测跳过
+
+**影响**: `moat check` 自举测试通过率 19→21 通过，失败 4→0
+
+### 🔄 改进
+
+- **版本号**: v0.6.0 → v0.6.1
+- **文档**: 新增 `SIDECAR_BUGFIX_REPORT.md` 详细修复报告
+
+### 📊 测试覆盖
+
+- ✅ **测试通过率**: 81/81 (100%)
+- ✅ **moat check**: 通过 21, 失败 0, 警告 1
+- ✅ **自举测试**: Moat 检查自己全部通过
+
+---
+
+## [0.6.0] - 2026-07-07
 
 ### 🎉 里程碑: 多语言感知 + 深度记忆 + 智能进化
 
