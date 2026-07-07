@@ -9,13 +9,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
-from watchdog.observers import Observer
+try:
+    from watchdog.events import FileSystemEventHandler, FileSystemEvent
+    from watchdog.observers import Observer
+    WATCHDOG_AVAILABLE = True
+except ImportError:
+    # watchdog 未安装（可选依赖）
+    WATCHDOG_AVAILABLE = False
+    FileSystemEventHandler = object  # 占位符
+    Observer = None
 
 logger = logging.getLogger(__name__)
 
 
-class FileChangeHandler(FileSystemEventHandler):
+class FileChangeHandler(FileSystemEventHandler if WATCHDOG_AVAILABLE else object):
     """文件变化处理器"""
 
     def __init__(self, project_root: str, debounce_seconds: float = 2.0):
@@ -265,6 +272,13 @@ class SidecarWatcher:
 
     def start(self) -> None:
         """启动监控"""
+        if not WATCHDOG_AVAILABLE:
+            logger.error("watchdog 未安装，无法启动文件监控")
+            print("❌ watchdog 未安装")
+            print("   安装: pip install watchdog")
+            print("   或: pip install moat-ai[sidecar]")
+            return
+
         self.handler = FileChangeHandler(str(self.project))
         self.observer = Observer()
         self.observer.schedule(self.handler, str(self.project), recursive=True)

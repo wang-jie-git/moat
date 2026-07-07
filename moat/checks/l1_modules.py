@@ -48,6 +48,20 @@ def run_modules_check(project_root: Path) -> list[dict]:
                     })
                     continue
 
+                # 跳过 Pydantic BaseModel（需要必填字段）
+                try:
+                    from pydantic import BaseModel
+                    if issubclass(cls, BaseModel):
+                        errors.append({
+                            "file": mod_name.replace(".", "/"),
+                            "level": "L1",
+                            "type": "module_skipped_ok",
+                            "message": f"{class_name} 是 Pydantic BaseModel（需要必填字段），跳过实例化",
+                        })
+                        continue
+                except ImportError:
+                    pass  # Pydantic 未安装，继续正常逻辑
+
                 # 尝试实例化
                 if inspect.isclass(cls) and not inspect.isabstract(cls):
                     try:
