@@ -1,10 +1,67 @@
+# Moat: The First Self-Evolving AI Coding Guardian 🚀
+
+> [中文](https://github.com/wang-jie-git/moat/blob/main/README.md) | English
+
+Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"具身智能"神经系统**。
+在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够感知"代码痛觉"、记住"架构教训"、并随项目演进而"自我进化"的守护者。
+
+## 🛡️ 为什么需要 Moat？
+
+AI 编码极快，但"副作用"往往滞后。当你修改一段代码时，你是否担心：
+
+- AI 破坏了系统的核心业务逻辑？
+- 修改了一处代码，却引发了远处难以追踪的"痛感"（Bug）？
+- 随着项目变大，你是否在重复修复同样的架构漏洞？
+
+Moat 解决这一切。它通过实时 AST 感知、痛觉评分系统（Pain Score）和 One Memory 记忆引擎，构建了一个闭环的自我防御机制。
+
+## ✨ 核心特性
+
+### 🧠 神经感知系统 (Neural Perception)
+基于 AST 的骨架图分析，精准定位每一次变更的影响域（Impact Analysis）。
+
+### 😣 痛觉评分 (Pain Score)
+自动识别鉴权、竞态、核心 API 等敏感区域，对风险进行 0-100 分量化，让"危险"可视化。
+
+### 💾 持久化记忆 (Long-term Memory)
+与 One Memory 无缝集成，像海马体一样记录 Bug 演变与修复历史。
+
+### ⚡ 实时守护 (Sidecar Daemon)
+轻量级守护进程，在编辑器（VS Code）中实时反馈，无需人工触发。
+
+### 🧬 自我进化 (Self-Evolution)
+系统不仅检测错误，还会通过进化指标监控"神经衰弱"，并根据重构表现自动调整防御阈值。
+
+## 🚀 快速上手
+
+```bash
+# 1. 安装
+pip install moat-ai
+
+# 2. 初始化你的守护者
+moat init
+
+# 3. 开始你的 AI 协作
+# Moat 会在后台感知变动，并通过 VS Code 插件提供实时反馈
+```
+
+## 🌟 演进路线
+
+| 阶段 | 定义 | 功能 |
+|------|------|------|
+| v0.1 | 护城河 | 基础的校验与基线对比 |
+| v0.2 | 神经突触 | AST 增量感知与痛觉评分 |
+| v0.3 | 具身进化 | AI 辅助修复 + VS Code 集成 + 进化指标系统 |
+
+## 🤝 社区共创
+
+Moat 是一个由 AI 驱动、开发者治理的实验性项目。我们坚信：**代码质量不应靠死板的规则维持，而应靠系统的"智能免疫"来保障**。
+
+如果你对 AI 工程化、具身智能开发环境感兴趣，欢迎加入我们。即使你只是提交一个 Bug 报告，也是在参与这个数字生命的进化过程。
+
+---
+
 # Moat — AI 编码护城河
-
-> [English](#moat--ai-coding-guardrails) | 中文
-
-改代码**前**跑一次，改代码**后**再跑一次。两次都通过才能提交。
-
-防止 AI 工具修一个 bug 出三个 bug。
 
 ## 为什么
 
@@ -125,7 +182,44 @@ moat adapter precommit
 
 各 AI 工具（Claude Code、Cursor、Codex、Copilot）在改代码时自动遵从 Moat 铁律。
 
-### 6. 基线管理
+### 6. AI 辅助修复
+
+```bash
+# 生成修复建议（演练模式）
+moat fix
+
+# 实际应用修复
+moat fix --no-dry-run
+
+# 复制报告到剪贴板
+moat fix --copy
+```
+
+为每个检测到的问题提供详细的修复建议：
+- 基于策略库的智能建议
+- 代码示例
+- 修复置信度
+- 支持自动修复简单问题
+
+### 7. 实时感知（Sidecar）
+
+```bash
+# 启动 Sidecar 守护进程
+moat sidecar start
+
+# 查看状态
+moat sidecar status
+
+# 停止
+moat sidecar stop
+
+# 前台运行（调试）
+moat sidecar start --foreground
+```
+
+Sidecar 在后台运行，实时监控文件变化并自动运行增量检查。
+
+### 8. 基线管理
 
 ```bash
 # 保存当前状态为基线

@@ -1,0 +1,144 @@
+{
+  "name": "moat-vscode",
+  "displayName": "Moat — AI 编码护城河",
+  "description": "防止 AI 改代码时越改越乱",
+  "version": "0.3.0",
+  "publisher": "moat-ai",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Linters", "Programming Languages"],
+  "keywords": [
+    "moat",
+    "ai",
+    "linting",
+    "quality",
+    "guardrails",
+    "pre-commit"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "workspaceContains:.moat/config.json",
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "moat.check",
+        "title": "Moat: 运行检查"
+      },
+      {
+        "command": "moat.check.onSave",
+        "title": "Moat: 自动运行检查（保存时）"
+      },
+      {
+        "command": "moat.fix",
+        "title": "Moat: AI 修复建议"
+      },
+      {
+        "command": "moat.fix.auto",
+        "title": "Moat: 自动修复"
+      },
+      {
+        "command": "moat.sidecar.start",
+        "title": "Moat: 启动 Sidecar"
+      },
+      {
+        "command": "moat.sidecar.stop",
+        "title": "Moat: 停止 Sidecar"
+      },
+      {
+        "command": "moat.sidecar.status",
+        "title": "Moat: Sidecar 状态"
+      },
+      {
+        "command": "moat.init",
+        "title": "Moat: 初始化项目"
+      },
+      {
+        "command": "moat.report",
+        "title": "Moat: 生成报告"
+      }
+    ],
+    "configuration": {
+      "title": "Moat",
+      "properties": {
+        "moat.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用 Moat 检查"
+        },
+        "moat.runOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "保存时自动运行检查"
+        },
+        "moat.sidecar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用 Sidecar 实时监控"
+        },
+        "moat.sidecar.port": {
+          "type": "number",
+          "default": 9877,
+          "description": "Sidecar API 端口"
+        },
+        "moat.autoFix.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "启用自动修复"
+        },
+        "moat.path": {
+          "type": "string",
+          "default": "moat",
+          "description": "Moat 可执行文件路径"
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "moat.check",
+          "group": "moat",
+          "when": "editorLangId == python || editorLangId == typescript || editorLangId == javascript"
+        },
+        {
+          "command": "moat.fix",
+          "group": "moat",
+          "when": "editorLangId == python || editorLangId == typescript || editorLangId == javascript"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "moat.check"
+        },
+        {
+          "command": "moat.fix"
+        },
+        {
+          "command": "moat.sidecar.start",
+          "when": "!moat.sidecar.running"
+        },
+        {
+          "command": "moat.sidecar.stop",
+          "when": "moat.sidecar.running"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

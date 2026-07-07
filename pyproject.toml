@@ -4,25 +4,26 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "moat-ai"
-version = "0.2.0"
-description = "AI 编码护城河 — 防止 AI 改代码时搞坏系统"
+version = "0.4.0"
+description = "AI 编码护城河 — 第一个自我进化的 AI 编码守护者"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 authors = [
     {name = "One Team"},
 ]
 requires-python = ">=3.10"
-keywords = ["ai", "testing", "guardrails", "code-quality", "python"]
+keywords = ["ai", "testing", "guardrails", "code-quality", "python", "self-evolving"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
 dependencies = [

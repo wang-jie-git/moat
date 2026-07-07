@@ -175,6 +175,75 @@ def cmd_adapter(args):
     return 0
 
 
+def cmd_fix(args):
+    """AI 辅助修复"""
+    from moat.fixer import generate_fix_report
+    from moat.runner import MoatResult, run_all_checks
+
+    root = Path(args.project)
+
+    # 先运行检查获取错误列表
+    print(f"\n🔍 运行检查以获取错误列表...")
+    success = run_all_checks(str(root))
+
+    if success:
+        print("\n✅ 未发现错误，无需修复")
+        return 0
+
+    # 从 runner 获取错误列表
+    # 注意：这里需要修改 runner 返回结果
+    # 临时方案：从 report 或直接调用 runner
+    print(f"\n🔧 生成修复建议...")
+
+    # 生成修复报告
+    report = generate_fix_report(
+        project_root=str(root),
+        dry_run=not args.no_dry_run,
+        format=args.format,
+    )
+
+    print(report)
+
+    if args.copy:
+        try:
+            import pyperclip
+            pyperclip.copy(report)
+            print("\n✅ 报告已复制到剪贴板")
+        except ImportError:
+            print("\n⚠️  未安装 pyperclip，跳过复制")
+
+    return 0
+
+
+def cmd_sidecar(args):
+    """Sidecar 守护进程管理"""
+    from moat.sidecar.daemon import SidecarDaemon
+
+    root = Path(args.project)
+    daemon = SidecarDaemon(root)
+
+    if args.action == "start":
+        return daemon.start(foreground=args.foreground)
+    elif args.action == "stop":
+        return daemon.stop()
+    elif args.action == "restart":
+        return daemon.restart()
+    elif args.action == "status":
+        status = daemon.status()
+        from moat.sidecar.daemon import print_status
+        print_status(status)
+        return 0
+    else:
+        print(f"❌ 未知操作: {args.action}")
+        return 1
+
+
+def cmd_evolution(args):
+    """进化指标管理"""
+    from moat.evolution_cli import cmd_evolution
+    return cmd_evolution(args)
+
+
 def _detect_log_path(project: str) -> str | None:
     """自动检测项目日志路径"""
     candidates = [
@@ -249,12 +318,52 @@ def build_parser() -> argparse.ArgumentParser:
     p_dash.add_argument("--port", "-p", type=int, default=9876, help="监听端口")
     p_dash.add_argument("--log", "-l", help="日志文件路径")
 
+    # fix
+    p_fix = sub.add_parser("fix", help="AI 辅助修复")
+    _shared_args(p_fix)
+    p_fix.add_argument("--no-dry-run", action="store_true",
+                       help="实际修复（默认为演练模式）")
+    p_fix.add_argument("--format", choices=["text", "md", "json"], default="text",
+                       help="输出格式（默认: text）")
+    p_fix.add_argument("--copy", action="store_true",
+                       help="复制报告到剪贴板")
+
+    # sidecar
+    p_sidecar = sub.add_parser("sidecar", help="Sidecar 实时感知守护进程")
+    _shared_args(p_sidecar)
+    p_sidecar.add_argument("action", choices=["start", "stop", "restart", "status"],
+                           help="操作")
+    p_sidecar.add_argument("--foreground", action="store_true",
+                           help="前台运行（仅 start）")
+
     # adapter
     p_adapter = sub.add_parser("adapter", help="安装 AI 适配器")
     _shared_args(p_adapter)
     p_adapter.add_argument("type", choices=["claude", "precommit", "all"],
                            default="all", nargs="?",
                            help="适配器类型")
+
+    # evolution
+    p_evolution = sub.add_parser("evolution", help="进化指标管理")
+    _shared_args(p_evolution)
+    p_evolution.add_argument("action", choices=["report", "adjust", "record"],
+                            help="操作")
+    p_evolution.add_argument("--window", type=int, default=24,
+                            help="报告时间窗口（小时，默认: 24）")
+    p_evolution.add_argument("--format", choices=["text", "json"], default="text",
+                            help="输出格式（默认: text）")
+    p_evolution.add_argument("--auto", action="store_true",
+                            help="自动调整配置")
+    p_evolution.add_argument("--pain-threshold", type=int,
+                            help="调整 Pain Score 阈值")
+    p_evolution.add_argument("--false-positive-tolerance", type=int,
+                            help="调整误报容忍度")
+    p_evolution.add_argument("--metric-type", choices=[
+        "refactor_success", "performance_improvement", "bug_fix_time",
+        "false_positive_rate", "dev_velocity"
+    ], help="手动记录指标类型（仅 record）")
+    p_evolution.add_argument("--value", type=float,
+                            help="指标值（仅 record）")
 
     return parser
 
@@ -268,8 +377,11 @@ def main():
         "watch": cmd_watch,
         "init": cmd_init,
         "report": cmd_report,
+        "fix": cmd_fix,
         "baseline": cmd_baseline,
         "dashboard": cmd_dashboard,
+        "sidecar": cmd_sidecar,
+        "evolution": cmd_evolution,
         "adapter": cmd_adapter,
     }
 

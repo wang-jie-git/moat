@@ -3,13 +3,13 @@
 ## 📊 项目概况
 
 **名称**: Moat (moat-ai) — AI 编码护城河
-**版本**: v0.2.0+
+**版本**: v0.3.0
 **GitHub**: https://github.com/wang-jie-git/moat
 **定位**: 防止 AI 改代码时"越改越乱"
 
 ---
 
-## ✅ 已完成功能（18/18）
+## ✅ 已完成功能（21/21）
 
 ### 核心架构
 1. ✅ 插件化检查架构（Check 基类）
@@ -41,6 +41,11 @@
 17. ✅ moat check --diff（增量检查）
 18. ✅ moat report --copy（一键复制给 AI）
 
+### v0.3.0 新功能
+19. ✅ moat fix --report（AI 辅助修复原型）
+20. ✅ Sidecar 守护进程（实时感知）
+21. ✅ VS Code 插件（编辑器集成）
+
 ---
 
 ## 🏗️ 核心文件
@@ -59,6 +64,18 @@
 
 ### 进化层
 - `moat/evolution.py` — 元知识反向驱动
+
+### AI 辅助修复（v0.3.0）
+- `moat/fixer.py` — 修复引擎
+- `moat/fix_strategies.py` — 修复策略库
+
+### Sidecar 守护进程（v0.3.0）
+- `moat/sidecar/daemon.py` — 守护进程管理
+- `moat/sidecar/watcher.py` — 文件监控
+
+### VS Code 插件（v0.3.0）
+- `vscode-moat/package.json` — 插件配置
+- `vscode-moat/src/extension.ts` — 插件主入口
 
 ### 其他
 - `moat/core_areas.py` — 核心业务探测
@@ -88,9 +105,9 @@
 ## 🎯 下一步计划
 
 ### 优先级 1（待实现）
-- ⏳ moat fix --report（AI 辅助修复）
-- ⏳ Sidecar 守护进程（实时感知）
-- ⏳ VS Code 插件
+- ✅ moat fix --report（AI 辅助修复）
+- ✅ Sidecar 守护进程（实时感知）
+- ✅ VS Code 插件（编辑器集成）
 
 ### 优先级 2（可选）
 - ⏳ 知识图谱记忆（.moat/memory.db 扩展）
