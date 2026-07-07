@@ -48,11 +48,49 @@ Completes four-layer defense in 12 seconds:
 
 | Layer | Purpose |
 |-------|---------|
-| **L0 Syntax** | All Python files pass syntax check |
+| **L0 Syntax** | All Python/TypeScript files pass syntax check |
 | **L1 Survival** | Imports work, APIs return 200, core modules instantiate, critical files exist |
 | **L2 Structure** | API JSON fields match contract (prevents frontend/backend breaks) |
 | **L3 Correlation** | Modified A doesn't break B (prevents "fix one, break three") |
 | **L4 Baseline** | File count doesn't decrease, code quality doesn't regress (prevents silent deletions) |
+
+**TypeScript Checks** (v0.2.0+):
+
+| Check | Purpose |
+|-------|---------|
+| **Syntax Check** | Validates TypeScript syntax via `tsc --noEmit` |
+| **Dedup Check** | Deduplication/debounce code must have "why" comments |
+| **Race Condition Check** | Race-critical logic must have timing comments |
+| **Timing Doc Check** | Timing diagram docs must exist (optional) |
+| **Semantic Analysis** | Deep semantic checks based on CodeGraph (optional) |
+
+**Enable TypeScript Checks**:
+
+```bash
+# 1. Install TypeScript
+npm install -g typescript
+
+# 2. Run checks (auto-detects TypeScript files)
+moat check
+```
+
+**Enable Semantic Checks** (requires CodeGraph):
+
+```json
+// .moat/config.json
+{
+  "typescript": {
+    "tsc_path": "npx tsc",
+    "tsconfig": "tsconfig.json",
+    "enable_semantic_checks": true
+  }
+}
+```
+
+Semantic checks provide:
+- **Change Impact Analysis**: Know which callers will be affected before modifying a function
+- **Dependency Graph Queries**: Deep semantic analysis based on CodeGraph knowledge graph
+- **Race Detection**: Identify race conditions and timing issues
 
 ### 3. Live Monitoring
 

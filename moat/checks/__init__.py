@@ -45,11 +45,24 @@ def create_check_instances(project_type: dict[str, bool], project_root: Path, co
             TypeScriptTimingDocCheck,
         )
         ts_config = (config or {}).get("typescript", {})
+
+        # 基础检查（默认启用）
         checks.extend([
             ("L0 TypeScript 语法", TypeScriptSyntaxCheck(project_root, ts_config)),
             ("L1 TypeScript 去重", TypeScriptDedupCheck(project_root, ts_config)),
             ("L1 TypeScript 竞态", TypeScriptRaceConditionCheck(project_root, ts_config)),
             ("L1 TypeScript 时序文档", TypeScriptTimingDocCheck(project_root, ts_config)),
         ])
+
+        # 语义检查（可选，需要 CodeGraph）
+        if ts_config.get("enable_semantic_checks", False):
+            from moat.checks.typescript import (
+                SemanticDedupCheck,
+                SemanticRaceConditionCheck,
+            )
+            checks.extend([
+                ("L2 TypeScript 语义去重", SemanticDedupCheck(project_root, ts_config)),
+                ("L2 TypeScript 语义竞态", SemanticRaceConditionCheck(project_root, ts_config)),
+            ])
 
     return checks

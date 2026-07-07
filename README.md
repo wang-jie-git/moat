@@ -46,11 +46,49 @@ moat check
 
 | 层级 | 作用 |
 |------|------|
-| **L0 语法** | 所有 Python 文件无语法错误 |
+| **L0 语法** | 所有 Python/TypeScript 文件无语法错误 |
 | **L1 存活** | import 正常、API 能返回 200、核心模块可实例化、关键文件存在 |
 | **L2 结构** | API 返回的 JSON 字段符合契约（防前后端断裂） |
 | **L3 关联** | 改了 A，B 还能用（防修一个出三个） |
 | **L4 基线** | 文件数不减少、代码量不退化（防隐性删除） |
+
+**TypeScript 专项检查**（v0.2.0+）：
+
+| 检查项 | 作用 |
+|--------|------|
+| **语法检查** | 调用 `tsc --noEmit` 验证 TypeScript 语法 |
+| **去重检查** | 去重/防抖代码必须有"为什么"注释 |
+| **竞态检查** | 竞态关键逻辑必须有时序注释 |
+| **时序文档** | 时序图文档必须存在（可选） |
+| **语义分析** | 基于 CodeGraph 的深度语义检查（可选） |
+
+**启用 TypeScript 检查**：
+
+```bash
+# 1. 安装 TypeScript
+npm install -g typescript
+
+# 2. 运行检查（自动检测 TypeScript 文件）
+moat check
+```
+
+**启用语义检查**（需要 CodeGraph）：
+
+```json
+// .moat/config.json
+{
+  "typescript": {
+    "tsc_path": "npx tsc",
+    "tsconfig": "tsconfig.json",
+    "enable_semantic_checks": true
+  }
+}
+```
+
+语义检查提供：
+- **变更影响分析**：修改函数前，知道会影响哪些调用方
+- **依赖图查询**：基于 CodeGraph 知识图谱的深度语义分析
+- **竞态检测**：识别竞态条件和时序问题
 
 ### 3. 实时监控
 

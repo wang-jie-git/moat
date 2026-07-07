@@ -107,3 +107,67 @@ class TestTypeScriptChecks:
         results = check.run()
         assert len(results) == 1
         assert results[0].type == "skip"
+
+
+class TestSemanticChecks:
+    """测试 CodeGraph 语义检查"""
+
+    def test_semantic_dedup_check_no_codegraph(self, tmp_path):
+        """CodeGraph 不可用时跳过"""
+        from moat.checks.typescript import SemanticDedupCheck
+
+        check = SemanticDedupCheck(tmp_path)
+        results = check.run()
+        assert len(results) == 1
+        assert results[0].type == "skip"
+
+    def test_semantic_race_condition_check_no_codegraph(self, tmp_path):
+        """CodeGraph 不可用时跳过"""
+        from moat.checks.typescript import SemanticRaceConditionCheck
+
+        check = SemanticRaceConditionCheck(tmp_path)
+        results = check.run()
+        assert len(results) == 1
+        assert results[0].type == "skip"
+
+    def test_codegraph_client_not_found(self, tmp_path):
+        """CodeGraph 数据库不存在时连接失败"""
+        from moat.checks.typescript.semantic import CodeGraphClient
+
+        cg = CodeGraphClient(tmp_path / "nonexistent.db")
+        assert not cg.connect()
+
+    def test_codegraph_client_valid_db(self):
+        """CodeGraph 数据库连接成功（使用 ONE 项目的数据库）"""
+        from moat.checks.typescript.semantic import CodeGraphClient
+
+        db_path = Path("/Users/mac/Desktop/oh-agent-panel/.codegraph/codegraph.db")
+        if not db_path.exists():
+            pytest.skip("CodeGraph database not found")
+
+        cg = CodeGraphClient(db_path)
+        assert cg.connect()
+
+        # 测试查询
+        nodes = cg.query_nodes(kind="function", file_pattern="%.ts")
+        assert len(nodes) > 0
+
+        cg.close()
+
+    def test_change_impact_analyzer(self):
+        """变更影响分析器"""
+        from moat.checks.typescript.semantic import CodeGraphClient, ChangeImpactAnalyzer
+
+        db_path = Path("/Users/mac/Desktop/oh-agent-panel/.codegraph/codegraph.db")
+        if not db_path.exists():
+            pytest.skip("CodeGraph database not found")
+
+        with CodeGraphClient(db_path) as cg:
+            analyzer = ChangeImpactAnalyzer(cg)
+            result = analyzer.analyze("setState", language="typescript")
+
+            # 验证结果结构
+            assert "symbol" in result or "error" in result
+            if "symbol" in result:
+                assert "risk_level" in result
+                assert result["risk_level"] in ("low", "medium", "high")

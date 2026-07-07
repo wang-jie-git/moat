@@ -139,7 +139,7 @@ wheels = [
 ]
 
 [[package]]
-name = "moat"
+name = "moat-ai"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
@@ -160,7 +160,7 @@ dashboard = [
 requires-dist = [
     { name = "fastapi", marker = "extra == 'dashboard'", specifier = ">=0.100" },
     { name = "httpx", specifier = ">=0.27" },
-    { name = "moat", extras = ["dashboard"], marker = "extra == 'all'" },
+    { name = "moat-ai", extras = ["dashboard"], marker = "extra == 'all'" },
     { name = "uvicorn", marker = "extra == 'dashboard'", specifier = ">=0.22" },
 ]
 provides-extras = ["dashboard", "all"]
