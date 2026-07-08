@@ -5,6 +5,88 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [0.6.2] - 2026-07-08
+
+### 🎯 覆盖率优化
+
+#### P0 紧急修复
+
+- **修复 evolution.py 测试失败**: EnhancedPainScorer 初始化逻辑修复
+- **修复 BridgeConfig 导入**: 修复 NameError（便捷函数）
+- **修复数据库连接泄漏**: sync.py 添加 finally 块确保连接关闭
+  - 消除 ResourceWarning: unclosed database
+
+#### P1 核心模块覆盖提升
+
+- **l1_behavior.py**: 0% → 100%（新增 8 个测试）
+- **l2_schema.py**: 0% → 100%（新增 13 个测试）
+- **contract.py**: 0% → 100%（新增 12 个测试）
+
+#### P2 TypeScript 检查模块
+
+- **any_type.py**: 0% → 88%（新增 16 个测试）
+- **async_race.py**: 0% → 96%（新增 11 个测试）
+- 修复 any_type.py 3 个 bug（变量名 `total`/`total_any` 混用）
+
+#### P3 其他模块优化
+
+- **cli.py**: 37% → 37%（+6 参数解析测试）
+- **sidecar/watcher.py**: 38% → 45%（+15 测试）
+- **evolution.py**: 65% → 98%（修复 14 个测试）
+
+### 🐛 Bug 修复
+
+#### TypeScript 检查
+
+- **any_type.py:69,75,87**: 变量名 `total` 未定义
+  - 影响：当检测到 >20 个 any 类型时会崩溃
+  - 修复：统一使用 `total_any` 变量名
+
+#### 进化模块
+
+- **evolution.py:173-176**: EnhancedPainScorer 覆盖测试设置
+  - 影响：14 个进化模块测试失败
+  - 修复：优先使用 `evolution_engine.evolved_rules`
+
+#### 数据库连接
+
+- **sync.py:325**: 数据库连接未关闭
+  - 影响：ResourceWarning 警告
+  - 修复：添加 finally 块确保连接关闭
+
+### 📊 测试覆盖
+
+- ✅ **总测试数**: 723 通过（+41）
+- ✅ **失败测试**: 0（从 14 降至 0）
+- ✅ **整体覆盖率**: 63% → 67%（+4%）
+- ✅ **未覆盖行数**: 1495 → 1351（-144）
+
+### 🏆 测试分布
+
+| 模块 | 覆盖率 | 状态 |
+|------|--------|------|
+| L1-L4 检查层 | 84-100% | ✅ 优秀 |
+| AST 感知层 | 78-91% | ✅ 良好 |
+| TypeScript 检查 | 平均 44% | ⚠️ 待优化 |
+| Sidecar 守护进程 | 45-82% | ⚠️ 待优化 |
+| CLI 命令 | 37% | ⚠️ 待优化 |
+
+### 📝 新增测试文件
+
+- `tests/test_contract.py` - CONTRACT.md 生成器测试
+- `tests/test_l1_behavior.py` - 行为验证检查测试
+- `tests/test_l2_schema.py` - API 结构检查测试
+- `tests/test_ts_any_type.py` - TypeScript any 类型检测测试
+- `tests/test_ts_async_race.py` - TypeScript 异步竞态检测测试
+
+### 🔧 改进的测试文件
+
+- `tests/test_evolution.py` - 修复 14 个测试失败
+- `tests/test_cli.py` - 新增 6 个参数解析测试
+- `tests/test_sidecar_watcher.py` - 新增 15 个文件监控测试
+
+---
+
 ## [0.6.1] - 2026-07-07
 
 ### 🐛 Bug 修复
