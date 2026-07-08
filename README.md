@@ -1,7 +1,7 @@
 # Moat: 多语言感知 + 深度记忆 + 智能进化 🚀
 
 > [中文](https://github.com/wang-jie-git/moat/blob/main/README.zh.md) | English
-> **当前版本**: v0.7.0-beta | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
+> **当前版本**: v0.7.0-beta.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
 Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语言智能神经系统"**。
 在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够：
@@ -10,16 +10,47 @@ Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语
 - 随项目演进而**自我进化**（知识图谱 + 智能提示）
 - 验收**架构质量**（规则、示例、证据驱动的验收系统）
 
-## 🎉 最新更新 (v0.7.0-beta)
+## 🎉 最新更新 (v0.7.0-beta.1)
 
-### 🎯 架构验收系统
+### 🎯 算子能力增强
 
-- ✅ **`moat verify` 命令**: 全新的架构验收系统
-- ✅ **7步验收流程**: 基于口播视频文案设计，从规则到文档全覆盖
-- ✅ **算子化架构**: 7个独立算子，灵活组合，易于扩展
-- ✅ **架构健康度评分**: 5维度量化架构质量（0-100分）
-- ✅ **实施真元文档**: 自动生成架构权威文档
-- ✅ **ARCHITECTURAL_AUDIT_PROTOCOL.md**: 架构验收方法论文档
+- ✅ **api_response_spec 完整实现**: 真实扫描 API 端点并验证响应格式
+  - 解析 FastAPI 装饰器 (`@app.get`, `@router.post`)
+  - 检查响应模型和 HTTP 状态码
+  - 检测统一响应格式
+- ✅ **framework_usage 算子增强**: 检查框架特性充分利用
+  - FastAPI: Pydantic + ExceptionHandler + Depends + APIRouter + BackgroundTasks
+  - Django: ORM + Forms/Serializers + get_object_or_404
+  - Flask: Marshmallow + errorhandler
+- ✅ **Claude Code Hook 集成**: 自动生成 `.claude/settings.json`
+  - 交互式配置询问
+  - PreToolUse + PostToolUse Hooks
+  - 开箱即用
+
+### 📦 安装方式
+
+#### 方式 1: 一键安装（推荐）
+
+```bash
+cd /Users/mac/Desktop/moat
+./install.sh
+```
+
+#### 方式 2: 创建别名
+
+```bash
+# Bash/Zsh
+echo 'alias moat="python3 -m moat"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### 方式 3: 直接使用
+
+```bash
+python3 -m moat --help
+python3 -m moat check
+python3 -m moat verify --all
+```
 
 [查看完整更新日志 →](CHANGELOG.md)
 
@@ -270,6 +301,174 @@ data = json.loads(request.body)  # moat-ignore: framework_usage
 - [安装指南](docs/INSTALLATION.md) — 详细安装选项和常见问题
 - [CHANGELOG](CHANGELOG.md) — 版本更新日志
 - [贡献指南](CONTRIBUTING.md) — 如何贡献代码
+- [使用指南](USAGE.md) — **快速开始和常用命令**
+
+
+## 🚀 快速开始使用
+
+### 三种使用方式
+
+#### 方式 1: 直接使用（无需安装）
+
+```bash
+# 在 moat 项目目录下
+cd /Users/mac/Desktop/moat
+
+# 通过 python -m 运行
+python3 -m moat --help
+python3 -m moat check
+python3 -m moat verify --all
+```
+
+#### 方式 2: 一键安装（推荐）
+
+```bash
+# 在 moat 项目目录下
+cd /Users/mac/Desktop/moat
+
+# 运行安装脚本
+./install.sh
+
+# 选择安装方式:
+# 1) 本地安装（虚拟环境）
+# 2) 用户目录安装（推荐，~/.local/bin/moat）
+# 3) 系统安装（需要 sudo）
+# 4) 仅创建别名（快速方案）
+```
+
+#### 方式 3: 创建别名（最快）
+
+```bash
+# Bash/Zsh
+echo 'alias moat="python3 -m moat"' >> ~/.bashrc
+# 或
+echo 'alias moat="python3 -m moat"' >> ~/.zshrc
+
+# 重新加载配置
+source ~/.bashrc  # 或 source ~/.zshrc
+
+# 现在可以直接使用
+moat --help
+moat check
+```
+
+### 常用命令
+
+#### 1. 初始化项目
+
+```bash
+# 进入你的项目
+cd your-project
+
+# 初始化 Moat
+moat init
+
+# 如果有 .claude 目录，会询问是否集成 Claude Code:
+# 🤖 Claude Code 集成:
+# 是否将 Moat 守护进程集成至 Claude Code？(Y/n): y
+# ✓ Claude Code Hook 已启用
+# ✓ 已生成 .claude/settings.json
+```
+
+#### 2. 运行检查
+
+```bash
+# 完整检查（四层门禁）
+moat check
+
+# 增量检查（只检查变更）
+moat check --diff
+```
+
+#### 3. 架构验收（v0.7.0-beta 新功能）
+
+```bash
+# 完整验收（7个算子）
+moat verify --all
+
+# 单个算子
+moat verify --operator api_response_spec      # API 响应规范
+moat verify --operator framework_usage        # 框架利用检查
+moat verify --operator directory_responsibility  # 目录责任
+
+# JSON 输出（用于 CI/CD）
+moat verify --json
+
+# 评分低于 60 分则失败（用于 CI/CD）
+moat verify --fail-on-score 60
+```
+
+**7个算子**:
+1. `directory_responsibility` — 目录责任验收
+2. `minimal_module_drill` — 最小模块演练
+3. `api_response_spec` — 接口响应规范验收 ⭐ 新增强
+4. `framework_usage` — 框架利用检查 ⭐ 新增强
+5. `runtime_evidence` — 运行证据包生成
+6. `architecture_health_score` — 架构健康度评分
+7. `truth_document` — 实施真元文档生成
+
+#### 4. 守门系统
+
+```bash
+# 列出所有规则
+moat gatekeeper rules
+
+# 检查单个文件
+moat gatekeeper check --file api/users.py
+```
+
+#### 5. 其他命令
+
+```bash
+# 实时监控日志
+moat watch --log logs/backend.log
+
+# 生成报告
+moat report
+moat report --copy  # 复制到剪贴板
+
+# AI 辅助修复
+moat fix
+
+# 进化指标
+moat evolution report
+
+# 基线管理
+moat baseline show
+```
+
+### Claude Code Hook 使用
+
+安装后，`.claude/settings.json` 会自动包含：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "moat gatekeeper check --file ${file}",
+        "timeout": 5000
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "moat check --diff",
+        "timeout": 10000
+      }]
+    }]
+  }
+}
+```
+
+**效果**:
+- **PreToolUse**: Claude Code 写文件前自动检查架构规则
+- **PostToolUse**: Claude Code 写文件后自动运行增量检查
+
+[查看完整使用指南 →](USAGE.md)
 
 
 ## 🌟 演进路线
