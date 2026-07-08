@@ -8,6 +8,7 @@ Moat CLI — 护城河命令行工具
   moat dashboard     启动 Web 错误看板
   moat adapter       安装 AI 工具适配器
   moat baseline      管理基线数据
+  moat verify        架构验收
 """
 
 import argparse
@@ -129,6 +130,18 @@ def cmd_dashboard(args):
         log_path=args.log or _detect_log_path(args.project),
     )
     return 0
+
+
+def cmd_gatekeeper(args) -> int:
+    """Gatekeeper守门"""
+    from moat.gatekeeper.cli import cmd_gatekeeper
+    return cmd_gatekeeper(args)
+
+
+def cmd_verify(args) -> int:
+    """架构验收"""
+    from moat.verification.verify_cli import cmd_verify
+    return cmd_verify(args)
 
 
 def cmd_report(args):
@@ -364,6 +377,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_evolution.add_argument("--value", type=float,
                             help="指标值（仅 record）")
 
+    # verify
+    p_verify = sub.add_parser("verify", help="架构验收")
+    _shared_args(p_verify)
+    p_verify.add_argument("--all", action="store_true", default=True,
+                          help="执行完整验收（所有算子）")
+    p_verify.add_argument("--operator", "-o",
+                          help="执行单个算子（如: directory_responsibility）")
+    p_verify.add_argument("--json", action="store_true",
+                          help="JSON输出")
+    p_verify.add_argument("--fail-on-score", type=int, metavar="SCORE",
+                          help="架构评分低于此阈值则失败")
+
+    # gatekeeper
+    from moat.gatekeeper.cli import add_gatekeeper_parser
+    add_gatekeeper_parser(sub)
+
     return parser
 
 
@@ -382,6 +411,8 @@ def main():
         "sidecar": cmd_sidecar,
         "evolution": cmd_evolution,
         "adapter": cmd_adapter,
+        "verify": cmd_verify,
+        "gatekeeper": cmd_gatekeeper,
     }
 
     sys.exit(commands[args.command](args))

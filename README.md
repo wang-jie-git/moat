@@ -1,19 +1,25 @@
 # Moat: 多语言感知 + 深度记忆 + 智能进化 🚀
 
 > [中文](https://github.com/wang-jie-git/moat/blob/main/README.zh.md) | English
-> **当前版本**: v0.6.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases/tag/v0.6.1)
+> **当前版本**: v0.7.0-beta | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
 Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语言智能神经系统"**。
 在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够：
 - 感知**多语言**代码变更（Python/TypeScript/Go/Rust）
 - 记住**架构教训**（One Memory 深度集成）
 - 随项目演进而**自我进化**（知识图谱 + 智能提示）
+- 验收**架构质量**（规则、示例、证据驱动的验收系统）
 
-## 🎉 最新更新 (v0.6.1)
+## 🎉 最新更新 (v0.7.0-beta)
 
-- ✅ **Sidecar Bug 修复**: watchdog 和 Pydantic 可选依赖优雅降级
-- ✅ **测试覆盖增强**: 81/81 单元测试通过 (100%)
-- ✅ **自举测试优化**: moat check 通过率 21/21 (100%)
+### 🎯 架构验收系统
+
+- ✅ **`moat verify` 命令**: 全新的架构验收系统
+- ✅ **7步验收流程**: 基于口播视频文案设计，从规则到文档全覆盖
+- ✅ **算子化架构**: 7个独立算子，灵活组合，易于扩展
+- ✅ **架构健康度评分**: 5维度量化架构质量（0-100分）
+- ✅ **实施真元文档**: 自动生成架构权威文档
+- ✅ **ARCHITECTURAL_AUDIT_PROTOCOL.md**: 架构验收方法论文档
 
 [查看完整更新日志 →](CHANGELOG.md)
 
@@ -82,10 +88,13 @@ moat init
 # 2. 运行检查
 moat check
 
-# 3. 查看进化报告
+# 3. 架构验收（NEW!）
+moat verify
+
+# 4. 查看进化报告
 moat evolution report
 
-# 4. 获取 AI 修复建议
+# 5. 获取 AI 修复建议
 moat fix
 ```
 
@@ -102,6 +111,7 @@ moat fix
 | AST 增量感知 | ✅ | ✅ |
 | AI 辅助修复 | ✅ | ✅ |
 | 进化指标系统 | ✅ | ✅ |
+| **架构验收系统** | **✅** | **✅** |
 | Web 看板 | ❌ | ✅ |
 | Sidecar 守护进程 | ❌ | ✅ |
 | 剪贴板复制 | ❌ | ✅ |
@@ -119,6 +129,53 @@ pip install "moat-ai[sidecar]"
 # VS Code 插件辅助
 pip install "moat-ai[vscode]"
 ```
+
+---
+
+## 🔍 架构验收（v0.7.0-beta）
+
+基于口播视频文案《怎么验收AI搭建的后端架构》设计，实现"规则、示例、证据"驱动的架构验收系统。
+
+### 核心命令
+
+```bash
+# 完整验收（7步流程）
+moat verify
+
+# 单项验收
+moat verify --operator directory_responsibility
+
+# JSON输出
+moat verify --json
+
+# CI/CD集成：评分低于60分则失败
+moat verify --fail-on-score 60
+```
+
+### 7步验收流程
+
+1. **目录责任验收** — 验证每个目录的责任是否清晰
+2. **最小模块演练** — 验证架构规则能否落地
+3. **接口响应规范** — 验证接口返回是否规范统一
+4. **框架利用检查** — 验证是否充分利用框架能力
+5. **运行证据包** — 固化项目运行方式
+6. **架构健康度评分** — 量化架构质量（0-100分）
+7. **实施真元文档** — 生成架构权威文档
+
+### 架构健康度评分
+
+| 分数 | 等级 | 行动 |
+|------|------|------|
+| 80-100 | 优秀 | ✅ 继续开发 |
+| 70-79 | 良好 | ✅ 继续（建议优化到80+） |
+| 60-69 | 一般 | ⚠️ 优化后再新增功能 |
+| <60 | 不健康 | ❌ 禁止新增功能 |
+
+### 详细文档
+
+📄 [ARCHITECTURAL_AUDIT_PROTOCOL.md](ARCHITECTURAL_AUDIT_PROTOCOL.md) — 架构验收方法论
+
+📄 [moat-v0.7.0-architecture-upgrade.md](../Documents/ObsidianVault/2.项目/Moat\ AI编码护城河_backup_20260707_195416/3.技术文档/moat-v0.7.0-architecture-upgrade.md) — v0.7.0架构升级方案
 
 ---
 
