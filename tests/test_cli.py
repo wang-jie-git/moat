@@ -76,3 +76,46 @@ class TestCLI:
         args = parser.parse_args(["dashboard", "--port", "9999"])
         assert args.command == "dashboard"
         assert args.port == 9999
+
+    def test_check_command_with_diff(self):
+        """check 命令的 --diff 参数"""
+        parser = build_parser()
+        args = parser.parse_args(["check", "--diff"])
+        assert args.command == "check"
+        assert args.diff is True
+
+    def test_watch_command_without_log(self):
+        """watch 命令无日志路径"""
+        parser = build_parser()
+        args = parser.parse_args(["watch"])
+        assert args.command == "watch"
+        assert args.log is None
+        assert args.color is True
+
+    def test_baseline_command_show(self):
+        """baseline show 命令"""
+        parser = build_parser()
+        args = parser.parse_args(["baseline", "show"])
+        assert args.command == "baseline"
+        assert args.action == "show"
+
+    def test_init_command_non_interactive(self):
+        """init 命令的非交互模式"""
+        parser = build_parser()
+        args = parser.parse_args(["init", "--no-interactive"])
+        assert args.command == "init"
+        assert args.no_interactive is True
+
+    def test_report_command_markdown(self):
+        """report 命令的 markdown 格式"""
+        parser = build_parser()
+        args = parser.parse_args(["report", "--format", "md"])
+        assert args.command == "report"
+        assert args.format == "md"
+
+    def test_report_command_json(self):
+        """report 命令的 JSON 格式"""
+        parser = build_parser()
+        args = parser.parse_args(["report", "--format", "json"])
+        assert args.command == "report"
+        assert args.format == "json"

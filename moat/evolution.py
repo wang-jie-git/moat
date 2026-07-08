@@ -172,7 +172,12 @@ class EnhancedPainScorer:
         self.evolution_engine = evolution_engine
         self.evolved_rules: dict[str, Any] | None = None
 
-        if evolution_engine:
+        # 优先使用 evolution_engine 已加载的规则（测试中手动设置）
+        if evolution_engine and hasattr(evolution_engine, 'evolved_rules'):
+            self.evolved_rules = evolution_engine.evolved_rules
+
+        # 如果没有规则，尝试从文件加载
+        if evolution_engine and self.evolved_rules is None:
             self.evolved_rules = evolution_engine.load_evolved_rules()
 
     def calculate(self, error: dict[str, Any], base_score: float) -> float:
@@ -261,7 +266,7 @@ def evolve_from_insights(project_root: str = ".", bridge: Any = None) -> list[Ev
     root = Path(project_root).resolve()
 
     if not bridge:
-        from moat.memory.bridge import SharedStorageBridge
+        from moat.memory.bridge import SharedStorageBridge, BridgeConfig
         bridge = SharedStorageBridge(
             BridgeConfig(db_path=root / ".moat" / "memory.db")
         )
@@ -280,7 +285,7 @@ def load_enhanced_pain_scorer(project_root: str = ".") -> EnhancedPainScorer:
     Returns:
         EnhancedPainScorer 实例
     """
-    from moat.memory.bridge import SharedStorageBridge
+    from moat.memory.bridge import SharedStorageBridge, BridgeConfig
 
     root = Path(project_root).resolve()
     bridge = SharedStorageBridge(

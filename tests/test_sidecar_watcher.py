@@ -42,11 +42,24 @@ def watcher(tmp_project):
     return SidecarWatcher(str(tmp_project))
 
 
-# ==================== 跳过测试（无 watchdog）====================
+# ==================== 测试（强制启用 watchdog）====================
 
-@pytest.mark.skipif(not WATCHDOG_AVAILABLE, reason="watchdog not installed")
-class TestFileChangeHandlerWithWatchdog:
-    """测试 FileChangeHandler（watchdog 可用时）"""
+class TestFileChangeHandler:
+    """测试 FileChangeHandler（强制启用 watchdog）"""
+
+    @pytest.fixture(autouse=True)
+    def enable_watchdog(self):
+        """自动启用 watchdog"""
+        with patch('moat.sidecar.watcher.WATCHDOG_AVAILABLE', True):
+            with patch('moat.sidecar.watcher.FileSystemEventHandler'):
+                with patch('moat.sidecar.watcher.Observer'):
+                    yield
+
+    @pytest.fixture
+    def handler(self, tmp_project):
+        """创建 FileChangeHandler 实例"""
+        with patch('moat.sidecar.watcher.WATCHDOG_AVAILABLE', True):
+            return FileChangeHandler(str(tmp_project), debounce_seconds=1.0)
 
     def test_handler_initialization(self, handler, tmp_project):
         """测试处理器初始化"""
@@ -94,12 +107,22 @@ class TestFileChangeHandlerWithWatchdog:
         """测试防抖"""
         path = tmp_project / "main.py"
 
-        # 第一次调用
-        handler._trigger_check(path, "modified")
+        with patch.object(handler, '_trigger_check') as mock_trigger:
+            # 第一次调用
+            handler.on_modified(MagicMock(
+                is_directory=False,
+                src_path=str(path)
+            ))
 
-        # 立即再次调用（应该被防抖）
-        # 注意：实际测试需要 mock，这里只测试逻辑
-        assert str(path) in handler.last_event_time
+            # 立即再次调用（应该被防抖跳过）
+            time.sleep(0.1)
+            handler.on_modified(MagicMock(
+                is_directory=False,
+                src_path=str(path)
+            ))
+
+            # 只应触发一次
+            assert mock_trigger.call_count == 1
 
 
 # ==================== 无 watchdog 时的测试 ====================

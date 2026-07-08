@@ -63,7 +63,7 @@ class TypeScriptAnyTypeCheck(Check):
             by_file[file_str].append(use)
 
         # 生成报告
-        total_any = len(any_uses)
+        total = len(any_uses)
         affected_files = len(by_file)
 
         if total > 20:
@@ -84,7 +84,7 @@ class TypeScriptAnyTypeCheck(Check):
             ))
 
         # 详细报告
-        if total_any <= 10:
+        if total <= 10:
             for file_str, uses in by_file.items():
                 for use in uses[:3]:  # 每文件最多 3 条
                     results.append(self.warn(

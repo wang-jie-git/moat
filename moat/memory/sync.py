@@ -270,6 +270,7 @@ class MemorySyncManager:
         Returns:
             报告字典
         """
+        conn = None
         try:
             import sqlite3
 
@@ -322,8 +323,6 @@ class MemorySyncManager:
                 ORDER BY date
             """, (week_ago,)).fetchall()
 
-            conn.close()
-
             return {
                 "generated_at": datetime.now().isoformat(),
                 "bug_memories": dict(bug_stats) if bug_stats else {},
@@ -338,6 +337,9 @@ class MemorySyncManager:
             return {
                 "error": str(e),
             }
+        finally:
+            if conn:
+                conn.close()
 
     def _calculate_quality_score(
         self, bug_stats: sqlite3.Row | None, insight_stats: sqlite3.Row | None

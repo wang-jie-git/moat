@@ -297,8 +297,11 @@ class TestEvolutionEngine:
 
     def test_load_evolved_rules_exists(self, tmp_project, evolution_engine, sample_insights):
         """测试加载存在的规则文件"""
-        # 先保存规则
-        engine = EvolutionEngine(tmp_project)
+        # 先保存规则（需要 bridge）
+        from unittest.mock import MagicMock
+        mock_bridge = MagicMock()
+        mock_bridge.query_recent_insights.return_value = sample_insights
+        engine = EvolutionEngine(tmp_project, bridge=mock_bridge)
         engine.generate_evolved_rules()
 
         # 创建新引擎并加载
@@ -436,56 +439,64 @@ class TestEnhancedPainScorer:
 
     def test_extract_module(self, evolution_engine):
         """测试提取模块名"""
-        assert evolution_engine._extract_module("src/auth/login.py") == "auth"
-        assert evolution_engine._extract_module("api/routes.py") == "api"
-        assert evolution_engine._extract_module("single.py") == "single.py"
+        scorer = EnhancedPainScorer(evolution_engine)
+        assert scorer._extract_module("src/auth/login.py") == "auth"
+        assert scorer._extract_module("api/routes.py") == "api"
+        assert scorer._extract_module("single.py") == "single.py"
 
     def test_rule_matches_module(self, evolution_engine):
         """测试规则模块匹配"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"module": "auth", "pattern": ""}
-        assert evolution_engine._rule_matches(rule, "auth", "test") is True
-        assert evolution_engine._rule_matches(rule, "api", "test") is False
+        assert scorer._rule_matches(rule, "auth", "test") is True
+        assert scorer._rule_matches(rule, "api", "test") is False
 
     def test_rule_matches_pattern(self, evolution_engine):
         """测试规则模式匹配"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"module": "", "pattern": "race_*"}
-        assert evolution_engine._rule_matches(rule, "auth", "race_condition") is True
-        assert evolution_engine._rule_matches(rule, "auth", "timeout") is False
+        assert scorer._rule_matches(rule, "auth", "race_condition") is True
+        assert scorer._rule_matches(rule, "auth", "timeout") is False
 
     def test_rule_matches_both(self, evolution_engine):
         """测试规则模块和模式都匹配"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"module": "auth", "pattern": "race_*"}
-        assert evolution_engine._rule_matches(rule, "auth", "race_condition") is True
-        assert evolution_engine._rule_matches(rule, "api", "race_condition") is False
-        assert evolution_engine._rule_matches(rule, "auth", "timeout") is False
+        assert scorer._rule_matches(rule, "auth", "race_condition") is True
+        assert scorer._rule_matches(rule, "api", "race_condition") is False
+        assert scorer._rule_matches(rule, "auth", "timeout") is False
 
     def test_apply_rule_pain_weight(self, evolution_engine):
         """测试应用 pain_weight 规则"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"type": "pain_weight", "confidence": 0.9}
-        score = evolution_engine._apply_rule(rule, 50.0)
+        score = scorer._apply_rule(rule, 50.0)
 
         # 50 * (1 + 0.9 * 0.5) = 72.5
         assert score == 72.5
 
     def test_apply_rule_check_priority(self, evolution_engine):
         """测试应用 check_priority 规则"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"type": "check_priority", "confidence": 0.8}
-        score = evolution_engine._apply_rule(rule, 50.0)
+        score = scorer._apply_rule(rule, 50.0)
 
         # 50 * (1 + 0.8 * 0.3) = 62
         assert score == 62.0
 
     def test_apply_rule_new_check(self, evolution_engine):
         """测试应用 new_check 规则（不调整分数）"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"type": "new_check", "confidence": 0.7}
-        score = evolution_engine._apply_rule(rule, 50.0)
+        score = scorer._apply_rule(rule, 50.0)
 
         assert score == 50.0  # 不调整
 
     def test_apply_rule_unknown_type(self, evolution_engine):
         """测试应用未知类型规则"""
+        scorer = EnhancedPainScorer(evolution_engine)
         rule = {"type": "unknown", "confidence": 0.5}
-        score = evolution_engine._apply_rule(rule, 50.0)
+        score = scorer._apply_rule(rule, 50.0)
 
         assert score == 50.0  # 不调整
 
@@ -501,7 +512,7 @@ class TestConvenienceFunctions:
 
         assert rules == []  # 应该返回空列表
 
-    @patch('moat.evolution.SharedStorageBridge')
+    @patch('moat.memory.bridge.SharedStorageBridge')
     def test_evolve_from_insights_with_bridge(self, mock_bridge_class, tmp_project, mock_bridge):
         """测试有 Bridge 时便捷函数"""
         mock_bridge_class.return_value = mock_bridge
@@ -512,7 +523,7 @@ class TestConvenienceFunctions:
         # 应该创建 Bridge 和 Engine
         mock_bridge_class.assert_called_once()
 
-    @patch('moat.evolution.SharedStorageBridge')
+    @patch('moat.memory.bridge.SharedStorageBridge')
     def test_load_enhanced_pain_scorer(self, mock_bridge_class, tmp_project):
         """测试加载增强 Pain Scorer"""
         mock_bridge = MagicMock()
