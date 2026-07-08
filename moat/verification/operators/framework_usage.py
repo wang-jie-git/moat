@@ -175,18 +175,18 @@ class FrameworkUsageOperator:
         return capabilities
 
     def _scan_framework_usage(self, project_path: Path, frameworks: list[str]) -> list[dict]:
-        """扫描代码，检查框架能力利用情况"""
+        """扫描代码，检查框架能力利用情况（真实实现）"""
         usage_checks = []
 
         # 定义豁免目录和文件
         exempt_patterns = {
             "test", "tests", "__pycache__", ".git",
             "venv", ".venv", "node_modules", "dist", "build",
-            "migrations"  # 数据库迁移文件通常不遵循业务代码规范
+            "migrations", "alembic"  # 数据库迁移文件通常不遵循业务代码规范
         }
 
         # 只扫描源代码目录（排除tests等）
-        source_dirs = ["moat", "app", "src", "api", "routers"]
+        source_dirs = ["moat", "app", "src", "api", "routers", "services", "controllers", "views"]
 
         python_files = []
         for source_dir in source_dirs:
@@ -214,40 +214,244 @@ class FrameworkUsageOperator:
 
                 content = py_file.read_text(encoding="utf-8", errors="ignore")
 
-                # 检查FastAPI Pydantic使用
+                # FastAPI 特性检查
                 if "fastapi" in frameworks:
-                    # 检查是否手动解析JSON（应使用Pydantic）
-                    has_json_parsing = False
-                    if "json.loads" in content or "request.json()" in content:
-                        # 排除导入语句和注释
-                        lines_with_json = [
-                            line.strip()
-                            for line in content.split('\n')
-                            if ('json.loads' in line or 'request.json()' in line)
-                            and not line.strip().startswith(('import', 'from', '#'))
-                        ]
-                        has_json_parsing = len(lines_with_json) > 0
+                    usage_checks.extend(self._check_fastapi_features(content, file_path_str))
 
-                    if has_json_parsing:
-                        usage_checks.append({
-                            "feature": "Pydantic验证",
-                            "file": file_path_str,
-                            "using_framework_feature": False,
-                            "importance": "medium",  # 降低重要性，因为可能是CLI工具代码
-                            "recommendation": "建议使用Pydantic BaseModel替代手动JSON解析（如果是API代码）",
-                            "example_file": file_path_str,
-                        })
-                    else:
-                        # 检查是否使用了Pydantic
-                        if "BaseModel" in content or "from pydantic import" in content:
-                            usage_checks.append({
-                                "feature": "Pydantic验证",
-                                "file": file_path_str,
-                                "using_framework_feature": True,
-                                "importance": "high",
-                            })
+                # Django 特性检查
+                if "django" in frameworks:
+                    usage_checks.extend(self._check_django_features(content, file_path_str))
+
+                # Flask 特性检查
+                if "flask" in frameworks:
+                    usage_checks.extend(self._check_flask_features(content, file_path_str))
 
             except Exception:
                 pass
 
         return usage_checks
+
+    def _check_fastapi_features(self, content: str, file_path: str) -> list[dict]:
+        """检查 FastAPI 特性使用情况"""
+        checks = []
+
+        # 1. Pydantic 验证（已实现）
+        has_base_model = "BaseModel" in content or "from pydantic import" in content
+        has_manual_json = "json.loads" in content or "request.json()" in content
+
+        if has_manual_json and not has_base_model:
+            checks.append({
+                "feature": "Pydantic BaseModel",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "high",
+                "recommendation": "使用 Pydantic BaseModel 替代手动 JSON 解析",
+            })
+        elif has_base_model:
+            checks.append({
+                "feature": "Pydantic BaseModel",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "high",
+            })
+
+        # 2. FastAPI 异常处理
+        has_exception_handler = "@app.exception_handler" in content or "@app.exception_handler" in content
+        has_try_except = "try:" in content and "except" in content
+
+        if has_try_except and not has_exception_handler:
+            checks.append({
+                "feature": "FastAPI Exception Handler",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "high",
+                "recommendation": "使用 @app.exception_handler 统一处理异常，减少样板 try-except 代码",
+            })
+        elif has_exception_handler:
+            checks.append({
+                "feature": "FastAPI Exception Handler",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "high",
+            })
+
+        # 3. FastAPI 依赖注入 (Depends)
+        has_depends = "Depends(" in content or "from fastapi import Depends" in content
+        has_auth_logic = any(kw in content for kw in ["token", "auth", "login", "current_user", "get_current_user"])
+
+        if has_auth_logic and not has_depends:
+            checks.append({
+                "feature": "FastAPI Depends (依赖注入)",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "high",
+                "recommendation": "使用 Depends() 实现鉴权依赖，避免在每个路由中重复验证 token",
+            })
+        elif has_depends:
+            checks.append({
+                "feature": "FastAPI Depends (依赖注入)",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "high",
+            })
+
+        # 4. FastAPI APIRouter 路由分组
+        has_apirouter = "APIRouter" in content or "from fastapi import APIRouter" in content
+        has_app_route = "@app." in content or "@router." in content
+
+        if has_app_route and not has_apirouter:
+            # 统计路由数量
+            route_count = content.count("@app.get") + content.count("@app.post") + \
+                         content.count("@app.put") + content.count("@app.delete")
+
+            if route_count > 5:
+                checks.append({
+                    "feature": "FastAPI APIRouter (路由分组)",
+                    "file": file_path,
+                    "using_framework_feature": False,
+                    "importance": "medium",
+                    "recommendation": f"文件中有 {route_count} 个路由，建议使用 APIRouter 按模块分组",
+                })
+        elif has_apirouter:
+            checks.append({
+                "feature": "FastAPI APIRouter (路由分组)",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "medium",
+            })
+
+        # 5. FastAPI BackgroundTasks 后台任务
+        has_background_tasks = "BackgroundTasks" in content or "from fastapi import BackgroundTasks"
+        has_slow_operation = any(kw in content for kw in ["time.sleep", "asyncio.sleep", "send_email", "process_file"])
+
+        if has_slow_operation and not has_background_tasks:
+            checks.append({
+                "feature": "FastAPI BackgroundTasks (后台任务)",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "low",
+                "recommendation": "检测到可能耗时操作，建议使用 BackgroundTasks 异步处理",
+            })
+        elif has_background_tasks:
+            checks.append({
+                "feature": "FastAPI BackgroundTasks (后台任务)",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "low",
+            })
+
+        return checks
+
+    def _check_django_features(self, content: str, file_path: str) -> list[dict]:
+        """检查 Django 特性使用情况"""
+        checks = []
+
+        # 1. Django ORM
+        has_orm = ".objects." in content or "Model.objects" in content
+        has_raw_sql = "cursor()" in content or "raw(" in content
+
+        if has_raw_sql and has_orm:
+            checks.append({
+                "feature": "Django ORM",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "medium",
+                "recommendation": "检测到原生 SQL，建议优先使用 Django ORM",
+            })
+        elif has_orm:
+            checks.append({
+                "feature": "Django ORM",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "high",
+            })
+
+        # 2. Django Forms/Serializers
+        has_forms = "forms.Form" in content or "forms.ModelForm" in content
+        has_serializers = "serializers." in content or "from rest_framework import serializers" in content
+        has_manual_validation = "is_valid()" in content and not (has_forms or has_serializers)
+
+        if has_manual_validation:
+            checks.append({
+                "feature": "Django Forms/Serializers",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "high",
+                "recommendation": "使用 Django Forms 或 DRF Serializers 进行数据验证",
+            })
+        elif has_forms or has_serializers:
+            checks.append({
+                "feature": "Django Forms/Serializers",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "high",
+            })
+
+        # 3. get_object_or_404
+        has_get_object = "get_object_or_404" in content or "get_list_or_404" in content
+        has_try_except_doesnotexist = "DoesNotExist" in content or "try:" in content
+
+        if has_try_except_doesnotexist and not has_get_object:
+            checks.append({
+                "feature": "Django get_object_or_404",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "medium",
+                "recommendation": "使用 get_object_or_404() 替代手动 try-except 捕获 DoesNotExist",
+            })
+        elif has_get_object:
+            checks.append({
+                "feature": "Django get_object_or_404",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "medium",
+            })
+
+        return checks
+
+    def _check_flask_features(self, content: str, file_path: str) -> list[dict]:
+        """检查 Flask 特性使用情况"""
+        checks = []
+
+        # 1. Flask-Marshmallow / Pydantic
+        has_marshmallow = "marshmallow" in content or "flask_marshmallow" in content
+        has_pydantic = "BaseModel" in content
+        has_manual_validation = "request." in content and ("json" in content or "form" in content)
+
+        if has_manual_validation and not (has_marshmallow or has_pydantic):
+            checks.append({
+                "feature": "Flask-Marshmallow / Pydantic",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "high",
+                "recommendation": "使用 Flask-Marshmallow 或 Pydantic 进行请求验证",
+            })
+        elif has_marshmallow or has_pydantic:
+            checks.append({
+                "feature": "Flask-Marshmallow / Pydantic",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "high",
+            })
+
+        # 2. Flask 错误处理
+        has_errorhandler = "@app.errorhandler" in content
+        has_try_except = "try:" in content and "except" in content
+
+        if has_try_except and not has_errorhandler:
+            checks.append({
+                "feature": "Flask ErrorHandler",
+                "file": file_path,
+                "using_framework_feature": False,
+                "importance": "medium",
+                "recommendation": "使用 @app.errorhandler 统一处理错误",
+            })
+        elif has_errorhandler:
+            checks.append({
+                "feature": "Flask ErrorHandler",
+                "file": file_path,
+                "using_framework_feature": True,
+                "importance": "medium",
+            })
+
+        return checks

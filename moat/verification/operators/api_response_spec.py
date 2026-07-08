@@ -154,49 +154,192 @@ class APIResponseSpecOperator:
             "routers/**/*.py",
             "views/**/*.py",
             "endpoints/**/*.py",
+            "**/routes.py",
+            "**/views.py",
         ]
 
         for pattern in search_paths:
             matches = list(project_path.glob(pattern))
             api_files.extend(matches)
 
-        # 去重
-        return list(set(api_files))
+        # 去重并过滤掉测试文件
+        api_files = list(set(api_files))
+        api_files = [f for f in api_files if not any(
+            exempt in str(f) for exempt in ["test_", "/tests/", "/test/"]
+        )]
 
-    def _extract_endpoints(self, file_path: Path) -> list[str]:
-        """从文件中提取API端点"""
+        return api_files
+
+    def _extract_endpoints(self, file_path: Path) -> list[dict]:
+        """从文件中提取API端点（真实实现）"""
+        endpoints = []
+
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             tree = ast.parse(content)
 
-            endpoints = []
+            # 查找 FastAPI/Starlette 路由装饰器
             for node in ast.walk(tree):
-                # 查找装饰器 @app.get, @app.post, @router.get, @router.post 等
-                if isinstance(node, ast.FunctionDef):
-                    for decorator in node.decorator_list:
-                        if isinstance(decorator, ast.Call):
-                            # @app.get("/path") 或 @router.post("/path")
-                            if isinstance(decorator.func, ast.Attribute):
-                                if decorator.func.attr in {"get", "post", "put", "delete", "patch"}:
-                                    # 提取路径
-                                    if decorator.args and isinstance(decorator.args[0], ast.Constant):
-                                        path = decorator.args[0].value
-                                        endpoints.append(f"{decorator.func.attr.upper()} {path}")
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    endpoint_info = self._extract_endpoint_from_function(node, file_path)
+                    if endpoint_info:
+                        endpoints.append(endpoint_info)
 
-            return endpoints
+        except Exception as e:
+            print(f"         ⚠️  解析失败 {file_path.name}: {e}")
 
-        except Exception:
-            return []
+        return endpoints
 
-    def _check_response_format(self, endpoint: str) -> dict:
-        """检查端点的响应格式（简化版）"""
-        # 实际实现需要更复杂的静态分析或运行时检查
-        # 这里返回一个基础检查结果
+    def _extract_endpoint_from_function(self, func_node: ast.FunctionDef, file_path: Path) -> dict | None:
+        """从函数节点提取端点信息"""
+        if not func_node.decorator_list:
+            return None
+
+        for decorator in func_node.decorator_list:
+            endpoint = self._parse_route_decorator(decorator, func_node)
+            if endpoint:
+                return endpoint
+
+        return None
+
+    def _parse_route_decorator(self, decorator: ast.expr, func_node: ast.FunctionDef) -> dict | None:
+        """解析路由装饰器"""
+        # 匹配 @app.get("/path") 或 @router.post("/path") 等
+        if not isinstance(decorator, ast.Call):
+            return None
+
+        if not isinstance(decorator.func, ast.Attribute):
+            return None
+
+        # 检查是否是路由方法
+        method = decorator.func.attr.lower()
+        if method not in {"get", "post", "put", "delete", "patch", "options", "head"}:
+            return None
+
+        # 提取路径
+        path = ""
+        if decorator.args and isinstance(decorator.args[0], ast.Constant):
+            path = decorator.args[0].value
+
+        # 提取关键字参数
+        kwargs = {}
+        for kw in decorator.keywords:
+            if isinstance(kw.arg, str):
+                kwargs[kw.arg] = self._ast_to_value(kw.value)
+
+        # 提取返回值信息
+        return_info = self._extract_return_info(func_node)
 
         return {
-            "endpoint": endpoint,
-            "returns_json": True,  # 假设都返回JSON
-            "has_standard_response": False,  # 假设还没有统一响应模型
-            "status_codes": [200],  # 默认200
-            "notes": "基础检查，需要进一步完善",
+            "method": method.upper(),
+            "path": path,
+            "function": func_node.name,
+            "line": func_node.lineno,
+            "response_model": kwargs.get("response_model"),
+            "status_code": kwargs.get("status_code"),
+            "tags": kwargs.get("tags", []),
+            "return_info": return_info,
+        }
+
+    def _ast_to_value(self, node: ast.expr) -> any:
+        """将 AST 节点转换为 Python 值"""
+        if isinstance(node, ast.Constant):
+            return node.value
+        elif isinstance(node, ast.Name):
+            return node.id
+        elif isinstance(node, ast.Attribute):
+            return f"{self._ast_to_value(node.value)}.{node.attr}"
+        return None
+
+    def _extract_return_info(self, func_node: ast.FunctionDef) -> dict:
+        """提取函数返回值信息"""
+        return_info = {
+            "has_return": False,
+            "return_type": None,
+            "returns_jsonresponse": False,
+            "returns_httpexception": False,
+            "returns_dict": False,
+        }
+
+        # 检查函数返回值类型注解
+        if func_node.returns:
+            return_info["return_type"] = self._ast_to_value(func_node.returns)
+
+        # 检查函数体中的返回语句
+        for node in ast.walk(func_node):
+            if isinstance(node, ast.Return) and node.value:
+                return_info["has_return"] = True
+
+                # 检查是否返回 JSONResponse
+                if isinstance(node.value, ast.Call):
+                    if isinstance(node.value.func, ast.Name) and "JSONResponse" in node.value.func.id:
+                        return_info["returns_jsonresponse"] = True
+                    elif isinstance(node.value.func, ast.Attribute) and "JSONResponse" in node.value.func.attr:
+                        return_info["returns_jsonresponse"] = True
+
+                # 检查是否返回 dict
+                if isinstance(node.value, (ast.Dict, ast.Call)):
+                    return_info["returns_dict"] = True
+
+        return return_info
+
+    def _check_response_format(self, endpoint: dict) -> dict:
+        """检查端点的响应格式（真实实现）"""
+        method = endpoint.get("method", "GET")
+        path = endpoint.get("path", "")
+        function_name = endpoint.get("function", "")
+        response_model = endpoint.get("response_model")
+        status_code = endpoint.get("status_code")
+        return_info = endpoint.get("return_info", {})
+
+        # 检查是否有统一的响应模型
+        has_standard_response = False
+        if response_model:
+            has_standard_response = True
+        elif return_info.get("return_type"):
+            has_standard_response = True
+        elif return_info.get("returns_jsonresponse"):
+            has_standard_response = True
+
+        # 检查是否返回 JSON
+        returns_json = (
+            has_standard_response or
+            return_info.get("returns_jsonresponse") or
+            return_info.get("returns_dict") or
+            return_info.get("has_return")
+        )
+
+        # 检查状态码使用是否规范
+        status_codes = []
+        if status_code:
+            status_codes.append(status_code)
+        else:
+            # 默认状态码
+            if method == "GET":
+                status_codes.append(200)
+            elif method == "POST":
+                status_codes.append(201)
+            elif method == "PUT":
+                status_codes.append(200)
+            elif method == "PATCH":
+                status_codes.append(200)
+            elif method == "DELETE":
+                status_codes.append(204)
+
+        # 检查是否使用 HTTPException
+        uses_httpexception = False
+        if return_info.get("returns_httpexception"):
+            uses_httpexception = True
+
+        return {
+            "endpoint": f"{method} {path}",
+            "function": function_name,
+            "has_standard_response": has_standard_response,
+            "returns_json": returns_json,
+            "status_codes": status_codes,
+            "has_response_model": response_model is not None,
+            "response_model": response_model,
+            "return_type": return_info.get("return_type"),
+            "uses_httpexception": uses_httpexception,
+            "notes": [],
         }

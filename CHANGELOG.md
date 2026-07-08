@@ -5,6 +5,113 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [0.7.0-beta.1] - 2026-07-08
+
+### 🎯 算子能力增强
+
+#### 完整实现：api_response_spec 算子
+
+- **真实 API 端点扫描**: 替换硬编码实现，真实解析 FastAPI 装饰器
+- **响应模型检查**: 检测 `response_model` 参数和返回值类型注解
+- **HTTP 状态码验证**: 自动验证 GET/POST/PUT/DELETE 的状态码使用
+- **统一响应格式检测**: 识别 `{"data": ..., "total": ...}` 模式
+
+**实现细节**:
+- 解析 `@app.get("/path")`、`@router.post("/path")` 等装饰器
+- 提取路径、方法、response_model、status_code 等参数
+- 检查返回值类型注解和 JSONResponse 使用
+- 支持同步/异步函数
+
+#### 完整实现：framework_usage 算子
+
+- **FastAPI 特性检测**
+  - ✅ Pydantic BaseModel（已实现）
+  - ❌ `@app.exception_handler` 异常处理（新增）
+  - ❌ `Depends()` 依赖注入（新增）
+  - ❌ `APIRouter` 路由分组（新增）
+  - ❌ `BackgroundTasks` 后台任务（新增）
+
+- **Django 特性检测**
+  - Django ORM vs 原生 SQL
+  - Django Forms/DRF Serializers
+  - `get_object_or_404()` 使用
+
+- **Flask 特性检测**
+  - Flask-Marshmallow / Pydantic
+  - `@app.errorhandler` 错误处理
+
+**实现细节**:
+- 静态分析代码扫描
+- 检测框架推荐机制的利用情况
+- 给出具体的改进建议
+
+### 🤖 Claude Code Hook 集成
+
+#### 自动生成 `.claude/settings.json`
+
+- **交互式配置**: `moat init` 时询问是否集成 Claude Code
+- **自动生成 Hook 配置**: PreToolUse + PostToolUse hooks
+- **非交互模式支持**: 检测到 `.claude` 目录自动启用
+
+**生成的配置**:
+```json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "moat gatekeeper check --file ${file}",
+        "timeout": 5000
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "moat check --diff",
+        "timeout": 10000
+      }]
+    }]
+  }
+}
+```
+
+**用户体验**:
+```bash
+moat init
+# 🤖 Claude Code 集成:
+# 检测到 .claude 目录
+# 是否将 Moat 守护进程集成至 Claude Code？(Y/n): y
+# ✓ Claude Code Hook 已启用
+```
+
+### 📊 测试覆盖
+
+- ✅ **verification 模块**: 48/48 通过 (100%)
+- ✅ **gatekeeper 模块**: 29/29 通过 (100%)
+- ✅ **全部测试**: 777/777 通过 (100%)
+- ✅ **算子实际能力验证**: 通过
+
+### 📦 文件更新
+
+```
+moat/discovery.py            # Claude Code Hook 集成
+moat/verification/operators/
+  ├── api_response_spec.py   # 完整实现
+  └── framework_usage.py     # 完整实现
+```
+
+### 🎨 设计决策
+
+#### 小步快跑策略
+
+- **先覆盖 80%**: 优先实现主流场景（FastAPI），不强求完美通用
+- **稳健优先**: 算子检查失败只给 WARNING，不阻塞 CI/CD
+- **用户体验**: 交互式配置 + 自动生成，开箱即用
+
+---
+
 ## [0.7.0-beta] - 2026-07-08
 
 ### 🎯 架构验收系统 (Architecture Verification)

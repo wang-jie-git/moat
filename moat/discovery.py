@@ -38,10 +38,16 @@ def init_project(project_root: Path, interactive: bool = True):
     bm = BaselineManager(root)
     bm.save()
 
+    # 6. 如果启用了 Claude Code，生成 Hook 配置
+    if config.get("claude_code", {}).get("enabled"):
+        _generate_claude_settings(root)
+
     print(f"\n✅ Moat 已初始化到 {root}")
     print(f"   .moat/config.json — 项目配置")
     print(f"   .moat/claude.md — AI 适配规则")
     print(f"   .moat/baseline.json — 基线数据")
+    if config.get("claude_code", {}).get("enabled"):
+        print(f"   .claude/settings.json — Claude Code Hook 配置")
     print(f"\n🚀 下一步: 运行 moat check")
 
 
@@ -248,6 +254,22 @@ def _interactive_setup(root: Path, project_types: dict[str, bool]) -> dict[str, 
         if custom_log:
             config["log_path"] = custom_log
 
+    # Claude Code 集成
+    print(f"\n🤖 Claude Code 集成:")
+    claude_dir = root / ".claude"
+    if claude_dir.exists():
+        print(f"   检测到 .claude 目录")
+
+        enable_claude_hook = input(f"   是否将 Moat 守护进程集成至 Claude Code？(Y/n): ").strip().lower()
+        if enable_claude_hook != "n":
+            config["claude_code"] = {"enabled": True}
+            print(f"   ✓ Claude Code Hook 已启用")
+
+            # 自动生成 .claude/settings.json
+            _generate_claude_settings(root)
+    else:
+        print(f"   未检测到 .claude 目录（跳过 Claude Code 集成）")
+
     # 核心业务探测
     print(f"\n⚡ 核心业务探测:")
     from moat.core_areas import detect_core_areas, CoreAreaDetector
@@ -274,6 +296,57 @@ def _interactive_setup(root: Path, project_types: dict[str, bool]) -> dict[str, 
     config.setdefault("auto_monitor", False)
 
     return config
+
+
+def _generate_claude_settings(root: Path) -> None:
+    """生成 Claude Code Hook 配置"""
+    claude_dir = root / ".claude"
+    claude_dir.mkdir(parents=True, exist_ok=True)
+
+    settings_path = claude_dir / "settings.json"
+
+    # 读取现有配置（如果存在）
+    existing_settings = {}
+    if settings_path.exists():
+        try:
+            existing_settings = json.loads(settings_path.read_text())
+        except Exception:
+            pass
+
+    # 生成 Hook 配置
+    moat_hooks = {
+        "PreToolUse": [
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "moat gatekeeper check --file ${file}",
+                        "timeout": 5000,
+                    }
+                ],
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "moat check --diff",
+                        "timeout": 10000,
+                    }
+                ],
+            }
+        ],
+    }
+
+    # 合并到现有配置
+    existing_settings["hooks"] = moat_hooks
+
+    # 写入配置
+    settings_path.write_text(json.dumps(existing_settings, indent=2))
+    print(f"   ✓ 已生成 {settings_path}")
 
 
 def _generate_default_config(root: Path, project_types: dict[str, bool]) -> dict[str, Any]:
