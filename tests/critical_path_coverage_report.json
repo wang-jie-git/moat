@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-07-08T11:00:00",
+  "summary": {
+    "total_tests": 270,
+    "passed": 270,
+    "failed": 0,
+    "flaky": 0,
+    "overall_coverage": 33,
+    "core_layer_coverage": "55-96%",
+    "ast_coverage": 49
+  },
+  "critical_paths": {
+    "l0_l1_import": {
+      "coverage": 92,
+      "tests": 21,
+      "status": "healthy",
+      "trend": "+37%"
+    },
+    "l1_files": {
+      "coverage": 100,
+      "tests": 13,
+      "status": "excellent",
+      "trend": "+100%"
+    },
+    "l1_modules": {
+      "coverage": 84,
+      "tests": 19,
+      "status": "good",
+      "trend": "+84%"
+    },
+    "l1_subsystems": {
+      "coverage": 96,
+      "tests": 10,
+      "status": "excellent",
+      "trend": "+90%"
+    },
+    "l3_correlation": {
+      "coverage": 98,
+      "tests": 11,
+      "status": "excellent",
+      "trend": "+98%"
+    },
+    "l4_baseline": {
+      "coverage": 91,
+      "tests": 11,
+      "status": "excellent",
+      "trend": "+91%"
+    },
+    "ts_syntax": {
+      "coverage": 91,
+      "tests": 8,
+      "status": "excellent",
+      "trend": "+53%"
+    },
+    "ts_dedup": {
+      "coverage": 94,
+      "tests": 13,
+      "status": "excellent",
+      "trend": "+45%"
+    },
+    "evolution_metrics": {
+      "coverage": 90,
+      "tests": 20,
+      "status": "excellent",
+      "trend": "+90%"
+    },
+    "knowledge_graph": {
+      "coverage": 68,
+      "tests": 11,
+      "status": "good",
+      "trend": "+68%"
+    },
+    "memory_sync": {
+      "coverage": 56,
+      "tests": 9,
+      "status": "good",
+      "trend": "+56%"
+    },
+    "ast_builder": {
+      "coverage": 76,
+      "tests": 19,
+      "status": "good",
+      "trend": "+76%"
+    },
+    "ast_diff": {
+      "coverage": 89,
+      "tests": 7,
+      "status": "excellent",
+      "trend": "+89%"
+    }
+  },
+  "stability": {
+    "verified": true,
+    "consecutive_runs": 3,
+    "result": "all_passed"
+  },
+  "next_steps": [
+    {
+      "priority": "low",
+      "target": "moat.ast.tree_sitter",
+      "current_coverage": 0,
+      "target_coverage": 70
+    }
+  ]
+}

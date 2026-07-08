@@ -4,12 +4,32 @@ import inspect
 from pathlib import Path
 
 
+def _cleanup_module_cache(module_path: str) -> None:
+    """清理模块缓存，避免不同测试项目互相污染。
+
+    当多个测试使用 `core.foo` 这样的通用模块路径时，
+    需要先清理 sys.modules 中旧的缓存，确保导入的是正确的文件。
+
+    Args:
+        module_path: 模块路径（如 "core.session_manager"）
+    """
+    # 清理主模块和父模块
+    parts = module_path.split(".")
+    for i in range(len(parts)):
+        key = ".".join(parts[:i+1])
+        if key in importlib.sys.modules:
+            importlib.sys.modules.pop(key)
+
+
 def run_subsystems_check(project_root: Path) -> list[dict]:
     """检测项目中的核心子系统"""
     errors = []
     subsystems = _discover_subsystems(project_root)
 
     for name, module_path, class_name in subsystems:
+        # 清理同名模块缓存，避免不同测试项目互相污染
+        _cleanup_module_cache(module_path)
+
         try:
             mod = importlib.import_module(module_path)
             if class_name:

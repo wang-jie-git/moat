@@ -29,11 +29,12 @@ class TypeScriptDedupCheck(Check):
     ]
 
     # "为什么"注释的关键词（中文/英文）
+    # 注意：不要在这里包含去重模式本身（如 dedupWindow），否则会自匹配导致漏报
     WHY_KEYWORDS = [
         "为什么", "why", "防止", "prevent", "避免", "avoid",
         "时序", "timing", "场景", "trigger", "race", "deadlock",
         "目的", "purpose", "说明", "note", "原因", "reason",
-        "reconnect", "重连", "动态", "dynamic", "dedupWindow",
+        "reconnect", "重连", "动态", "dynamic",
     ]
 
     def run(self) -> list[CheckResult]:

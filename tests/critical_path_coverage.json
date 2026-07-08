@@ -1,0 +1,77 @@
+{
+  "paths": {
+    "L0 Python 语法检查": {
+      "weight": "critical",
+      "description": "第一道防线，语法错误检测",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "L1 Import 检查": {
+      "weight": "critical",
+      "description": "模块动态 import 验证",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "L1 文件完整性": {
+      "weight": "high",
+      "description": "关键文件存在性检测",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "L1 核心模块": {
+      "weight": "critical",
+      "description": "核心模块实例化验证",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "L1 子系统": {
+      "weight": "high",
+      "description": "子系统存活检测",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "L3 关联检查": {
+      "weight": "high",
+      "description": "循环依赖和核心-边缘违规检测",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "L4 基线对比": {
+      "weight": "medium",
+      "description": "基线退化检测",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "TypeScript 语法检查": {
+      "weight": "high",
+      "description": "TS 语法门禁",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "痛觉评分": {
+      "weight": "critical",
+      "description": "风险量化评分",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    },
+    "记忆桥接器": {
+      "weight": "high",
+      "description": "One Memory SQLite 桥接",
+      "lines_covered": 0,
+      "lines_total": 0,
+      "coverage_pct": 0.0
+    }
+  },
+  "total_lines": 0,
+  "covered_lines": 0,
+  "overall_coverage_pct": 0
+}

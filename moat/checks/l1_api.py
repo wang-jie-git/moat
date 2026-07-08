@@ -110,9 +110,13 @@ def _discover_endpoints(project_root: Path) -> list[dict]:
                 # Extract path
                 for method in ["get", "post", "put", "delete", "patch"]:
                     if f".{method}(" in line:
-                        start = line.index(f".{method}(") + len(method) + 1
-                        end = line.index(")", start) if ")" in line[start:] else len(line)
-                        path = line[start:end].strip("\"'")
+                        # Find the opening parenthesis after .method(
+                        method_start = line.index(f".{method}(")
+                        paren_start = line.index("(", method_start)
+                        # Find the closing parenthesis
+                        paren_end = line.index(")", paren_start) if ")" in line[paren_start:] else len(line)
+                        # Extract and clean the path
+                        path = line[paren_start + 1:paren_end].strip("\"'")
                         if path and path.startswith("/"):
                             endpoints.append({
                                 "path": path,
