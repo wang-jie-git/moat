@@ -4,7 +4,6 @@
 
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from .rules import RuleEngine
 from .types import (
@@ -12,10 +11,8 @@ from .types import (
     GatekeeperResult,
     IgnoreMechanism,
     RuleViolation,
+    RuleSeverity,
 )
-
-if TYPE_CHECKING:
-    pass
 
 
 class ArchitectureGatekeeper:
@@ -25,9 +22,10 @@ class ArchitectureGatekeeper:
     职责：
     1. 加载规则和配置
     2. 执行架构规则检查
-    3. 应用豁免机制
-    4. 判断是否应该阻止写入
-    5. 记录审计日志
+    3. 执行 Karpathy Principles 检查
+    4. 应用豁免机制
+    5. 判断是否应该阻止写入
+    6. 记录审计日志
     """
 
     def __init__(self, project_path: Path, config: GatekeeperConfig | None = None):
@@ -67,6 +65,10 @@ class ArchitectureGatekeeper:
         }
 
         all_violations = self.rule_engine.check_file(file_path, content, context)
+
+        # 2.5. 执行 Karpathy Principles 检查（简化的文件内容检查）
+        karpathy_violations = self._check_karpathy_principles(file_path, content)
+        all_violations.extend(karpathy_violations)
 
         # 3. 应用豁免机制
         violations = []
@@ -129,6 +131,35 @@ class ArchitectureGatekeeper:
                 frameworks.append("django")
 
         return frameworks
+
+    def _check_karpathy_principles(self, file_path: str, content: str) -> list:
+        """
+        检查 Karpathy Principles
+
+        在文件级别检查简单原则：
+        - Simplicity: 文件行数、函数长度
+        """
+        from moat.rules import PrinciplesLoader
+
+        violations = []
+        loader = PrinciplesLoader()
+        principles = loader.load_principles()
+
+        lines = content.split('\n')
+        file_lines = len(lines)
+
+        # 检查文件长度
+        max_file_lines = principles["simplicity_first"].thresholds.get("max_file_lines", 500)
+        if file_lines > max_file_lines:
+            violations.append(RuleViolation(
+                rule_id="karpathy.simplicity.file_size",
+                severity=RuleSeverity.WARNING,
+                message=f"文件过大（{file_lines} 行），违反 'Simplicity First' 原则。建议拆分。",
+                file_path=file_path,
+                suggestion=f"将文件拆分为多个模块，每个文件不超过 {max_file_lines} 行",
+            ))
+
+        return violations
 
     def _log_check(
         self,

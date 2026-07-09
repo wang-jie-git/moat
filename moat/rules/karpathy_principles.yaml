@@ -1,0 +1,49 @@
+# Moat Rules — Karpathy Principles Constitution
+# 将软原则转化为硬规则，通过 Gatekeeper 和 Verification 强制执行
+
+principles:
+  # 1. Think Before Coding (计划驱动)
+  think_before_coding:
+    description: "AI 必须在修改前列出计划"
+    check_type: "context_audit"
+    enforcement: "warning"  # 不强制拦截，但会提醒
+    thresholds:
+      require_plan_summary: true
+      min_plan_length: 50  # 计划最少字符数
+
+  # 2. Simplicity First (简单优先)
+  simplicity_first:
+    description: "拒绝过度工程化，保持代码简洁"
+    check_type: "complexity_analysis"
+    enforcement: "critical"  # 发现超大型类/函数直接告警
+    metrics:
+      - "complexity_score"
+      - "file_count"
+      - "inheritance_depth"
+      - "function_length"
+      - "class_size"
+    thresholds:
+      max_function_lines: 50
+      max_class_methods: 15
+      max_inheritance_depth: 3
+      max_file_lines: 500
+      max_cyclomatic_complexity: 10
+
+  # 3. Surgical Changes (手术刀式修改)
+  surgical_changes:
+    description: "修改必须精准，禁止重写整个文件"
+    check_type: "diff_size_limit"
+    enforcement: "warning"
+    thresholds:
+      max_diff_lines: 100
+      max_files_changed: 3
+      recommended_diff_lines: 50
+
+  # 4. Goal-Driven (目标驱动)
+  goal_driven:
+    description: "修改必须直接服务于目标"
+    check_type: "linkage_audit"
+    enforcement: "info"
+    thresholds:
+      require_ticket_reference: false  # 可选，但建议
+      min_commit_message_quality: "medium"  # low/medium/high
