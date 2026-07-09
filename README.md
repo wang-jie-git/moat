@@ -1,7 +1,7 @@
 # Moat: 多语言感知 + 深度记忆 + 智能进化 🚀
 
 > [中文](https://github.com/wang-jie-git/moat/blob/main/README.zh.md) | English
-> **当前版本**: v0.7.0-beta.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
+> **当前版本**: v0.8.0-alpha | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
 Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语言智能神经系统"**。
 在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够：
