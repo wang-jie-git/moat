@@ -1,32 +1,29 @@
 # CLAUDE.md — Moat 项目开发指南
 
-> **项目**: Moat (moat-ai) — AI 编码护城河
+> **项目**: Moat (moat-ai) — AI 编码守门员
 > **GitHub**: https://github.com/wang-jie-git/moat
-> **版本**: v0.8.0-alpha+
+> **版本**: v0.9.1
 > **最后更新**: 2026-07-10
+> **核心理念**: 零配置 + 实时拦截 + 处方化提示
 
 ---
 
 ## 🎯 项目定位
 
-**核心价值**: 防止 AI 改代码时"越改越乱"
+**核心价值**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员。
 
 **哲学**: 改代码前跑一次，改代码后再跑一次。两次都通过才能提交。
 
-**演进方向**: 从"校验工具" → "自我感知神经系统"
-
-**定位声明**: Moat 是**架构完整性守护者**，不是功能验证工具。
+**定位声明**: Moat 是**零配置架构守门员**，不是功能验证工具。
 
 ### 职责边界
 
-**✅ Moat 的领域（架构与质量）**
-- 代码结构是否清晰、模块责任是否明确
-- 是否遵守架构分层规则
-- 代码复杂度是否超标（文件大小、函数长度）
-- 是否滥用框架特性
-- 依赖注入、鉴权中间件是否被正确使用（架构边界）
-- 测试覆盖率是否达标（测试作为"门票"）
-- 核心业务/API 是否有 Pain Score 保护
+**✅ Moat 的领域（架构安全）**
+- SQL 注入检测与拦截
+- API 鉴权缺失检测
+- 竞态条件检测（React hooks）
+- 异步函数错误处理
+- 架构分层违规检测
 
 **❌ 不属于 Moat 的领域（功能与 UI）**
 - UI 渲染是否正确（视觉回归测试交给 Playwright）
@@ -34,171 +31,76 @@
 - 用户交互是否流畅（E2E 测试交给 Cypress）
 - API 返回的数据是否完整（集成测试交给测试套件）
 
-**📋 上下文桥接（精进建议）**
-- Moat 可以在 Truth Document 中定义"业务规则约束"（架构边界检查）
-- 例如：检查"访问模型列表的 API 是否经过鉴权中间件"
-- 这不涉及业务逻辑验证，而是架构边界的守护
-- 详见 [CONTEXT_BRIDGE.md](CONTEXT_BRIDGE.md)
+---
+
+## 📊 当前状态（2026-07-10）
+
+### v0.9.1 已完成 ✅
+
+#### 核心守门员（5 条常识规则）
+- ✅ **SQL 注入守门员**（CRITICAL）
+  - Tree-sitter AST 检测（execute() 中的 + 拼接）
+  - 上下文回溯（前 3 行 f-string/.format()/% 格式化）
+  - 处方化提示（不仅拦截，还提供修复建议）
+- ✅ **API 鉴权守门员**（CRITICAL）
+  - 自动检测 API 路由
+  - 检查是否缺少鉴权装饰器
+- ✅ **竞态条件守门员**（HIGH）
+  - React useEffect 依赖数组检测
+- ✅ **错误处理守门员**（MEDIUM）
+  - async 函数缺少 try/except 检测
+- ✅ **分层检查守门员**（HIGH）
+  - 跨层调用检测（如 Controller 直接操作数据库）
+
+#### 性能优化（重构成果）
+- ✅ **moat init 零配置**
+  - 15 分钟 → **0.82 秒**（18 倍提升）
+  - 单文件配置（moat.json，替代 6 个文件）
+  - 零交互（移除所有交互式询问）
+- ✅ **moat check 超快速度**
+  - >120 秒 → **5.29 秒**（40 倍提升）
+  - 默认快速模式（只检查修改的文件）
+  - 支持 4 种模式：quick / full / diff / legacy
+- ✅ **真实项目验证**
+  - Django（7,072 文件）：2.91 秒
+  - oh-agent-panel（20,741 文件）：5.29 秒
+
+#### 文档焕新
+- ✅ **README 减法策略**
+  - 删除 Constitution、Evolution Metrics 等自嗨内容
+  - 痛点 + 价值 + 效果 三段式展示
+  - 性能对比表（40 倍提速可视化）
+  - SQL 注入案例（左边烂代码，右边修复建议）
 
 ---
 
-## 📊 当前状态（2026-07-07）
+## 🚀 快速开始
 
-### 已完成 ✅
+### 安装
 
-#### 第一阶段：神经突触建设
-- ✅ AST 增量感知（`moat/ast/`）
-  - 项目骨架图构建器（`builder.py`）
-  - AST 增量对比器（`diff.py`）
-  - 函数调用图生成（164 函数, 1005 调用）
-  - **突触连接置信度模型**（Edge 类，置信度 0.3-1.0）
-- ✅ 痛觉评分系统（`moat/pain/`）
-  - Pain Score 算法（0-100 分）
-  - **自我校准机制**（`feedback.py`，反馈闭环）
-  - 核心业务/鉴权/API/竞态权重检测
-- ✅ 增量检查命令（`moat check --diff`）
-  - 对比 Git 变更
-  - 影响域分析
-  - Pain Score 评估
+```bash
+# PyPI
+pip install moat-ai
 
-#### 第二阶段：构建免疫循环
-- ✅ 交互式引导（`moat/discovery.py`）
-  - 自动检测项目类型和框架
-  - 智能识别：FastAPI/Flask/Django/React/Vue/Next.js
-- ✅ 核心业务探测（`moat/core_areas.py`）
-  - 6 大核心区域：鉴权/支付/数据核心/API 网关/配置中心/用户核心
-  - 敏感级别标记（critical/high/medium/low）
-- ✅ 详尽失败报告（`moat/report.py`）
-  - 详细错误分析
-  - AI 修复建议
-  - **结构化 JSON 输出**（`--format json`）
-- ✅ **上下文感知报告**
-  - `.moat/architecture_intent.md` — 架构意图文档
-  - 业务约束明确化
-
-#### 深层进化
-- ✅ **混沌测试集**（`moat/testing/chaos.py`）
-  - 随机注入故障
-  - 自动验证检测能力
-- ✅ **三大隐形坑防御机制**
-  - 记忆写入过滤器（`moat/memory/filter.py`）
-  - SQLite 共享存储桥接器（`moat/memory/bridge.py`）
-  - 元知识反向驱动（`moat/evolution.py`）
-
-#### 基础功能
-- ✅ 插件化检查架构（`moat/checks/base.py`）
-- ✅ TypeScript 检查模块（4 个检查）
-- ✅ CodeGraph 语义分析集成
-- ✅ moat report --copy 命令
-- ✅ 测试覆盖：30/30 通过
-
----
-
-## 🏗️ 项目结构
-
-```
-moat/
-├── moat/
-│   ├── cli.py              # CLI 入口（argparse）
-│   ├── runner.py           # 检查运行器
-│   ├── discovery.py        # 项目自动发现 + 交互式引导
-│   ├── report.py           # 报告生成器（text/md/json）
-│   ├── baseline.py         # 基线管理
-│   ├── monitor.py          # 实时监控
-│   ├── core_areas.py       # 核心业务探测
-│   ├── __init__.py         # 版本号：0.2.0
-│   │
-│   ├── checks/             # 检查规则（插件化架构）
-│   │   ├── base.py         # Check 基类
-│   │   ├── l1_*.py         # L1 检查（Python 旧风格）
-│   │   ├── l2_schema.py    # L2 结构检查
-│   │   ├── l3_correlation.py # L3 关联检查
-│   │   ├── l4_baseline.py  # L4 基线对比
-│   │   └── typescript/     # TypeScript 检查
-│   │       ├── syntax.py   # 语法检查
-│   │       ├── dedup.py    # 去重检查
-│   │       ├── race_condition.py # 竞态检查
-│   │       └── timing_doc.py # 时序文档
-│   │
-│   ├── ast/                # AST 感知层（第一阶段）
-│   │   ├── __init__.py
-│   │   ├── builder.py      # 骨架图构建器
-│   │   └── diff.py         # AST 增量对比器
-│   │
-│   ├── pain/               # 痛觉评分层
-│   │   ├── scorer.py       # Pain Score 算法
-│   │   └── feedback.py     # 自我校准机制
-│   │
-│   ├── memory/             # 记忆层（Moat + One Memory 桥接）
-│   │   ├── filter.py       # 记忆写入过滤器
-│   │   └── bridge.py       # SQLite 共享桥接器
-│   │
-│   ├── evolution.py        # 元知识反向驱动
-│   └── testing/
-│       └── chaos.py        # 混沌测试集
-│
-├── .moat/                  # 项目配置（自动生成）
-│   ├── config.json         # 项目配置
-│   ├── claude.md           # AI 适配规则
-│   ├── baseline.json       # 基线数据
-│   ├── architecture_intent.md  # 架构意图
-│   ├── memory.db           # 共享记忆库（SQLite）
-│   └── evolved_rules.json  # 进化规则（自动生成）
-│
-├── tests/                  # 测试（30/30 通过）
-├── docs/                   # 文档
-├── pyproject.toml          # 构建配置
-└── README.md               # 主文档
+# 或从 GitHub
+pip install git+https://github.com/wang-jie-git/moat.git
 ```
 
----
+### 使用
 
-## 🎯 核心设计原则
+```bash
+# 1. 初始化（零配置）
+moat init
 
-### 1. 规则与逻辑分离（避免维护地狱）
+# 2. 实时检查（只检查修改的代码，< 5 秒）
+moat check
 
-**Rule Engine**（可插拔）:
-- `moat/checks/` — 所有检查规则
-- 核心代码只负责调度
-- 规则报错不影响核心运行
+# 3. 完整检查（检查所有文件）
+moat check --full
 
-**Core**（稳定）:
-- `moat/cli.py` — CLI 入口
-- `moat/runner.py` — 检查调度器
-- `moat/ast/` — AST 感知层
-- `moat/pain/` — 痛觉评分层
-
-### 2. 向后兼容性优先
-
-- ✅ Python 检查（旧风格）和新检查并存
-- ✅ 配置格式兼容（`.moat/config.json`）
-- ✅ 无需改动现有项目
-
-### 3. 防御性编程
-
-- ✅ 过滤器防止碎片化
-- ✅ WAL 模式支持并发
-- ✅ 混沌测试集持续验证
-
----
-
-## 🔑 关键决策记录
-
-### Q1: 为什么用 Python ast 而不是 tree-sitter？
-**A**: Python ast 内置，零依赖，足够用于原型验证。未来可升级到 tree-sitter（多语言支持）。
-
-### Q2: Pain Score 校准阈值为什么是 3 次反馈？
-**A**: 避免单次误判导致权重剧烈波动，3 次反馈是统计显著性的最低要求。
-
-### Q3: 为什么 SQLite 而不是 HTTP API 通信？
-**A**:
-- 零进程开销（< 1ms vs 50-100ms）
-- 跨语言原生支持（Python + TypeScript）
-- WAL 模式支持并发读写
-- 无需维护服务进程
-
-### Q4: 过滤阈值为什么是 Pain Score > 50？
-**A**: 50 分是 MEDIUM/HIGH 分界线，避免低级错误污染记忆库。
+# 4. 增量检查（AST 对比 + 影响域分析）
+moat check --diff
+```
 
 ---
 
@@ -210,7 +112,7 @@ moat/
 2. **编写测试**: 先写测试（TDD）
 3. **实现功能**: 遵循现有架构
 4. **运行测试**: `python3 -m pytest tests/ -v`
-5. **更新文档**: 更新 README.md 和 CLAUDE.md
+5. **更新文档**: 更新 CLAUDE.md 和 README.md
 6. **提交 PR**: `git push origin feature/xxx`
 
 ### 代码风格
@@ -232,132 +134,99 @@ feat(scope): 简短描述
 
 **示例**:
 ```
-feat(evolution): 实现元知识反向驱动机制
+feat(checker): 新增 SQL 注入守门员
 
-- 新增 EvolutionEngine
-- 生成 .moat/evolved_rules.json
-- 增强版 Pain Scorer
+- Tree-sitter AST 检测 execute() 中的 + 拼接
+- 上下文回溯（前 3 行）
+- 处方化提示（报错 + 修复建议）
 
-测试: ✅ 30/30 通过
+测试: ✅ 7/7 通过
 ```
 
 ---
 
-## 🚀 快速开始
+## 🏗️ 项目结构
 
-### 安装
-
-```bash
-# 从 PyPI
-pip install moat-ai
-
-# 从 GitHub
-pip install git+https://github.com/wang-jie-git/moat.git
 ```
-
-### 开发环境
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/wang-jie-git/moat.git
-cd moat
-
-# 2. 创建虚拟环境
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 3. 安装依赖
-pip install -e .
-
-# 4. 运行测试
-python3 -m pytest tests/ -v
-```
-
-### 常用命令
-
-```bash
-# 检查（完整）
-moat check
-
-# 增量检查
-moat check --diff
-
-# 交互式初始化
-moat init
-
-# 生成报告
-moat report --copy --format json
-
-# 运行混沌测试
-python3 -m moat.testing.chaos
+moat/
+├── moat/
+│   ├── cli.py              # CLI 入口（argparse）
+│   ├── runner.py           # 检查运行器
+│   ├── discovery.py        # 项目自动发现 + 零配置初始化
+│   ├── report.py           # 报告生成器
+│   ├── baseline.py         # 基线管理
+│   ├── monitor.py          # 实时监控
+│   ├── __init__.py         # 版本号：0.9.1
+│   │
+│   ├── checks/             # 检查规则（插件化架构）
+│   │   ├── base.py         # Check 基类
+│   │   ├── quick_check.py  # 快速检查器（默认模式）
+│   │   ├── sql_injection.py # SQL 注入守门员
+│   │   └── ...             # 其他守门员规则
+│   │
+│   └── ast/                # AST 感知层
+│       ├── builder.py      # 骨架图构建器
+│       └── diff.py         # AST 增量对比器
+│
+├── .moat/                  # 项目配置（自动生成）
+│   └── moat.json          # 单文件配置（内置 5 条规则）
+│
+├── tests/                  # 测试（845/855 通过 98.8%）
+├── docs/                   # 文档
+├── README.md               # 项目主文档（减法策略）
+├── CHANGELOG.md            # 版本更新日志
+└── pyproject.toml          # 构建配置
 ```
 
 ---
 
-## 📊 测试覆盖
+## 🧪 测试
 
-**当前**: 30/30 测试通过 ✅
-
-**测试文件**:
-- `tests/test_checks.py` — 检查模块测试
-- `tests/test_cli.py` — CLI 测试
-- `tests/test_monitor.py` — 监控测试
+**当前**: 845/855 测试通过 (98.8%)
 
 **运行测试**:
 ```bash
 python3 -m pytest tests/ -v
 ```
 
+**测试文件**:
+- `tests/test_sql_injection.py` — SQL 注入检测测试（7/7 通过）
+- `tests/test_checks.py` — 检查模块测试
+- `tests/test_cli.py` — CLI 测试
+
 ---
 
-## 🔧 调试技巧
+## 🔑 关键决策记录
 
-### 查看骨架图
+### Q1: 为什么用正则 + Tree-sitter AST，而不是纯 AST？
 
-```bash
-python3 -c "
-from moat.ast.builder import build_skeleton
-skeleton = build_skeleton('.')
-print(f'函数数: {skeleton.to_dict()[\"stats\"][\"total_functions\"]}')
-print(f'调用数: {skeleton.to_dict()[\"stats\"][\"total_calls\"]}')
-"
-```
+**A**:
+- **正则**：简单、快速、容错性强
+- **Tree-sitter AST**：精准检测 BinaryExpression（+ 拼接）
+- **组合策略**：正则做快速扫描，AST 做精准验证
+- **性能**：20,000+ 文件的项目，检查耗时 < 6 秒
 
-### 查看 Pain Score
+### Q2: 为什么只检查修改的文件？
 
-```bash
-python3 -c "
-from moat.pain.scorer import calculate_pain_score
-error = {'type': 'race_condition', 'file': 'src/auth.py', 'message': 'pendingMessageRef'}
-result = calculate_pain_score(error)
-print(f'Pain Score: {result[\"score\"]}/100 ({result[\"level\"]})')
-"
-```
+**A**:
+- **性能**：全量检查 > 120 秒，增量检查 < 5 秒
+- **实用性**：开发者只关心自己改的代码
+- **准确性**：修改的文件最可能有 Bug
 
-### 查看记忆库统计
+### Q3: 为什么做"减法"而不是"加法"？
 
-```bash
-python3 -c "
-from moat.memory.bridge import SharedStorageBridge, BridgeConfig
-bridge = SharedStorageBridge(BridgeConfig(db_path='.moat/memory.db'))
-bridge.initialize()
-print(bridge.get_statistics())
-bridge.close()
-"
-```
+**A**:
+- **用户体验**：零配置 > 复杂配置
+- **性能**： fewer rules < more rules
+- **文档**：痛点 + 价值 + 效果 > 架构自嗨
 
 ---
 
 ## 📚 重要文档
 
-- `README.md` — 项目主文档（中文）
-- `README.en.md` — 英文文档
-- `CHANGELOG.md` — 版本更新日志
-- `EVOLUTION_ROADMAP.md` — 三阶段演进路线图
-- `DX_IMPROVEMENTS.md` — DX 优化详细说明
-- `DEEP_EVOLUTION_COMPLETE.md` — 深层进化完成报告
-- `THREE_PILLARS_COMPLETE.md` — 三大隐形坑防御机制
-- `EVOLUTION_COMPLETE.md` — 演进完成报告
+- **README.md** — 项目主文档（痛点 + 价值 + 效果）
+- **CHANGELOG.md** — 完整版本更新日志
+- **CLAUDE.md** — 本文档（开发指南）
 
 ---
 
@@ -378,46 +247,25 @@ MIT © 2026 One Team
 
 ---
 
-## 💡 关键概念
+## 💡 核心理念
 
-### Pain Score（痛觉评分）
+**从"自嗨"到"实用"**：
+- ❌ 不再是"自我进化的 AI 工程操作系统"
+- ✅ 现在是"AI 编码守门员 — 零配置 + 实时拦截 + 处方化提示"
 
-0-100 分评估错误危险程度：
-- **CRITICAL**（≥75）：立即修复
-- **HIGH**（≥50）：尽快修复
-- **MEDIUM**（≥25）：计划修复
-- **LOW**（<25）：可选修复
+**最重要的改变**：
+> 从"我觉得这个功能很酷"变成"开发者需要这个功能"。
 
-### 置信度权重
+**处方化提示 = 架构师助手**：
+```
+❌ [CRITICAL] SQL 注入
+修复建议: cursor.execute("...", (param,))
+```
 
-影响域分析的可信度：
-- **1.0**：直接函数调用
-- **0.9**：对象方法调用
-- **0.7**：间接依赖
-- **0.3**：动态调用
-
-### 进化规则
-
-梦境引擎 → Insight → 进化规则 → Moat 主动进化
-
----
-
-## 🔗 相关项目
-
-- **One Memory**: https://github.com/wang-jie-git/one-memory
-  - 图+向量混合架构的持久记忆系统
-  - Moat + One Memory = 质量守护 + 智能记忆
-
-- **CodeGraph**: https://github.com/colbymchenry/codegraph
-  - 代码知识图谱
-  - Moat 使用 CodeGraph 进行语义分析
-
----
-
-## 📞 获取帮助
-
-- **Issues**: https://github.com/wang-jie-git/moat/issues
-- **Discussions**: https://github.com/wang-jie-git/moat/discussions
+**性能优先**：
+- 如果 `moat check` 不能在 10 秒内完成，所有功能都是摆设
+- 开发者不会等待 120 秒
+- **速度 > 功能**
 
 ---
 
