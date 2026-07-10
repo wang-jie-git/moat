@@ -29,6 +29,7 @@ classifiers = [
 dependencies = [
     "httpx>=0.27",
     "pyyaml>=6.0",  # Karpathy Principles YAML config
+    "tree-sitter>=0.20.0",  # SQL 注入检测（守门员规则核心依赖）
 ]
 
 [project.optional-dependencies]

@@ -104,24 +104,25 @@ AI 改代码很快。AI 搞坏系统也很快。
 
 ## 安装
 
-### 基础安装
+### 从 PyPI 安装（推荐）
 
 ```bash
-# 从 PyPI 安装（核心功能）
+# 基础安装（包含守门员规则）
 pip install moat-ai
 
-# 直接从 GitHub 安装最新版
-pip install git+https://github.com/wang-jie-git/moat.git
-```
-
-### 完整安装（推荐）
-
-```bash
-# 一键安装所有功能
+# 完整安装（包含 Web 看板 + Sidecar + VS Code 辅助）
 pip install "moat-ai[all]"
 ```
 
-包括：Web 看板 + Sidecar 守护进程 + VS Code 插件辅助
+### 从 GitHub 安装
+
+```bash
+# 基础安装
+pip install git+https://github.com/wang-jie-git/moat.git
+
+# 完整安装
+pip install "git+https://github.com/wang-jie-git/moat.git[all]"
+```
 
 ### 按需安装
 
@@ -136,24 +137,29 @@ pip install "moat-ai[sidecar]"
 pip install "moat-ai[vscode]"
 ```
 
-### 功能对比
+### 包含内容
 
-| 功能 | 基础安装 | 完整安装 |
-|------|---------|---------|
-| 四层门禁检查 | ✅ | ✅ |
-| Pain Score 评分 | ✅ | ✅ |
-| AI 辅助修复 | ✅ | ✅ |
-| 进化指标系统 | ✅ | ✅ |
-| 实时文件监控 | ❌ | ✅ |
-| Sidecar REST API | ❌ | ✅ |
-| Web 看板 | ❌ | ✅ |
-| 剪贴板复制 | ❌ | ✅ |
+**基础安装**（~5MB）：
+- ✅ 四层门禁检查（L0-L4）
+- ✅ 守门员规则系统（5 条安全规则）
+- ✅ Pain Score 评分
+- ✅ AI 辅助修复
+- ✅ 进化指标系统
+- ✅ 4 种检查模式（quick/full/diff/legacy）
+- ✅ 零配置初始化
+
+**完整安装**（~50MB，在基础安装之上）：
+- Web 看板（FastAPI + 前端）
+- Sidecar 守护进程（实时监控 + REST API）
+- VS Code 插件辅助（剪贴板复制）
 
 ### 依赖说明
 
 **核心依赖**（自动安装）：
 - Python 3.10+
 - httpx >= 0.27
+- pyyaml >= 6.0
+- tree-sitter >= 0.20.0（守门员规则必需）
 
 **可选依赖**（按需安装）：
 - **watchdog** — Sidecar 文件监控
