@@ -32,6 +32,17 @@ class ArchitectureGatekeeper:
         self.project_path = project_path
         self.config = config or GatekeeperConfig.load(project_path)
         self.rule_engine = RuleEngine()
+        self.ai_test_gateway = None  # 延迟加载
+
+    def _get_ai_test_gateway(self):
+        """获取 AI 测试网关（延迟加载）"""
+        if self.ai_test_gateway is None:
+            try:
+                from .ai_test.gateway import AITestGateway
+                self.ai_test_gateway = AITestGateway()
+            except ImportError:
+                self.ai_test_gateway = False  # 标记为不可用
+        return self.ai_test_gateway if self.ai_test_gateway else None
 
     def check_file(self, file_path: str | Path, content: str) -> GatekeeperResult:
         """
@@ -139,27 +150,32 @@ class ArchitectureGatekeeper:
         在文件级别检查简单原则：
         - Simplicity: 文件行数、函数长度
         """
-        from moat.rules import PrinciplesLoader
+        try:
+            from moat.karpathy_principles import PrinciplesLoader
 
-        violations = []
-        loader = PrinciplesLoader()
-        principles = loader.load_principles()
+            violations = []
+            loader = PrinciplesLoader()
+            principles = loader.load_principles()
 
-        lines = content.split('\n')
-        file_lines = len(lines)
+            lines = content.split('\n')
+            file_lines = len(lines)
 
-        # 检查文件长度
-        max_file_lines = principles["simplicity_first"].thresholds.get("max_file_lines", 500)
-        if file_lines > max_file_lines:
-            violations.append(RuleViolation(
-                rule_id="karpathy.simplicity.file_size",
-                severity=RuleSeverity.WARNING,
-                message=f"文件过大（{file_lines} 行），违反 'Simplicity First' 原则。建议拆分。",
-                file_path=file_path,
-                suggestion=f"将文件拆分为多个模块，每个文件不超过 {max_file_lines} 行",
-            ))
+            # 检查文件长度
+            max_file_lines = principles["simplicity_first"].thresholds.get("max_file_lines", 500)
+            if file_lines > max_file_lines:
+                violations.append(RuleViolation(
+                    rule_id="karpathy.simplicity.file_size",
+                    severity=RuleSeverity.WARNING,
+                    message=f"文件过大（{file_lines} 行），违反 'Simplicity First' 原则。建议拆分。",
+                    file_path=file_path,
+                    suggestion=f"将文件拆分为多个模块，每个文件不超过 {max_file_lines} 行",
+                ))
 
-        return violations
+            return violations
+
+        except ImportError:
+            # Karpathy Principles 模块不存在，跳过检查
+            return []
 
     def _log_check(
         self,

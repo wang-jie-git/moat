@@ -23,6 +23,7 @@ from .types import (
     IgnoreMechanism,
 )
 from .rules import RuleEngine, ArchitectureRule
+from .rules.test_coverage_gate import TestCoverageGateRule
 from .checker import ArchitectureGatekeeper
 
 __all__ = [

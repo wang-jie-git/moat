@@ -1,50 +1,67 @@
-# Moat: 多语言感知 + 深度记忆 + 智能进化 🚀
+# Moat: 自我进化的 AI 工程操作系统 🚀
 
 > [中文](https://github.com/wang-jie-git/moat/blob/main/README.zh.md) | English
-> **当前版本**: v0.8.0-alpha | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
+> **当前版本**: v0.9.0 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
-Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"多语言智能神经系统"**。
+## 🛡️ Moat = Core + Immune
+
+Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"自我进化智能生命"**。
+
+- **🏛️ Moat Core**: 守护你的代码库**不腐烂**（架构完整性 + 工程健康度）
+- **🛡️ Moat Immune**: 确保你的功能**不崩坏**（AI 工程化测试体系）
+
 在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够：
 - 感知**多语言**代码变更（Python/TypeScript/Go/Rust）
 - 记住**架构教训**（One Memory 深度集成）
 - 随项目演进而**自我进化**（知识图谱 + 智能提示）
-- 验收**架构质量**（规则、示例、证据驱动的验收系统）
+- 守护**架构质量**（规则、示例、证据驱动的验收系统）
+- 生成**智能测试**（AI 驱动的单元测试、契约测试、BDD、视觉测试）
 
-## 🎉 最新更新 (v0.8.0-alpha)
+**安装一个 Moat，获得双重保护。**
 
-### 🏛️ Karpathy Principles Constitution
+## 🎉 最新更新 (v0.9.0)
+
+### 🛡️ Moat Immune Phase 2 — 契约测试系统（战略级能力）
+
+**跨越服务边界的检查能力，这是从"工具"到"系统"的关键跃迁**
+
+- ✅ **OpenAPI → Pact 契约生成**: 从 OpenAPI 规范自动生成 Pact 契约文件
+  - 支持 OpenAPI 3.0.x 规范
+  - 自动生成消费者驱动契约
+  -  Pact 文件格式验证
+- ✅ **破坏性变更智能检测**: 不只是告警，还能精确诊断问题
+  - **字段类型变更**: `price: Integer → String`（AI 不看文档直接盲写）
+  - **必选字段删除**: `required: [name, email] → [name]`（AI 贪快最容易删）
+  - **字段格式变更**: `email` 格式被删除
+  - **响应字段删除**: 消费者依赖的字段被删除
+  - **状态码变更**: `201 → 200`
+- ✅ **One Memory 深度集成**: 契约基线作为"架构宪法"持久化存储
+  - `contract_baselines` 表存储基线元数据
+  - `api_contracts` 表存储单个契约
+  - 跨会话、跨时间的契约追踪
+- ✅ **主动干预建议**: 不只告诉你"哪里坏了"，还告诉你"怎么修"
+  - 影响文件分析：`frontend/api/user.ts` 会受影响
+  - 具体修复步骤：保持兼容性 / 版本化 / 更新基线
+  - CLI 命令提示：`moat immune contract update`
+- ✅ **Claude Code Hook 集成**: API 变更时自动拦截
+  - Claude 准备提交时触发契约检查
+  - 破坏性变更时阻止提交
+  - 输出完整破坏性变更报告
+
+### 🎫 Phase 1 — AI 测试门票 (Gatekeeper)
+
+- ✅ **测试覆盖率守门规则**: 强制"测试门票"机制
+  - CRITICAL 级别拦截（阻止提交）
+  - HIGH 级别告警
+  - 模块级粒度控制
+- ✅ **AI 辅助生成测试**: 通过 Claude API 为缺失测试的业务代码自动生成 pytest 测试
+- ✅ **单元测试集成**: `moat check` 时自动验证测试存在性
+
+### 🏛️ Karpathy Principles Constitution (v0.8.0)
 
 - ✅ **Surgical Changes 规则**: Git diff 行数监控，修改过大自动告警
-  - 单文件最大修改: 100 行
-  - 最多修改文件数: 3 个
-  - 智能修复建议生成
 - ✅ **Simplicity First 规则**: 代码复杂度检查
-  - 文件大小检查: 500 行
-  - 函数长度检查: 50 行
-  - 类方法数量检查: 15 个
-- ✅ **规则系统架构**: 配置驱动的规则系统
-  - YAML 配置原则定义
-  - PrinciplesLoader 加载器
-  - 延迟导入避免循环依赖
-- ✅ **Gatekeeper 集成**: 文件检查时执行 Karpathy 原则检查
-- ✅ **16 个新测试**: 规则系统 100% 测试覆盖
-
-### 🎯 前一版本 (v0.7.0-beta.1)
-
-### 🎯 算子能力增强
-
-- ✅ **api_response_spec 完整实现**: 真实扫描 API 端点并验证响应格式
-  - 解析 FastAPI 装饰器 (`@app.get`, `@router.post`)
-  - 检查响应模型和 HTTP 状态码
-  - 检测统一响应格式
-- ✅ **framework_usage 算子增强**: 检查框架特性充分利用
-  - FastAPI: Pydantic + ExceptionHandler + Depends + APIRouter + BackgroundTasks
-  - Django: ORM + Forms/Serializers + get_object_or_404
-  - Flask: Marshmallow + errorhandler
-- ✅ **Claude Code Hook 集成**: 自动生成 `.claude/settings.json`
-  - 交互式配置询问
-  - PreToolUse + PostToolUse Hooks
-  - 开箱即用
+- ✅ **规则系统架构**: 配置驱动的规则系统（YAML）
 
 ### 📦 安装方式
 
@@ -83,14 +100,16 @@ AI 编码极快，但"副作用"往往滞后。当你修改一段代码时，你
 
 ## 🎯 定位声明
 
-**Moat 是架构完整性守护者，不是功能验证工具。**
+**Moat 是架构完整性守护者 + AI 工程化测试体系。**
 
-Moat 专注于代码的**架构完整性 (Structural Integrity)** 与**工程健康度 (Engineering Health)**。
-我们不参与具体的业务功能验证或 UI 交互测试。
+Moat 专注于代码的**架构完整性 (Structural Integrity)** 与**工程健康度 (Engineering Health)**，
+并通过 **Moat Immune** 扩展至功能验证领域，形成完整的"守护 + 验证"闭环。
 
-### 我们检查什么？
+### Moat Core（护城河核心）
 
-✅ **架构与质量（Moat 的领域）**
+**定位**: 架构与质量守护者
+
+✅ **我们检查什么？**
 - 代码结构是否清晰、模块责任是否明确
 - 是否遵守架构分层规则
 - 代码复杂度是否超标（文件大小、函数长度）
@@ -98,20 +117,29 @@ Moat 专注于代码的**架构完整性 (Structural Integrity)** 与**工程健
 - 依赖注入、鉴权中间件是否被正确使用
 - 测试覆盖率是否达标
 - 核心业务/API 是否有 Pain Score 保护
+- **每个代码变更必须带着测试报告**（AI 测试门票）
 
-### 我们不检查什么？
+❌ **我们不检查什么？**
+- UI 渲染是否正确（视觉回归测试交给 Moat Immune）
+- 业务逻辑是否按预期工作（单元测试交给 Moat Immune）
+- 用户交互是否流畅（E2E 测试交给 Moat Immune）
 
-❌ **功能与 UI（测试工具的领域）**
-- UI 渲染是否正确（视觉回归测试交给 Playwright）
-- 业务逻辑是否按预期工作（单元测试交给 Jest/Pytest）
-- 用户交互是否流畅（E2E 测试交给 Cypress）
-- API 返回的数据是否完整（集成测试交给测试套件）
+### Moat Immune（免疫系统）
+
+**定位**: AI 工程化测试体系
+
+✅ **我们做什么？**
+- 单元测试生成（pytest + Hypothesis 属性测试）
+- 契约测试生成（Pact 消费者驱动契约）
+- BDD 测试生成（Gherkin + pytest-bdd）
+- AI 视觉测试（Playwright + GPT-4o 视觉断言）
+- 测试覆盖率门禁（CRITICAL 拦截）
 
 ### 为什么这样划分？
 
 **责任分层原则**：
-- **Moat 的职责**：确保房子的地基稳固、电路清晰、结构不腐烂
-- **测试框架的职责**：确保房间里的家具摆放正确、开关好使
+- **Moat Core 的职责**：确保房子的地基稳固、电路清晰、结构不腐烂
+- **Moat Immune 的职责**：确保房间里的家具摆放正确、开关好使
 
 这种分层让架构可以"以不变应万变"：无论业务怎么改，你的分层架构原则（目录责任、接口规范）是不变的。
 

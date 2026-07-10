@@ -1,0 +1,436 @@
+# 🤖 AI 工程化测试体系配置
+# Moat AI Test Suite Manifesto
+#
+# 核心理念：
+# - Moat 负责"架构与质量守护"（地基）
+# - AI 测试体系负责"功能与价值验证"（装修）
+# - 职责解耦，各司其职
+
+# ========================================
+# 全局配置
+# ========================================
+global:
+  enabled: true                          # 启用 AI 测试体系
+  version: "1.0.0"
+
+  # Moat 协同模式
+  moat_integration:
+    mode: "audit"                        # audit | gatekeeper | advisory
+    config_path: ".moat/config.json"
+    baseline_path: ".moat/baseline.json"
+
+    # Moat 作为"审计官"的职责
+    audit_responsibilities:
+      - "check_test_coverage"            # 监控测试覆盖率
+      - "verify_test_existence"          # 检查测试文件是否存在
+      - "validate_contract_integrity"    # 验证契约文件完整性
+      - "monitor_bdd_coverage"           # 监控 BDD 场景覆盖
+      - "enforce_test_ticket"            # 强制执行"测试门票"机制
+
+  # One Memory 协同
+  one_memory:
+    enabled: true
+    db_path: ".moat/memory.db"
+    record_execution_results: true       # 记录测试执行结果
+    track_contract_evolution: true       # 追踪契约演变
+    store_ai_test_patterns: true         # 存储 AI 测试模式
+
+# ========================================
+# 第一层：单元测试（Unit Tests）
+# ========================================
+unit_tests:
+  enabled: true
+
+  # 测试框架
+  framework:
+    name: "pytest"
+    version: ">=7.0.0"
+    dependencies:
+      - "pytest>=7.0.0"
+      - "pytest-cov>=4.0.0"
+      - "pytest-asyncio>=0.21.0"
+      - "hypothesis>=6.0.0"             # 属性测试
+      - "pytest-mock>=3.10.0"
+
+  # 覆盖率要求
+  coverage:
+    threshold: 80                        # 最低覆盖率 80%
+    fail_under: 75                       # Moat 告警阈值
+    measure:
+      - "core/"                          # 核心模块必须 90%
+      - "services/"                      # 服务层必须 80%
+      - "api/"                           # API 层必须 85%
+    exclude:
+      - "*/tests/*"
+      - "*/migrations/*"
+      - "*/__init__.py"
+
+  # Hypothesis 属性测试
+  property_tests:
+    enabled: true
+    auto_generate: true                  # AI 自动生成属性测试
+    scope: "critical/*"                  # 只对关键业务路径启用
+    ai_prompt_template: |
+      为以下函数编写 Hypothesis 属性测试：
+      函数名：{function_name}
+      业务规则：{business_rules}
+      输入类型：{input_types}
+      输出类型：{output_types}
+
+  # AI 自动补全测试
+  ai_generation:
+    enabled: true
+    trigger: "missing_test"              # 当检测到缺失测试时触发
+    scope: "services/*,core/*"           # 对哪些目录生效
+    prompt_template: |
+      为以下代码生成 pytest 单元测试：
+      {code_content}
+      要求：
+      1. 覆盖正常路径和边界条件
+      2. 包含异常处理测试
+      3. 使用 mock 隔离依赖
+      4. 添加类型提示
+
+  # Moat "测试门票"机制
+  test_ticket:
+    enabled: true
+    enforcement: "block"                  # block | warn | log
+    rules:
+      - "services/*.py → 必须有对应的 tests/unit/services/test_*.py"
+      - "core/*.py → 必须有对应的 tests/unit/core/test_*.py"
+      - "api/*.py → 必须有对应的 tests/unit/api/test_*.py"
+    ai_fix_suggestion: true              # Moat 拦截后触发 AI 生成测试
+
+# ========================================
+# 第二层：集成/契约测试（Contract Tests）
+# ========================================
+contract_tests:
+  enabled: true
+
+  # 契约测试框架
+  framework:
+    name: "pact"
+    version: ">=4.0.0"
+    dependencies:
+      - "pact-python>=4.0.0"
+      - "pytest-bdd>=7.0.0"
+      - "requests-mock>=1.9.0"
+
+  # 契约文件存储
+  contracts:
+    path: "tests/integration/contracts/"
+    format: "json"
+
+    # API 接口规范
+    api_specs:
+      - "openapi"                        # OpenAPI/Swagger 规范
+      - "graphql"                        # GraphQL Schema
+      - "grpc"                           # gRPC Proto 文件
+
+  # 🤖 关键：AI 契约自愈能力（微调建议 #2）
+  ai_self_healing:
+    enabled: true
+
+    # 变更检测流程
+    change_detection:
+      - moat_gatekeeper_detects_api_change
+      - trigger_ai_regenerate_contracts
+      - one_memory_compare_old_vs_new
+      - prompt_user_for_confirmation
+
+    # AI 重新生成契约
+    regeneration:
+      trigger: "contract_break_detected"  # Moat 检测到契约破坏时触发
+      source: "latest_api_specs"          # 从最新 API 规范生成
+      output_path: "tests/integration/contracts/"
+
+      prompt_template: |
+        检测到 API 接口变更，请重新生成契约文件：
+        旧契约：{old_contract}
+        新 API 规范：{new_api_spec}
+        变更摘要：{change_summary}
+
+        生成步骤：
+        1. 对比新旧契约差异
+        2. 生成新的 Pact 契约文件
+        3. 标记破坏性变更（Breaking Changes）
+        4. 更新消费者驱动测试用例
+
+    # 破坏性变更检测
+    breaking_change_detection:
+      enabled: true
+      auto_fail: true                     # 破坏性变更自动失败
+      require_manual_approval: true       # 需要人工确认
+      notify_channels:
+        - "slack"
+        - "github_pr_comment"
+
+# ========================================
+# 第三层：BDD 行为驱动测试
+# ========================================
+bdd_tests:
+  enabled: true
+
+  framework:
+    name: "pytest-bdd"
+    version: ">=7.0.0"
+    feature_path: "tests/features/"
+    step_definitions_path: "tests/steps/"
+
+  # 自然语言测试生成
+  ai_generation:
+    enabled: true
+    input_source: "prd"                   # PRD | user_story | conversation
+
+    prompt_template: |
+      根据以下业务需求生成 BDD 测试场景：
+
+      需求描述：{requirement}
+      相关模块：{module}
+
+      要求：
+      1. 使用 Gherkin 语法（Feature / Scenario / Given / When / Then）
+      2. 覆盖正常流程和异常场景
+      3. 生成对应的 pytest-bdd 步骤定义代码
+      4. 保存到 tests/features/{module}.feature
+
+  # BDD 覆盖率监控
+  coverage:
+    required_scenarios:
+      - "用户注册流程"
+      - "用户登录流程"
+      - "支付流程"
+      - "数据查询流程"
+    moat_enforcement: true                # Moat 强制要求关键路径有 BDD 测试
+
+# ========================================
+# 第四层：E2E 与 AI 视觉测试
+# ========================================
+e2e_tests:
+  enabled: true
+
+  # 测试框架
+  framework:
+    name: "playwright"
+    version: ">=1.40.0"
+    dependencies:
+      - "playwright>=1.40.0"
+      - "@playwright/test>=1.40.0"
+    browsers:
+      - "chromium"
+      - "firefox"                        # 可选
+      - "webkit"                         # 可选
+
+  # 🤖 关键：AI 视觉断言成本控制（微调建议 #1）
+  ai_visual_assertion:
+    enabled: true
+
+    # 视觉差异检测（第一道防线）
+    pixel_diff:
+      enabled: true
+      threshold: 5.0                      # 差异超过 5% 才触发 AI 分析
+      algorithm: "ssim"                   # 结构相似性算法
+      baseline_images_path: "tests/e2e/baselines/"
+      current_images_path: "tests/e2e/screenshots/"
+      diff_images_path: "tests/e2e/diffs/"
+
+    # AI 意图分析（仅在像素差异超过阈值时触发）
+    ai_analysis:
+      enabled: true
+      model: "gpt-4o"                     # 或 claude-3-5-sonnet-20241022
+      api_endpoint: "openai"              # openai | anthropic | custom
+      prompt_template: |
+        对比以下两张网页截图：
+        - 基准截图（Baseline）：{baseline_image}
+        - 当前截图（Current）：{current_image}
+        - 像素差异区域：{diff_highlighted}
+
+        请分析：
+        1. 页面是否"损坏"（Critical）或"正常"（OK）
+        2. 如果损坏，具体是什么问题（布局错乱、内容缺失、样式异常）
+        3. 修复建议
+
+        返回 JSON 格式：{"status": "OK|DEGRADED|BROKEN", "issues": [...], "suggestions": [...]}
+
+      # 成本控制
+      cost_control:
+        max_calls_per_test_run: 10        # 每次测试运行最多调用 10 次 AI
+        cache_results: true               # 缓存 AI 分析结果
+        cache_ttl: 86400                  # 缓存 24 小时
+        budget_per_day_usd: 5.0           # 每日预算上限 $5
+
+    # 关键页面优先（渐进式扩展）
+    critical_pages_only: true
+    pages:
+      - "/"                               # 首页
+      - "/models"                         # 模型列表
+      - "/settings"                       # 设置页
+      - "/dashboard"                      # 仪表板
+
+  # AI Agent 自动化探索
+  ai_agent_exploration:
+    enabled: false                        # Phase 3 再启用
+    framework: "browser-use"              # browser-use | multi-on
+    max_steps_per_page: 10
+    auto_detect_errors: true
+    screenshot_on_error: true
+
+# ========================================
+# 测试覆盖率门禁
+# ========================================
+coverage_gates:
+  # Moat 强制执行的覆盖率门禁
+  moat_enforcement:
+    overall: 80                           # 整体覆盖率 >= 80%
+    critical_modules: 90                  # 核心模块 >= 90%
+    new_code: 85                          # 新代码 >= 85%
+
+    # 覆盖率降低时自动拦截
+    on_coverage_drop:
+      action: "block"                     # block | warn
+      require_ai_test_generation: true    # 触发 AI 生成测试
+
+  # 变异测试提醒（微调建议 #3）
+  mutation_testing:
+    enabled: false                        # 可选：引入 mutation testing
+    framework: "mutmut"                   # mutmut | cosmic-ray | pystry
+
+    # AI 辅助测试质量检查
+    ai_quality_check:
+      enabled: true
+      prompt: |
+        分析以下测试代码的"有效性"：
+        {test_code}
+
+        检查项：
+        1. 是否"只会通过测试"（Test the test）？
+        2. 是否覆盖了边界条件？
+        3. 是否使用了 mock 隔离外部依赖？
+        4. 测试断言是否足够具体？
+
+        返回 JSON 格式：{"quality_score": 0-100, "issues": [...], "suggestions": [...]}
+
+      alert_threshold: 60                 # 质量分 < 60 时提醒用户 Review
+
+# ========================================
+# 测试执行策略
+# ========================================
+execution_strategy:
+  # 测试分层执行
+  tiers:
+    - name: "unit"
+      parallel: true
+      workers: 4
+      timeout_seconds: 60
+
+    - name: "contract"
+      parallel: true
+      workers: 2
+      timeout_seconds: 120
+
+    - name: "bdd"
+      parallel: false                     # BDD 测试需要顺序执行
+      timeout_seconds: 180
+
+    - name: "e2e"
+      parallel: false
+      timeout_seconds: 300
+      retry_failed: 2                     # 失败的 E2E 测试自动重试 2 次
+
+  # CI/CD 集成
+  ci_cd:
+    # GitHub Actions 工作流
+    github_actions:
+      enabled: true
+      workflow_file: ".github/workflows/ai-test.yml"
+
+      # 触发条件
+      triggers:
+        - "push"
+        - "pull_request"
+        - "schedule: 0 2 * * *"          # 每日凌晨 2 点全量测试
+
+      # 失败策略
+      on_failure:
+        action: "block_merge"
+        notify:
+          - "slack"
+          - "github_pr_comment"
+          - "email"
+
+  # 本地开发体验
+  local_development:
+    watch_mode: true                      # 监听文件变化自动重跑
+    incremental: true                     # 只运行受影响的测试
+    fast_fail: true                       # 第一个失败即停止
+
+# ========================================
+# AI 测试生成策略
+# ========================================
+ai_test_generation:
+  # 单元测试生成
+  unit:
+    enabled: true
+    model: "claude-sonnet-4-20250514"     # 或 gpt-4o
+    max_tokens: 4000
+    temperature: 0.2                      # 低温度确保代码质量
+
+  # 契约测试生成
+  contract:
+    enabled: true
+    model: "claude-sonnet-4-20250514"
+    auto_regenerate: true                 # 检测到 API 变更自动重新生成
+
+  # BDD 测试生成
+  bdd:
+    enabled: true
+    model: "claude-sonnet-4-20250514"
+    input_format: "markdown"              # 从 Markdown PRD 生成
+
+  # E2E 测试生成
+  e2e:
+    enabled: true
+    model: "claude-sonnet-4-20250514"
+    playwright_version: "1.40.0"
+
+# ========================================
+# 报告与分析
+# ========================================
+reporting:
+  # 测试报告格式
+  formats:
+    - "json"
+    - "html"
+    - "junit"                             # CI 工具友好
+
+  # AI 分析报告
+  ai_analysis:
+    enabled: true
+    generate_summary: true                # AI 生成测试报告摘要
+    highlight_flaky_tests: true           # 标记不稳定测试
+    suggest_fixes: true                   # AI 建议修复方案
+
+  # 集成 One Memory
+  one_memory_integration:
+    store_test_results: true
+    track_test_evolution: true            # 追踪测试质量演变
+    learn_from_failures: true             # 从失败中学习
+
+# ========================================
+# 实验性功能
+# ========================================
+experimental:
+  # 模糊测试（Fuzzing）
+  fuzzing:
+    enabled: false
+    framework: "atheris"                  # Python Fuzzing
+
+  # 性能测试
+  performance_testing:
+    enabled: false
+    framework: "locust"
+
+  # AI 探索式测试
+  exploratory_testing:
+    enabled: false
+    agent: "browser-use"

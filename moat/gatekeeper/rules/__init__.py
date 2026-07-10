@@ -5,7 +5,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .types import RuleSeverity, RuleViolation
+from ..types import RuleSeverity, RuleViolation
 
 if TYPE_CHECKING:
     pass
@@ -288,6 +288,13 @@ class RuleEngine:
             NamingConventionRule(),
             FrameworkUsageRule(),
         ]
+
+        # 加载 AI 测试门票规则（可选）
+        try:
+            from .test_coverage_gate import TestCoverageGateRule
+            self.rules.append(TestCoverageGateRule())
+        except ImportError:
+            pass  # 可选依赖，不影响核心功能
 
     def add_rule(self, rule: ArchitectureRule) -> None:
         """添加自定义规则"""

@@ -5,6 +5,81 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [0.9.0] - 2026-07-10
+
+### 🎉 核心更新
+
+#### 🛡️ Moat Immune Phase 2 — 契约测试系统（战略级能力）
+
+**跨越服务边界的检查能力，这是从"工具"到"系统"的关键跃迁**
+
+##### OpenAPI → Pact 契约生成
+
+从 OpenAPI 规范自动生成 Pact 契约文件，实现消费者驱动契约测试。
+
+```bash
+# 从 OpenAPI 规范生成 Pact 契约
+moat immune contract generate --api=openapi.json
+```
+
+**特性**：
+- ✅ 支持 OpenAPI 3.0.x 规范
+- ✅ 自动生成消费者驱动契约
+- ✅ Pact 文件格式验证（Pact Specification v3.0.0）
+- ✅ 自动保存到 One Memory
+
+##### 破坏性变更智能检测
+
+不只是告警，还能**精确诊断问题**，检测 AI 最容易犯的错误：
+
+| 检测项 | 描述 | 场景 |
+|--------|------|------|
+| **字段类型变更** | `price: Integer → String` | AI 不看 API 文档直接盲写 |
+| **必选字段删除** | `required: [name, email] → [name]` | AI 贪快最容易删的字段 |
+| **字段格式变更** | `email` 格式被删除 | 格式化约束丢失 |
+| **响应字段删除** | 消费者依赖的字段被删除 | 后端改 API 未通知前端 |
+| **状态码变更** | `201 → 200` | HTTP 语义变更 |
+
+##### 主动干预建议
+
+不只告诉你"哪里坏了"，还告诉你"怎么修"：
+
+- ✅ 影响文件分析：`frontend/api/user.ts` 会受影响
+- ✅ 具体修复步骤：保持兼容性 / 版本化 / 更新基线
+- ✅ CLI 命令提示：`moat immune contract update`
+
+##### Claude Code Hook 集成
+
+API 变更时自动拦截，阻止破坏性代码提交：
+
+- ✅ Claude 准备提交时触发契约检查
+- ✅ 破坏性变更时阻止提交
+- ✅ 输出完整破坏性变更报告
+
+##### One Memory 深度集成
+
+- ✅ `contract_baselines` 表存储基线元数据
+- ✅ `api_contracts` 表存储单个契约
+- ✅ 跨会话、跨时间的契约追踪
+- ✅ 基线版本管理（v1.0.0 → v2.0.0）
+
+#### 🎫 Phase 1 — AI 测试门票 (Gatekeeper)
+
+- ✅ **测试覆盖率守门规则**: 强制"测试门票"机制
+  - CRITICAL 级别拦截（阻止提交）
+  - HIGH 级别告警
+  - 模块级粒度控制
+- ✅ **AI 辅助生成测试**: 通过 Claude API 自动生成 pytest 测试
+- ✅ **单元测试集成**: `moat check` 时自动验证测试存在性
+
+#### 🏛️ Karpathy Principles Constitution (v0.8.0)
+
+- ✅ **Surgical Changes 规则**: Git diff 行数监控，修改过大自动告警
+- ✅ **Simplicity First 规则**: 代码复杂度检查
+- ✅ **规则系统架构**: 配置驱动的规则系统（YAML）
+
+---
+
 ## [0.8.0-alpha.1] - 2026-07-10
 
 ### 📋 定位声明与职责边界

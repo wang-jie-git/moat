@@ -196,6 +196,40 @@ class SharedStorageBridge:
             )
         """)
 
+        # 契约基线表（v0.9.0 新增 - Phase 2）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS contract_baselines (
+                id TEXT PRIMARY KEY,
+                service_name TEXT NOT NULL,
+                version TEXT NOT NULL,
+                baseline_hash TEXT NOT NULL,
+                contract_count INTEGER DEFAULT 0,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(service_name, version)
+            )
+        """)
+
+        # API 契约表（v0.9.0 新增 - Phase 2）
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS api_contracts (
+                id TEXT PRIMARY KEY,
+                service_name TEXT NOT NULL,
+                version TEXT NOT NULL,
+                endpoint TEXT NOT NULL,
+                method TEXT NOT NULL,
+                contract_hash TEXT NOT NULL,
+                request_schema TEXT,
+                response_schema TEXT,
+                status_code INTEGER,
+                description TEXT,
+                is_breaking BOOLEAN DEFAULT 0,
+                created_at TIMESTAMP NOT NULL,
+                last_modified TIMESTAMP,
+                FOREIGN KEY (service_name, version) REFERENCES contract_baselines(service_name, version)
+            )
+        """)
+
         # 索引优化
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_error_type ON bug_memories(error_type)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_file_path ON bug_memories(file_path)")
@@ -205,6 +239,8 @@ class SharedStorageBridge:
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_insight_type ON insights(type)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_insight_applied ON insights(applied)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_hint_file_line ON smart_hints(file_path, line)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_contract_service ON contract_baselines(service_name)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_contract_endpoint ON api_contracts(service_name, endpoint, method)")
 
         self.conn.commit()
 
@@ -359,12 +395,168 @@ class SharedStorageBridge:
         unapplied_insights = self.conn.execute(
             "SELECT COUNT(*) FROM insights WHERE applied = 0"
         ).fetchone()[0]
+        contract_count = self.conn.execute("SELECT COUNT(*) FROM api_contracts").fetchone()[0]
 
         return {
             "bug_memories": bug_count,
             "insights": insight_count,
             "unapplied_insights": unapplied_insights,
+            "api_contracts": contract_count,
         }
+
+    # ========================================
+    # 契约存储方法（v0.9.0 Phase 2 新增）
+    # ========================================
+
+    def store_contract_baseline(self, baseline_data: dict[str, Any]) -> bool:
+        """保存契约基线
+
+        Args:
+            baseline_data: 基线数据
+
+        Returns:
+            是否成功
+        """
+        if not self.conn:
+            return False
+
+        try:
+            import time
+            baseline_id = f"baseline_{int(time.time() * 1000)}_{hash(baseline_data.get('service_name', '')) % 10000:04d}"
+
+            with self.transaction() as cursor:
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO contract_baselines (
+                        id, service_name, version, baseline_hash,
+                        contract_count, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        baseline_id,
+                        baseline_data["service_name"],
+                        baseline_data["version"],
+                        baseline_data["baseline_hash"],
+                        baseline_data.get("contract_count", 0),
+                        baseline_data.get("created_at", datetime.now().isoformat()),
+                        datetime.now().isoformat(),
+                    ),
+                )
+            return True
+        except Exception as e:
+            print(f"❌ 保存契约基线失败: {e}")
+            return False
+
+    def store_api_contract(self, contract_data: dict[str, Any]) -> bool:
+        """保存单个 API 契约
+
+        Args:
+            contract_data: 契约数据
+
+        Returns:
+            是否成功
+        """
+        if not self.conn:
+            return False
+
+        try:
+            import time
+            contract_id = f"contract_{int(time.time() * 1000)}_{hash(contract_data.get('endpoint', '')) % 10000:04d}"
+
+            with self.transaction() as cursor:
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO api_contracts (
+                        id, service_name, version, endpoint, method,
+                        contract_hash, request_schema, response_schema,
+                        status_code, description, is_breaking,
+                        created_at, last_modified
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        contract_id,
+                        contract_data["service_name"],
+                        contract_data["version"],
+                        contract_data["endpoint"],
+                        contract_data["method"],
+                        contract_data["contract_hash"],
+                        json.dumps(contract_data.get("request_schema", {})),
+                        json.dumps(contract_data.get("response_schema", {})),
+                        contract_data.get("status_code", 200),
+                        contract_data.get("description", ""),
+                        contract_data.get("is_breaking", False),
+                        contract_data.get("created_at", datetime.now().isoformat()),
+                        contract_data.get("last_modified", datetime.now().isoformat()),
+                    ),
+                )
+            return True
+        except Exception as e:
+            print(f"❌ 保存 API 契约失败: {e}")
+            return False
+
+    def query_contract_baseline(self, service_name: str, version: str | None = None) -> dict | None:
+        """查询契约基线
+
+        Args:
+            service_name: 服务名称
+            version: 版本（可选，默认查询最新）
+
+        Returns:
+            基线数据或 None
+        """
+        if not self.conn:
+            return None
+
+        try:
+            if version:
+                cursor = self.conn.execute(
+                    "SELECT * FROM contract_baselines WHERE service_name = ? AND version = ?",
+                    (service_name, version),
+                )
+            else:
+                cursor = self.conn.execute(
+                    "SELECT * FROM contract_baselines WHERE service_name = ? ORDER BY created_at DESC LIMIT 1",
+                    (service_name,),
+                )
+
+            row = cursor.fetchone()
+            if not row:
+                return None
+
+            return dict(row)
+        except Exception as e:
+            print(f"❌ 查询契约基线失败: {e}")
+            return None
+
+    def query_api_contracts(self, service_name: str, version: str | None = None) -> list[dict]:
+        """查询 API 契约列表
+
+        Args:
+            service_name: 服务名称
+            version: 版本（可选）
+
+        Returns:
+            契约列表
+        """
+        if not self.conn:
+            return []
+
+        try:
+            if version:
+                cursor = self.conn.execute(
+                    "SELECT * FROM api_contracts WHERE service_name = ? AND version = ?",
+                    (service_name, version),
+                )
+            else:
+                cursor = self.conn.execute(
+                    "SELECT * FROM api_contracts WHERE service_name = ?",
+                    (service_name,),
+                )
+
+            return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"❌ 查询 API 契约失败: {e}")
+            return []
 
     def close(self):
         """关闭连接"""

@@ -250,6 +250,18 @@ def cmd_sidecar(args):
         return 1
 
 
+def cmd_test(args) -> int:
+    """AI 测试生成（已废弃，使用 moat immune）"""
+    from moat.ai_test.cli import cmd_test
+    return cmd_test(args)
+
+
+def cmd_immune(args) -> int:
+    """Moat Immune - AI 工程化测试体系"""
+    from moat.immune.cli import cmd_immune
+    return cmd_immune(args)
+
+
 def cmd_evolution(args):
     """进化指标管理"""
     from moat.evolution_cli import cmd_evolution
@@ -393,6 +405,14 @@ def build_parser() -> argparse.ArgumentParser:
     from moat.gatekeeper.cli import add_gatekeeper_parser
     add_gatekeeper_parser(sub)
 
+    # immune (Moat Immune - AI 工程化测试体系)
+    from moat.immune.cli import add_immune_parser
+    add_immune_parser(sub)
+
+    # test (已废弃，使用 moat immune unit)
+    from moat.ai_test.cli import add_test_parser
+    add_test_parser(sub)
+
     return parser
 
 
@@ -413,6 +433,8 @@ def main():
         "adapter": cmd_adapter,
         "verify": cmd_verify,
         "gatekeeper": cmd_gatekeeper,
+        "immune": cmd_immune,  # ← Moat Immune
+        "test": cmd_test,  # ← 已废弃，保留兼容性
     }
 
     sys.exit(commands[args.command](args))
