@@ -288,6 +288,8 @@ def test_breaking_change_detection():
     """测试 6: 破坏性变更检测"""
     print("\n📋 测试 6: 破坏性变更检测")
 
+    storage = ContractStorage()
+
     old = APIContract(
         endpoint="/api/users",
         method="POST",
