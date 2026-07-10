@@ -238,8 +238,9 @@ class FullCheck(Check):
     """
 
     def __init__(self, project_root: Path, config: dict[str, Any] | None = None):
-        super().__init__("FullCheck", project_root, config)
+        super().__init__(project_root, config)
         self.config = config or {}
+        self.name = "FullCheck"
 
     def run(self) -> list[CheckResult]:
         """运行完整检查"""

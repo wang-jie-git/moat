@@ -46,13 +46,13 @@ class BaselineManager:
 
     def diff(self):
         """对比当前状态与基线"""
-        from moat.checks.l4_baseline import _capture_state
+        from moat.checks.l4_baseline import _capture_enhanced_state
         baseline = self.load()
         if not baseline:
             print("❌ 没有基线数据。运行: moat baseline save")
             return
 
-        current = _capture_state(self.project_root)
+        current = _capture_enhanced_state(self.project_root)
         print(f"基线   | 当前   | 变化")
         print(f"-------|--------|------")
         print(f"{baseline.get('file_count', '?'):>6} | {len(current['py_files']):>6} | "
@@ -60,7 +60,66 @@ class BaselineManager:
         print(f"{baseline.get('total_lines', '?'):>6} | {current['total_lines']:>6} | "
               f"{current['total_lines'] - baseline.get('total_lines', 0):>+6}")
 
-    # ========== 架构基线管理（新增功能）==========
+        # 🆕 新增：显示文件哈希对比结果
+        print()
+        print("📊 文件内容变更检查：")
+
+        # 加载基线哈希数据
+        baseline_hashes = baseline.get("file_hashes", {})
+        current_hashes = current.get("file_hashes", {})
+
+        changed_files = []
+        for file_path, curr_hash in current_hashes.items():
+            base_hash = baseline_hashes.get(file_path)
+            if base_hash and curr_hash != base_hash:
+                changed_files.append((file_path, base_hash[:8], curr_hash[:8]))
+
+        if changed_files:
+            print(f"  🔴 {len(changed_files)} 个文件内容已变更")
+            for file_path, base_hash, curr_hash in changed_files[:5]:
+                print(f"    - {file_path}")
+                print(f"      基线: {base_hash}... → 当前: {curr_hash}...")
+        else:
+            print(f"  ✅ 无内容变更")
+
+        # 🆕 新增：显示代码熵增
+        print()
+        print("📊 代码熵增检查：")
+
+        curr_lines = current.get("line_counts", {})
+        base_lines = baseline.get("line_counts", {})
+
+        high_entropy = []
+        medium_entropy = []
+        for file_path, curr_count in curr_lines.items():
+            base_count = base_lines.get(file_path, 0)
+            if base_count > 0:
+                change_pct = (curr_count - base_count) / base_count * 100
+                if change_pct > 100:
+                    high_entropy.append((file_path, base_count, curr_count, change_pct))
+                elif change_pct > 50:
+                    medium_entropy.append((file_path, base_count, curr_count, change_pct))
+
+        if high_entropy:
+            print(f"  🔴 高熵增（>100%）: {len(high_entropy)} 个文件")
+            for file_path, base_count, curr_count, change_pct in high_entropy[:3]:
+                print(f"    - {file_path}: {change_pct:+.1f}% ({base_count} → {curr_count})")
+
+        if medium_entropy:
+            print(f"  🟡 中熵增（>50%）: {len(medium_entropy)} 个文件")
+            for file_path, base_count, curr_count, change_pct in medium_entropy[:3]:
+                print(f"    - {file_path}: {change_pct:+.1f}% ({base_count} → {curr_count})")
+
+        if not high_entropy and not medium_entropy:
+            print(f"  ✅ 无熵增风险")
+
+        # 总结
+        total_changes = len(changed_files) + len(high_entropy) + len(medium_entropy)
+        if total_changes > 0:
+            print()
+            print(f"⚠️  总计 {total_changes} 个问题")
+
+    # ========== 架构基线管理（原有功能）==========
 
     def create_architecture_baseline(
         self,

@@ -199,8 +199,7 @@ def cmd_report(args):
 
 def cmd_adapter(args):
     """安装 AI 适配器"""
-    from moat.adapters.claude import install_claude_adapter
-    from moat.adapters.precommit import install_precommit_hook
+    from moat.adapters import install_claude_adapter, install_precommit_hook
 
     if args.type == "claude" or args.type == "all":
         install_claude_adapter(Path(args.project))
