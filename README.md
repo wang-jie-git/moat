@@ -1,132 +1,27 @@
-# Moat: The First Self-Evolving AI Coding Guardian 🚀
+# Moat — AI 编码守门员 🚀
 
-> [中文](https://github.com/wang-jie-git/moat/blob/main/README.md) | English
+> **当前版本**: v0.9.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
-Moat 不仅仅是一个静态代码校验工具，它是你代码库的**"具身智能"神经系统**。
-在 AI 辅助编程成为常态的今天，我们不仅需要 AI 帮我们写代码，更需要一个能够感知"代码痛觉"、记住"架构教训"、并随项目演进而"自我进化"的守护者。
-
-## 🛡️ 为什么需要 Moat？
-
-AI 编码极快，但"副作用"往往滞后。当你修改一段代码时，你是否担心：
-
-- AI 破坏了系统的核心业务逻辑？
-- 修改了一处代码，却引发了远处难以追踪的"痛感"（Bug）？
-- 随着项目变大，你是否在重复修复同样的架构漏洞？
-
-Moat 解决这一切。它通过实时 AST 感知、痛觉评分系统（Pain Score）和 One Memory 记忆引擎，构建了一个闭环的自我防御机制。
-
-## ✨ 核心特性
-
-### ⚡ 零配置极速检查 (Zero-Config Speed) ✨ v0.9.1
-- **moat init 0.82秒** — 自动检测项目类型，无需交互（18倍提升）
-- **单文件配置** — moat.json（取代6个配置文件，83%减少）
-- **超快检查** — moat check <5秒（40倍提升）
-- **4种检查模式** — quick/full/diff/legacy
-
-### 🛡️ 守门员规则系统 (Gatekeeper Rules) ✨ v0.9.1
-开箱即用的5条安全规则：
-- **SQL注入检测** — CRITICAL + Tree-sitter AST + 处方化
-- **API鉴权检查** — CRITICAL 级别
-- **竞态条件检测** — HIGH 级别
-- **错误处理检查** — MEDIUM 级别
-- **分层检查** — HIGH 级别
-
-### 🧠 神经感知系统 (Neural Perception)
-基于 AST 的骨架图分析，精准定位每一次变更的影响域（Impact Analysis）。
-
-## 💾 持久化记忆 (Long-term Memory)
-与 One Memory 无缝集成，像海马体一样记录 Bug 演变与修复历史。
-
-### ⚡ 实时守护 (Sidecar Daemon)
-轻量级守护进程，在编辑器（VS Code）中实时反馈，无需人工触发。
-
-### 🧬 自我进化 (Self-Evolution)
-系统不仅检测错误，还会通过进化指标监控"神经衰弱"，并根据重构表现自动调整防御阈值。
-
-## 🚀 快速上手
-
-### 安装
-
-#### 一键安装（推荐）⭐
-
-```bash
-# 安装所有功能（包括 Web 看板、Sidecar、VS Code 辅助）
-pip install "moat-ai[all]"
-```
-
-#### 基础安装
-
-```bash
-# 仅核心功能
-pip install moat-ai
-```
-
-#### 从 GitHub 安装
-
-```bash
-# 最新版
-pip install git+https://github.com/wang-jie-git/moat.git
-
-# 完整版
-pip install "git+https://github.com/wang-jie-git/moat.git[all]"
-```
-
-### 开始使用
-
-```bash
-# 1. 初始化项目（0.82秒，零配置）✨ v0.9.1
-cd your-project
-moat init
-
-# 2. 运行检查 ✨ v0.9.1 四模式
-moat check              # 默认快速模式（<5秒）
-moat check --full       # 完整模式（所有文件）
-moat check --diff       # 增量模式（git diff）
-moat check --legacy     # 兼容模式（v0.8.0规则）
-
-# 3. 查看进化报告
-moat evolution report
-
-# 4. 获取 AI 修复建议
-moat fix
-```
-
-**v0.9.1 性能数据**:
-- 🚀 oh-agent-panel (20,741文件): **5.29秒**
-- 🚀 Django (7,072文件): **2.91秒**
-
-**说明**: Moat 会在后台感知变动，并通过 VS Code 插件提供实时反馈。
+**一句话**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员，零配置，实时拦截。
 
 ---
 
-## 📦 安装选项对比
+## 🔑 "最后的清醒时刻"——Moat 的灵魂
 
-| 功能 | 基础版 | 完整版 |
-|------|--------|--------|
-| 四层门禁检查 | ✅ | ✅ |
-| Pain Score 评分 | ✅ | ✅ |
-| AST 增量感知 | ✅ | ✅ |
-| AI 辅助修复 | ✅ | ✅ |
-| 进化指标系统 | ✅ | ✅ |
-| **守门员规则** ✨ v0.9.1 | **✅** | **✅** |
-| **4种检查模式** ✨ v0.9.1 | **✅** | **✅** |
-| Web 看板 | ❌ | ✅ |
-| Sidecar 守护进程 | ❌ | ✅ |
-| 剪贴板复制 | ❌ | ✅ |
-| **依赖大小** | ~5MB | ~50MB |
+> **AI 是一个会撒谎、会贪快、会产生幻觉的个体。只要 AI 是在"预测下一个 Token"，它就永远会有"记忆盲区"和"偷懒倾向"。**
+>
+> **Moat 真正的价值在于：它是 AI 的"刹车片"。**
+>
+> 哪怕 AI 再强，只要它在高速运行，它就需要物理意义上的"刹车"。你不必做那个驾驶员，你只需要做好那个无论 AI 怎么踩油门，都能在最关键的转弯处发出警报并自动降速的"刹车系统"。
 
-### 按需安装
+**为什么这个定位如此重要**:
+- ❌ **玩具 vs 工具**: 如果你把 Moat 定义为"AI 工程操作系统"或"自我进化系统"，它是一个玩具。如果你把它定义为"刹车片"，它是一个工具。
+- ❌ **AI 会变强，但不会变诚实**: 未来的 AI 能力更强，但它仍然会有"偷懒倾向"（为了速度牺牲质量）和"记忆盲区"（上下文窗口之外就是黑暗）。
+- ✅ **"刹车"的永恒价值**: 无论 AI 怎么进化，物理定律不变——高速运动需要刹车，复杂系统需要检查点，连续输出需要暂停验证。
 
-```bash
-# Web 看板
-pip install "moat-ai[dashboard]"
+**这个反思把项目从"玩具"拉回到"工具"的轨道上。这是 Moat 生命力最旺盛的时刻。**
 
-# Sidecar 守护进程
-pip install "moat-ai[sidecar]"
-
-# VS Code 插件辅助
-pip install "moat-ai[vscode]"
-```
+---
 
 ---
 
