@@ -67,11 +67,17 @@ class MoatResult:
         return self.failed == 0
 
 
-def run_all_checks(project_root: str = ".") -> MoatResult:
+def run_all_checks(project_root: str = ".", mode: str = "quick") -> MoatResult:
     """运行所有检查（插件化架构）
 
-    自动检测项目类型，只运行相关的检查。
-    保持向后兼容：Python 检查（旧风格）和新检查（基于 Check 基类）并存。
+    支持三种模式：
+    - "quick"（默认）：只检查修改的文件（git diff），< 5 秒
+    - "full"：检查所有文件（包括复杂的 L1/L2/L3/L4 规则），可能很慢
+    - "legacy"：使用旧的 L1 检查（向后兼容）
+
+    Args:
+        project_root: 项目根目录
+        mode: 检查模式（"quick" | "full" | "legacy"）
 
     Returns:
         MoatResult 包含完整的检查结果和错误列表
@@ -87,13 +93,24 @@ def run_all_checks(project_root: str = ".") -> MoatResult:
 
     # 1. 检测项目类型
     project_type = detect_project_type(root)
-    print(f"📊 项目类型: {', '.join(k for k, v in project_type.items() if v) or '未知'}\n")
+    print(f"📊 项目类型: {', '.join(k for k, v in project_type.items() if v) or '未知'}")
+    print(f"🔧 检查模式: {mode}\n")
 
     # 2. 加载配置
     config = _load_config(root)
 
-    # 3. 创建检查实例
-    checks = create_check_instances(project_type, root, config)
+    # 3. 根据模式运行检查
+    if mode == "quick":
+        # 快速模式：只检查修改的文件
+        checks = _run_quick_checks(root, config)
+    elif mode == "full":
+        # 完整模式：检查所有文件 + 复杂规则
+        checks = _create_full_checks(project_type, root, config)
+    elif mode == "legacy":
+        # 旧模式：使用旧的 L1 检查
+        checks = create_check_instances(project_type, root, config)
+    else:
+        raise ValueError(f"未知模式: {mode}")
 
     # 4. 运行检查
     for name, check_or_module in checks:
@@ -116,10 +133,7 @@ def run_all_checks(project_root: str = ".") -> MoatResult:
 
     result.end_time = time.time()
 
-    # 5. 自动记录进化指标（v0.5.0 新增）
-    _record_check_metrics(root, result)
-
-    # 6. 输出总结
+    # 5. 输出总结
     print(f"\n{'=' * 50}")
     print(f"  结果: {result.summary()}")
     print(f"{'=' * 50}")
@@ -135,6 +149,35 @@ def run_all_checks(project_root: str = ".") -> MoatResult:
         print(f"\n✅ MOAT 全部通过，系统健康。")
 
     return result
+
+
+def _run_quick_checks(root: Path, config: dict[str, Any]) -> list[tuple[str, Any]]:
+    """运行快速检查（只检查修改的文件）
+
+    Args:
+        root: 项目根目录
+        config: 配置
+
+    Returns:
+        检查列表 [(name, check_instance), ...]
+    """
+    from moat.checks.quick_check import QuickCheck
+    return [("快速检查（修改的文件）", QuickCheck(root, config))]
+
+
+def _create_full_checks(project_type: dict[str, bool], root: Path, config: dict[str, Any]) -> list[tuple[str, Any]]:
+    """创建完整检查（所有文件 + 复杂规则）
+
+    Args:
+        project_type: 项目类型
+        root: 项目根目录
+        config: 配置
+
+    Returns:
+        检查列表 [(name, check_instance), ...]
+    """
+    from moat.checks.quick_check import FullCheck
+    return [("完整检查（所有文件）", FullCheck(root, config))]
 
 
 def _run_legacy_check(module, name: str, root: Path) -> list[dict]:
@@ -159,7 +202,16 @@ def _run_legacy_check(module, name: str, root: Path) -> list[dict]:
 
 
 def _load_config(root: Path) -> dict:
-    """加载 Moat 配置"""
+    """加载 Moat 配置（优先读取 moat.json，向后兼容 config.json）"""
+    # 优先读取 moat.json（新格式）
+    moat_json_path = root / ".moat" / "moat.json"
+    if moat_json_path.exists():
+        try:
+            return json.loads(moat_json_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    # 向后兼容：读取 config.json（旧格式）
     config_path = root / ".moat" / "config.json"
     if config_path.exists():
         try:

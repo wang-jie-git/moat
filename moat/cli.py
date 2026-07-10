@@ -2,7 +2,9 @@
 Moat CLI — 护城河命令行工具
 
 用法:
-  moat check         改代码前/后检查（12秒）
+  moat check         改代码前/后检查（默认快速模式 < 5 秒）
+  moat check --full  完整检查（所有文件，可能很慢）
+  moat check --diff  增量检查（AST 对比 + 影响域分析 < 10 秒）
   moat watch         实时监控日志错误
   moat init          初始化到当前项目
   moat dashboard     启动 Web 错误看板
@@ -18,11 +20,18 @@ from pathlib import Path
 
 
 def cmd_check(args):
-    """运行四层门禁检查"""
+    """运行四层门禁检查
+
+    支持三种模式：
+    - moat check（默认）：快速检查（只检查修改的文件）< 5 秒
+    - moat check --full：完整检查（所有文件 + 复杂规则）可能很慢
+    - moat check --diff：增量检查（AST 对比 + 影响域分析）< 10 秒
+    """
     from moat.runner import run_all_checks
 
+    # 优先使用 --diff 模式（增量检查）
     if args.diff:
-        # 增量检查模式
+        # 增量检查模式（AST 对比 + 影响域分析）
         from moat.ast.diff import diff_project
         from moat.ast.builder import build_skeleton
         from moat.pain.scorer import calculate_total_pain
@@ -77,15 +86,28 @@ def cmd_check(args):
         # 5. 返回建议
         if pain_result['overall_level'] in ('CRITICAL', 'HIGH'):
             print(f"\n⚠️  建议: 运行完整检查以确保没有引入问题")
-            print(f"   moat check")
+            print(f"   moat check --full")
             return 1
         else:
             print(f"\n✅ 变更风险较低，但仍建议运行完整检查")
             return 0
 
-    else:
+    # 根据参数选择检查模式
+    elif args.full:
         # 完整检查模式
-        result = run_all_checks(args.project)
+        print(f"\n🔍 完整检查模式（所有文件 + 复杂规则）...")
+        result = run_all_checks(args.project, mode="full")
+        return 0 if result.is_success() else 1
+
+    elif args.quick:
+        # 快速检查模式（默认）
+        print(f"\n⚡ 快速检查模式（只检查修改的文件）...")
+        result = run_all_checks(args.project, mode="quick")
+        return 0 if result.is_success() else 1
+
+    else:
+        # 默认：快速检查模式
+        result = run_all_checks(args.project, mode="quick")
         return 0 if result.is_success() else 1
 
 
@@ -304,7 +326,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_check = sub.add_parser("check", help="运行四层门禁检查")
     _shared_args(p_check)
     p_check.add_argument("--diff", action="store_true",
-                         help="增量检查模式（对比 Git 变更）")
+                         help="增量检查模式（对比 Git 变更 + AST 影响域分析）")
+    p_check.add_argument("--quick", action="store_true",
+                         help="快速检查模式（只检查修改的文件，默认）")
+    p_check.add_argument("--full", action="store_true",
+                         help="完整检查模式（所有文件 + 复杂规则，可能很慢）")
+    p_check.add_argument("--legacy", action="store_true",
+                         help="使用旧版 L1 检查（向后兼容）")
 
     # watch
     p_watch = sub.add_parser("watch", help="实时监控日志错误")
