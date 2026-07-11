@@ -250,7 +250,31 @@ class FullCheck(Check):
         quick = QuickCheck(self.project, self.config)
         results.extend(quick.run())
 
-        # 2. TODO: 添加复杂规则检查（L1/L2/L3/L4）
-        # 暂时注释掉，等性能优化后再启用
+        # 2. 🆕 运行 L2 架构规则检查
+        from moat.checks.l2_architecture import run_architecture_check
+
+        # 加载基线数据（用于熵增检测）
+        from moat.baseline import BaselineManager
+
+        baseline_mgr = BaselineManager(self.project)
+        baseline = baseline_mgr.load()
+
+        l2_errors = run_architecture_check(
+            self.project,
+            baseline=baseline,
+            quick_mode=False,
+        )
+
+        # 转换为 CheckResult
+        for error in l2_errors:
+            results.append(CheckResult(
+                type="fail" if error.get("level") in ("ERROR", "CRITICAL") else "warn",
+                level=error.get("level", "WARN"),
+                file=error.get("file", ""),
+                line=0,
+                message=error.get("message", ""),
+            ))
+
+        # 3. TODO: 其他复杂规则检查（L1/L3/L4）
 
         return results
