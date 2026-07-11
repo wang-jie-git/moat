@@ -67,7 +67,7 @@ class MoatResult:
         return self.failed == 0
 
 
-def run_all_checks(project_root: str = ".", mode: str = "quick") -> MoatResult:
+def run_all_checks(project_root: str = ".", mode: str = "quick", enable_optimization: bool = False) -> MoatResult:
     """运行所有检查（插件化架构）
 
     支持三种模式：
@@ -78,6 +78,7 @@ def run_all_checks(project_root: str = ".", mode: str = "quick") -> MoatResult:
     Args:
         project_root: 项目根目录
         mode: 检查模式（"quick" | "full" | "legacy"）
+        enable_optimization: 是否启用优化检查（Ponytail 集成）
 
     Returns:
         MoatResult 包含完整的检查结果和错误列表
@@ -102,10 +103,10 @@ def run_all_checks(project_root: str = ".", mode: str = "quick") -> MoatResult:
     # 3. 根据模式运行检查
     if mode == "quick":
         # 快速模式：只检查修改的文件
-        checks = _run_quick_checks(root, config)
+        checks = _run_quick_checks(root, config, enable_optimization)
     elif mode == "full":
         # 完整模式：检查所有文件 + 复杂规则
-        checks = _create_full_checks(project_type, root, config)
+        checks = _create_full_checks(project_type, root, config, enable_optimization)
     elif mode == "legacy":
         # 旧模式：使用旧的 L1 检查
         checks = create_check_instances(project_type, root, config)
@@ -151,33 +152,51 @@ def run_all_checks(project_root: str = ".", mode: str = "quick") -> MoatResult:
     return result
 
 
-def _run_quick_checks(root: Path, config: dict[str, Any]) -> list[tuple[str, Any]]:
+def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: bool = False) -> list[tuple[str, Any]]:
     """运行快速检查（只检查修改的文件）
 
     Args:
         root: 项目根目录
         config: 配置
+        enable_optimization: 是否启用优化检查（Ponytail 集成）
 
     Returns:
         检查列表 [(name, check_instance), ...]
     """
     from moat.checks.quick_check import QuickCheck
-    return [("快速检查（修改的文件）", QuickCheck(root, config))]
+    checks = [("快速检查（修改的文件）", QuickCheck(root, config))]
+
+    # 战术建议 1：异步触发优化检查（默认不跑）
+    if enable_optimization:
+        from moat.checks.optimization import OptimizationCheck
+        opt_config = {**config, "optimization": True}
+        checks.append(("优化检查（Ponytail 集成）", OptimizationCheck(root, opt_config)))
+
+    return checks
 
 
-def _create_full_checks(project_type: dict[str, bool], root: Path, config: dict[str, Any]) -> list[tuple[str, Any]]:
+def _create_full_checks(project_type: dict[str, bool], root: Path, config: dict[str, Any], enable_optimization: bool = False) -> list[tuple[str, Any]]:
     """创建完整检查（所有文件 + 复杂规则）
 
     Args:
         project_type: 项目类型
         root: 项目根目录
         config: 配置
+        enable_optimization: 是否启用优化检查（Ponytail 集成）
 
     Returns:
         检查列表 [(name, check_instance), ...]
     """
     from moat.checks.quick_check import FullCheck
-    return [("完整检查（所有文件）", FullCheck(root, config))]
+    checks = [("完整检查（所有文件）", FullCheck(root, config))]
+
+    # 战术建议 1：完整模式也支持优化检查
+    if enable_optimization:
+        from moat.checks.optimization import OptimizationCheck
+        opt_config = {**config, "optimization": True}
+        checks.append(("优化检查（Ponytail 集成）", OptimizationCheck(root, opt_config)))
+
+    return checks
 
 
 def _run_legacy_check(module, name: str, root: Path) -> list[dict]:

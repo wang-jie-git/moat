@@ -1,6 +1,6 @@
 # Moat — AI 编码守门员 🚀
 
-> **当前版本**: v1.0.4 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
+> **当前版本**: v1.0.6 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
 **一句话**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员，零配置，实时拦截。
 
@@ -130,11 +130,26 @@ Moat 是一种**"非侵入式的工程赋能"**：
 
 ```bash
 # 核心检查
+moat check [--quick|--full|--diff|--legacy] [--optimize]  # 4种检查模式 + 优化检查 ✨ v1.0.6
 moat check [--quick|--full|--diff|--legacy]  # 4种检查模式 ✨ v1.0.3
 moat init                                     # 零配置初始化 ✨ v1.0.3
 moat watch                                    # 实时监控日志
 moat report                                   # 生成检查报告
 moat baseline [save|show|diff]               # 基线管理
+
+# 优化检查（Ponytail 集成）✨ v1.0.6
+moat check --quick --optimize                 # 快速检查 + 优化规则
+moat check --full --optimize                  # 完整检查 + 优化规则
+moat report                                   # 技术债务报告（自动分类展示）
+
+# 优化规则配置
+# max_complexity: 圈复杂度阈值（默认 10）
+# max_function_length: 函数长度阈值（默认 50 行）
+# max_cognitive_complexity: 认知复杂度阈值（默认 15）
+# check_yagni: 是否启用 YAGNI 检查（默认 true）
+# check_dead_code: 是否启用死代码检测（默认 true）
+# check_duplicate_code: 是否启用重复代码检测（默认 false）
+# check_stdlib: 是否启用标准库检查（默认 true）
 
 # 进化指标
 moat evolution report                         # 查看进化报告
@@ -181,6 +196,7 @@ moat gatekeeper check --file <path>          # 检查单个文件
 | v0.8 | 2026-07-09 | 原则具象化 | Karpathy Principles Constitution、手术刀检查器、简单性检查器 |
 | **v0.9** | **2026-07-10** | **极速重构** | **零配置（18倍）、超快检查（40倍）、守门员规则（5条）、Bug 检测实战** |
 | **v1.0** | **2026-07-11** | **架构哨兵** | **L2 架构检查（熵增+依赖枢纽）、架构健康报告、性能优化（缓存+并行）、4.3x 加速** |
+| **v1.0.6** | **2026-07-11** | **代码优化** | **Ponytail 集成（12条规则：复杂度/YAGNI/TS/标准库）、技术债务报告、认知复杂度检查** |
 
 ## 🤝 社区共创
 

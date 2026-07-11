@@ -141,6 +141,11 @@ class ReportGenerator:
             "",
         ])
 
+        # 🆕 新增：技术债务报告
+        tech_debt_section = self._generate_tech_debt_section()
+        if tech_debt_section:
+            lines.append(tech_debt_section)
+
         # 🆕 新增：L2 架构健康报告
         arch_section = self._generate_architecture_section()
         if arch_section:
@@ -215,6 +220,11 @@ class ReportGenerator:
             f"```",
             "",
         ])
+
+        # 🆕 新增：技术债务报告
+        tech_debt_section = self._generate_tech_debt_section_md()
+        if tech_debt_section:
+            lines.append(tech_debt_section)
 
         # 🆕 新增：L2 架构健康报告
         arch_section = self._generate_architecture_section()
@@ -414,6 +424,150 @@ class ReportGenerator:
             "  • 使用 `moat baseline diff` 查看详细的基线对比",
             "  • 对于熵增过快的文件，考虑拆分为多个职责清晰的模块",
             "  • 依赖枢纽模块修改前，确保有充分的单元测试覆盖",
+            "",
+        ])
+
+        return "\n".join(lines)
+
+    def _categorize_optimization_error(self, message: str) -> str:
+        """将优化检查错误分类为技术债务类型"""
+        if "[YAGNI-" in message:
+            return "code_simplification"
+        elif "[COMPLEX-" in message:
+            return "complexity"
+        elif "[STDLIB-" in message or "[TS-" in message:
+            return "standard_library"
+        else:
+            return "other"
+
+    def _generate_tech_debt_section(self) -> str | None:
+        """生成技术债务报告（纯文本格式）
+
+        从错误列表中提取优化检查结果，按技术债务分类展示
+        """
+        # 筛选优化检查错误
+        opt_errors = [
+            e for e in self.result.errors
+            if any(keyword in e.get("message", "")
+                   for keyword in ["[YAGNI-", "[COMPLEX-", "[STDLIB-", "[TS-"])
+        ]
+
+        if not opt_errors:
+            return None
+
+        # 按类别分组
+        categories = {
+            "code_simplification": [],
+            "complexity": [],
+            "standard_library": [],
+            "other": [],
+        }
+
+        for error in opt_errors:
+            category = self._categorize_optimization_error(error.get("message", ""))
+            categories[category].append(error)
+
+        # 生成报告
+        lines = [
+            "",
+            "=" * 60,
+            "  📦 技术债务报告",
+            "=" * 60,
+            "",
+        ]
+
+        category_names = {
+            "code_simplification": "代码精简空间 (YAGNI)",
+            "complexity": "复杂度债务",
+            "standard_library": "标准库优化",
+            "other": "其他优化建议",
+        }
+
+        for category, errors in categories.items():
+            if errors:
+                lines.append(f"{category_names[category]} - {len(errors)} 个")
+                for error in errors:
+                    file_info = error.get('file', '?')
+                    line_info = f":{error['line']}" if error.get('line') else ""
+                    message = error.get('message', '')
+                    lines.append(f"  • {file_info}{line_info} - {message}")
+                lines.append("")
+
+        # 添加优化建议
+        lines.extend([
+            "💡 优化建议:",
+            "  • 优先处理复杂度债务（COMPLEX-*），提高代码可维护性",
+            "  • 定期清理 YAGNI 问题（YAGNI-*），保持代码精简",
+            "  • 考虑标准库替代方案（STDLIB-*），减少依赖",
+            "  • 运行 moat check --full --optimize 查看完整优化检查",
+            "",
+        ])
+
+        return "\n".join(lines)
+
+    def _generate_tech_debt_section_md(self) -> str | None:
+        """生成技术债务报告（Markdown 格式）"""
+        # 筛选优化检查错误
+        opt_errors = [
+            e for e in self.result.errors
+            if any(keyword in e.get("message", "")
+                   for keyword in ["[YAGNI-", "[COMPLEX-", "[STDLIB-", "[TS-"])
+        ]
+
+        if not opt_errors:
+            return None
+
+        # 按类别分组
+        categories = {
+            "code_simplification": [],
+            "complexity": [],
+            "standard_library": [],
+            "other": [],
+        }
+
+        for error in opt_errors:
+            category = self._categorize_optimization_error(error.get("message", ""))
+            categories[category].append(error)
+
+        # 生成报告
+        lines = [
+            "## 📦 技术债务报告",
+            "",
+        ]
+
+        category_icons = {
+            "code_simplification": "📦",
+            "complexity": "🔢",
+            "standard_library": "📚",
+            "other": "💡",
+        }
+
+        category_names = {
+            "code_simplification": "代码精简空间 (YAGNI)",
+            "complexity": "复杂度债务",
+            "standard_library": "标准库优化",
+            "other": "其他优化建议",
+        }
+
+        for category, errors in categories.items():
+            if errors:
+                lines.append(f"### {category_icons[category]} {category_names[category]} ({len(errors)} 个)")
+                lines.append("")
+                for error in errors:
+                    file_info = error.get('file', '?')
+                    line_info = f":{error['line']}" if error.get('line') else ""
+                    message = error.get('message', '')
+                    lines.append(f"- {file_info}{line_info} - {message}")
+                lines.append("")
+
+        # 添加优化建议
+        lines.extend([
+            "💡 **优化建议**:",
+            "",
+            "- 优先处理复杂度债务（COMPLEX-*），提高代码可维护性",
+            "- 定期清理 YAGNI 问题（YAGNI-*），保持代码精简",
+            "- 考虑标准库替代方案（STDLIB-*），减少依赖",
+            "- 运行 `moat check --full --optimize` 查看完整优化检查",
             "",
         ])
 

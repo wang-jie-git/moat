@@ -108,18 +108,28 @@ def cmd_check(args):
         if args.skip_architecture:
             os.environ["MOAT_SKIP_ARCHITECTURE"] = "true"
 
-        result = run_all_checks(args.project, mode="full")
+        # 战术建议 1：异步触发优化检查
+        enable_optimization = getattr(args, 'optimize', False)
+        result = run_all_checks(args.project, mode="full", enable_optimization=enable_optimization)
+
+        if enable_optimization:
+            print(f"\n⚡ 已启用代码优化检查（Ponytail 集成）")
         return 0 if result.is_success() else 1
 
     elif args.quick:
         # 快速检查模式（默认）
         print(f"\n⚡ 快速检查模式（只检查修改的文件）...")
-        result = run_all_checks(args.project, mode="quick")
+        enable_optimization = getattr(args, 'optimize', False)
+        result = run_all_checks(args.project, mode="quick", enable_optimization=enable_optimization)
+
+        if enable_optimization:
+            print(f"\n⚡ 已启用代码优化检查（Ponytail 集成）")
         return 0 if result.is_success() else 1
 
     else:
         # 默认：快速检查模式
-        result = run_all_checks(args.project, mode="quick")
+        enable_optimization = getattr(args, 'optimize', False)
+        result = run_all_checks(args.project, mode="quick", enable_optimization=enable_optimization)
         return 0 if result.is_success() else 1
 
 
@@ -363,6 +373,8 @@ def build_parser() -> argparse.ArgumentParser:
                          help="使用旧版 L1 检查（向后兼容）")
     p_check.add_argument("--skip-architecture", action="store_true",
                          help="跳过 L2 架构检查（提升性能，完整模式有效）")
+    p_check.add_argument("--optimize", action="store_true",
+                         help="启用代码优化检查（Ponytail 集成：YAGNI、复杂度、标准库优先）")
 
     # watch
     p_watch = sub.add_parser("watch", help="实时监控日志错误")

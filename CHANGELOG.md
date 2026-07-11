@@ -5,6 +5,78 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [1.0.6] - 2026-07-11
+
+### 🚀 新增功能
+
+#### Ponytail 集成：代码优化检查器
+
+- ✅ **新增优化检查模块** (`moat/checks/optimization.py`，426 行)
+  - YAGNI 原则检查（You Ain't Gonna Need It）
+  - 复杂度控制（圈复杂度 + 认知复杂度 + 函数长度）
+  - 死代码检测（return/raise/break 后的不可达代码）
+  - 过度注释检测（注释占比 > 30%）
+  - 重复代码检测（≥5 行代码块）
+  - TypeScript 专项检查（any 类型滥用 + 嵌套三元运算符）
+  - 标准库优先检查（requests → urllib.request）
+
+- ✅ **技术债务分类系统**
+  - 代码精简空间 (YAGNI)：YAGNI-001 ~ YAGNI-006
+  - 复杂度债务：COMPLEX-001 ~ COMPLEX-003
+  - 标准库优化：STDLIB-001
+  - TypeScript 优化：TS-001 ~ TS-002
+
+- ✅ **CLI 集成**
+  - 新增 `--optimize` 参数（默认关闭，按需启用）
+  - 集成到 `moat check --quick --optimize`
+  - 集成到 `moat check --full --optimize`
+
+- ✅ **报告集成**
+  - `moat report` 新增技术债务报告章节
+  - 支持纯文本和 Markdown 两种格式
+  - 按技术债务类别分组展示（code_simplification / complexity / standard_library）
+
+#### 规则详情
+
+**复杂度检查 (3 条)**:
+- `COMPLEX-001`：圈复杂度超标（默认阈值 10）
+- `COMPLEX-002`：函数过长（默认阈值 50 行）
+- `COMPLEX-003`：认知复杂度超标（默认阈值 15）
+
+**YAGNI 检查 (6 条)**:
+- `YAGNI-001`：未使用的导入
+- `YAGNI-002`：未处理的 TODO/FIXME
+- `YAGNI-003`：过度抽象（函数/类过多）
+- `YAGNI-004`：死代码检测
+- `YAGNI-005`：过度注释（注释占比 > 30%）
+- `YAGNI-006`：重复代码（≥5 行，默认关闭）
+
+**TypeScript 专项检查 (2 条)**:
+- `TS-001`：any 类型滥用
+- `TS-002`：过度嵌套的三元运算符（>2 层）
+
+**标准库优先检查 (1 条)**:
+- `STDLIB-001`：使用标准库替代 requests/numpy/pandas/tqdm
+
+### 🔧 优化
+
+- ✅ **配置灵活性**
+  - `max_complexity`：圈复杂度阈值（默认 10）
+  - `max_function_length`：函数长度阈值（默认 50 行）
+  - `max_cognitive_complexity`：认知复杂度阈值（默认 15）
+  - `check_yagni`：是否启用 YAGNI 检查（默认 true）
+  - `check_dead_code`：是否启用死代码检测（默认 true）
+  - `check_duplicate_code`：是否启用重复代码检测（默认 false，性能原因）
+  - `check_stdlib`：是否启用标准库检查（默认 true）
+
+### 📚 参考
+
+- 原 Ponytail 项目：https://github.com/DietrichGebert/ponytail
+- 认知复杂度规范：SonarSource Cognitive Complexity
+  https://www.sonarsource.com/resources/why-cognitive-complexity/
+
+---
+
 ## [1.0.5] - 2026-07-11
 
 ### 📚 文档更新
