@@ -12,15 +12,65 @@
 
 **物理位置**: Moat 是一个标准的 Python 包。你可以通过 `pip install moat-ai` 将其安装在**被开发项目的虚拟环境（venv）**中，或者作为全局工具安装。
 
-**运行位置**: 它运行在**开发者的本地机器上**（终端、编辑器插件或守护进程），而不是运行在 Claude/Cursor 的云端服务器里。你的代码永远不会离开你的机器。
+**运行位置**: 它运行在**开发者的本地机器上**（终端或守护进程），而不是运行在 Claude/Cursor 的云端服务器里。你的代码永远不会离开你的机器。
 
 ### Moat 是怎么和 Claude/Cursor 配合的？
 
-Moat 不依赖于 Claude 的内部插件市场，它通过**"协议"来与 AI 对话**。你可以把它理解为"寄生在代码库里的守护神"：
+Moat 本质上是一个 **CLI 工具**（命令行工具）。Claude/Cursor 可以通过以下方式使用 Moat：
 
-- **作为"协议提供者" (MCP)**: 你把 Moat 作为一个 MCP Server 运行在本地。当你打开 Claude Desktop 时，Claude 通过 MCP 协议连接到你的 Moat。此时，Claude 就像戴上了一副"Moat 眼睛"，它不仅看到了你的代码，还看到了你通过 Moat 计算出的架构约束和 Pain Score。
+#### 方式 1: 直接调用 CLI 命令（当前，推荐）
 
-- **作为"守门员" (Gatekeeper/Hooks)**: Moat 运行在你的 Shell 或 VS Code 插件里。当 Claude/Cursor 在编辑器里尝试写入代码时，Moat 作为"钩子"实时扫描变动。如果它发现 Claude 违反了 Truth Document 里的规则，它会直接报错阻止提交。
+Claude 可以直接在终端中执行 Moat 的命令：
+
+```bash
+# Claude 执行这些命令
+moat check --full              # 运行完整检查
+moat architecture --format json # 生成架构健康报告
+moat gatekeeper check --file app.py # 检查单个文件
+```
+
+**这就是你现在使用 Moat 的方式**：Claude 就像在终端里打字一样，调用 `moat` 命令，然后根据返回结果给出建议或修复代码。
+
+**优点**:
+- ✅ 简单直接，不需要额外配置
+- ✅ 立即可用
+- ✅ 充分利用 Moat 的全部能力
+
+---
+
+#### 方式 2: Sidecar 守护进程（实时监控）
+
+Moat 可以运行一个 Sidecar 守护进程，提供实时监控和 API 访问：
+
+```bash
+# 启动 Sidecar
+moat sidecar start
+
+# 通过 REST API 访问
+curl http://localhost:7777/api/health
+```
+
+**适用场景**: 持续集成环境或实时监控需求。
+
+---
+
+#### 方式 3: 静态规则注入（被动指导）
+
+Moat 可以在你的项目中生成规则文件，告诉 AI 工具遵守架构约束：
+
+```bash
+# 为 Claude 生成规则
+moat adapter claude
+# → 生成 CLAUDE.md，包含 Moat 的使用规则
+
+# 为 Cursor 生成规则
+moat adapter all
+# → 生成 .cursor/rules.mdc
+```
+
+**这是"被动指导"**：AI 工具会读取这些规则文件，但不会实时调用 Moat。
+
+---
 
 ### 用户感知的"安装路径" (产品差异化点)
 
@@ -29,18 +79,18 @@ Moat 是一种**"非侵入式的工程赋能"**：
 1. **终端用户 (CLI)**: `pip install moat-ai` → `moat init`。此时它就是一个命令行工具，你手动运行 `moat check` 就像运行 `git status` 一样。
 
 2. **AI 深度玩家 (Claude/Cursor)**:
-   - **步骤**: 在 Claude Desktop 的配置里写上 Moat 的路径。
-   - **体验**: AI 不再是"瞎子"，它在写代码前会先问 Moat："这个目录我可以写吗？""这里有什么架构禁忌吗？"
+   - **步骤**: Claude 直接执行 `moat check`、`moat architecture` 等命令。
+   - **体验**: AI 在改代码前后会自动调用 Moat 检查，就像人类开发者一样。
 
 3. **编辑器极客 (VS Code/Cursor 用户)**:
-   - **步骤**: 安装 Moat 的 VS Code 插件。
-   - **体验**: 它表现得像一个"超级版 Lint"，如果你写了 SQL 注入代码，编辑器直接变红，即时反馈。
+   - **步骤**: 配置 pre-commit hook 或使用 Sidecar。
+   - **体验**: 提交前自动检查，或实时监控架构健康度。
 
 ### 为什么这么设计是最好的？
 
-- **不被平台绑架**: 如果有一天 Claude 倒闭了，Moat 还在，它依然是一个强大的本地代码质量监控工具。
-- **数据安全**: 因为 Moat 安装在项目里，代码不需要发给任何"Moat 云"去检查，这让企业用户和开源项目非常放心。
-- **上下文无限**: 它利用本地的文件读取，直接将项目的 Dependency Graph 喂给 AI，这比依赖云端代码分析要快得多且精确得多。
+- **不被平台绑架**: Moat 是一个独立的 CLI 工具。如果有一天 Claude 倒闭了，Moat 还在，你依然可以在终端里使用它。
+- **数据安全**: 因为 Moat 运行在本地，代码不需要发给任何"Moat 云"去检查，这让企业用户和开源项目非常放心。
+- **简单直接**: 不需要复杂的 MCP 配置，不需要理解协议，直接执行命令就能用。
 
 **You own the code, you own the guard.**
 
