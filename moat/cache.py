@@ -49,7 +49,15 @@ class HashCacheManager:
         Returns:
             文件哈希（前16位），如果无法计算则返回 None
         """
-        rel_path = str(file_path.relative_to(self.project_root))
+        # macOS 兼容：resolve() 解决 /var vs /private/var 符号链接问题
+        resolved_file = file_path.resolve()
+        resolved_root = self.project_root.resolve()
+
+        try:
+            rel_path = str(resolved_file.relative_to(resolved_root))
+        except ValueError:
+            # 如果文件不在 project_root 下（理论上不应发生），使用绝对路径
+            rel_path = str(resolved_file)
 
         # 检查缓存
         if not force_recalculate and rel_path in self.cache:
@@ -94,7 +102,15 @@ class HashCacheManager:
         Returns:
             文件行数，如果无法计算则返回 None
         """
-        rel_path = str(file_path.relative_to(self.project_root))
+        # macOS 兼容：resolve() 解决 /var vs /private/var 符号链接问题
+        resolved_file = file_path.resolve()
+        resolved_root = self.project_root.resolve()
+
+        try:
+            rel_path = str(resolved_file.relative_to(resolved_root))
+        except ValueError:
+            # 如果文件不在 project_root 下，使用绝对路径
+            rel_path = str(resolved_file)
 
         # 检查缓存
         if not force_recalculate and rel_path in self.cache:
@@ -118,19 +134,19 @@ class HashCacheManager:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             lines = len(content.split("\n"))
             mtime = file_path.stat().st_mtime
-            size = len(content)
+            size = file_path.stat().st_size  # 使用字节数（与缓存检查一致）
 
             # 更新缓存
             if rel_path in self.cache:
                 self.cache[rel_path]["lines"] = lines
                 self.cache[rel_path]["mtime"] = mtime
-                self.cache[rel_path]["size"] = size
+                self.cache[rel_path]["size"] = size  # 存储字节数
                 self.cache[rel_path]["cached_at"] = datetime.now().isoformat()
             else:
                 self.cache[rel_path] = {
                     "hash": None,
                     "mtime": mtime,
-                    "size": size,
+                    "size": size,  # 存储字节数
                     "lines": lines,
                     "cached_at": datetime.now().isoformat(),
                 }
@@ -178,7 +194,10 @@ def _process_file(file_path: Path, project_root: Path) -> tuple[str, str | None,
     """
     import hashlib
 
-    rel_path = str(file_path.relative_to(project_root))
+    # macOS 兼容：使用 resolved 路径
+    resolved_file = file_path.resolve()
+    resolved_root = Path(project_root).resolve()
+    rel_path = str(resolved_file.relative_to(resolved_root))
 
     try:
         content = file_path.read_text(encoding="utf-8", errors="ignore")
@@ -218,7 +237,11 @@ def capture_state_with_cache(
     # 收集所有 Python 文件
     all_files = []
     for f in project_root.rglob("*.py"):
-        rel = f.relative_to(project_root)
+        # macOS 兼容：使用 resolved 路径确保一致性
+        resolved_f = f.resolve()
+        resolved_root = Path(project_root).resolve()
+
+        rel = resolved_f.relative_to(resolved_root)
         parts = rel.parts
 
         # 跳过虚拟环境等
@@ -261,7 +284,10 @@ def capture_state_with_cache(
     else:
         # 串行扫描（小型项目）
         for f in all_files:
-            rel_path = str(f.relative_to(project_root))
+            # macOS 兼容：使用 resolved 路径
+            resolved_f = f.resolve()
+            resolved_root = Path(project_root).resolve()
+            rel_path = str(resolved_f.relative_to(resolved_root))
 
             file_hash = cache_mgr.get_file_hash(f)
             if file_hash:

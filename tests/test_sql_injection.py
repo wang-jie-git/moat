@@ -107,7 +107,7 @@ cursor.execute(query)
 
     results = check._check_file(test_file)
     assert len(results) >= 1
-    assert results[0].line == 3  # cursor.execute 在第 3 行
+    assert results[0].line == 4  # cursor.execute 在第 4 行（包含前导空行）
     print(f"✅ 上下文回溯: 检测到第 {results[0].line} 行的 SQL 注入")
 
 

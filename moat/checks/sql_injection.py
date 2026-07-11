@@ -150,7 +150,7 @@ class SQLInjectionCheck(Check):
                             results.append(CheckResult(
                                 type="fail",
                                 level="CRITICAL",
-                                file=str(file_path.relative_to(self.project)),
+                                file=str(file_path.resolve().relative_to(self.project.resolve())),
                                 line=line,
                                 message=f"[SQL 注入] 第 {line} 行检测到字符串拼接 SQL。修复建议：使用参数化查询 -> {func_name}(\"SELECT ... WHERE id = %s\", (user_id,))",
                                 metadata={"rule": "sql_injection", "method": "ast"},
@@ -250,7 +250,7 @@ class SQLInjectionCheck(Check):
         return exec_lines
 
     def _check_context(self, content: str, exec_line: int, file_path: Path) -> list[CheckResult]:
-        """检查 SQL 执行点的前 5 行上下文
+        """检查 SQL 执行点的前 5 行上下文 + 当前行
 
         Args:
             content: 文件内容
@@ -263,9 +263,9 @@ class SQLInjectionCheck(Check):
         results = []
         lines = content.split("\n")
 
-        # 检查前 5 行（最多回溯到第 1 行）
+        # 检查前 5 行 + 当前行（最多回溯到第 1 行）
         start_line = max(0, exec_line - 6)  # 0-based
-        end_line = exec_line - 1  # 0-based（不包含当前行）
+        end_line = exec_line  # 0-based（包含当前行，用于检测同行的 f-string）
 
         context_lines = lines[start_line:end_line]
         context_text = "\n".join(context_lines)
@@ -285,7 +285,7 @@ class SQLInjectionCheck(Check):
             results.append(CheckResult(
                 type="fail",
                 level="CRITICAL",
-                file=str(file_path.relative_to(self.project)),
+                file=str(file_path.resolve().relative_to(self.project.resolve())),
                 line=exec_line,
                 message=f"[SQL 注入] 第 {exec_line} 行检测到 SQL 拼接（{interpolation_type}），请使用参数化查询",
                 metadata={

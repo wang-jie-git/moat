@@ -43,7 +43,7 @@ class TestDiscoverSubsystems:
         )
         result = l1_subsystems._discover_subsystems(tmp_path)
         assert len(result) >= 1, f"应发现 {filename}"
-        _, _, discovered_cls = result[0]
+        _, _, discovered_cls, _ = result[0]  # 4 元组：(name, module_path, class_name, file_path)
         assert discovered_cls == class_name
 
     def test_ignores_non_keyword_files(self, tmp_path: Path) -> None:
@@ -58,15 +58,15 @@ class TestDiscoverSubsystems:
         venv.mkdir()
         (venv / "session_manager.py").write_text("class SM(object):\n    pass\n")
         result = l1_subsystems._discover_subsystems(tmp_path)
-        assert not any("session_manager" in s.lower() for s, _, _ in result)
+        assert not any("session_manager" in s.lower() for s, _, _, _ in result)  # 4 元组
 
     def test_returns_tuples(self, tmp_path: Path) -> None:
-        """返回格式应为 (name, module_path, class_name)。"""
+        """返回格式应为 (name, module_path, class_name, file_path)。"""
         (tmp_path / "test_agent.py").write_text("class TestAgent(object):\n    pass\n")
         result = l1_subsystems._discover_subsystems(tmp_path)
         assert len(result) >= 1
-        name, mod_path, cls_name = result[0]
-        assert all(isinstance(v, str) and v for v in (name, mod_path, cls_name))
+        name, mod_path, cls_name, file_path = result[0]  # 4 元组
+        assert all(isinstance(v, (str, Path)) for v in (name, mod_path, cls_name, file_path))
 
     def test_empty_project(self, tmp_path: Path) -> None:
         """空项目应返回空列表。"""
