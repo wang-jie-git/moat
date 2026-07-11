@@ -89,43 +89,14 @@ def capture_baseline(project_root: Path) -> dict:
 def _capture_enhanced_state(project_root: Path) -> dict:
     """捕获项目当前状态（增强版，包含文件哈希和行数统计）
 
+    使用哈希缓存优化性能
+
     Returns:
         项目状态字典
     """
-    py_files = []
-    total_lines = 0
-    file_hashes = {}
-    line_counts = {}
+    from moat.cache import capture_state_with_cache
 
-    for f in project_root.rglob("*.py"):
-        rel = f.relative_to(project_root)
-        parts = rel.parts
-        if any(p in (".venv", "venv", "__pycache__", ".git", "node_modules",
-                      "build", "dist") for p in parts):
-            continue
-
-        rel_path = str(rel)
-        py_files.append(rel_path)
-
-        try:
-            content = f.read_text(encoding="utf-8")
-            lines = content.split("\n")
-            total_lines += len(lines)
-
-            # 🆕 新增：文件哈希
-            file_hashes[rel_path] = hashlib.sha256(content.encode()).hexdigest()[:16]
-
-            # 🆕 新增：行数统计
-            line_counts[rel_path] = len(lines)
-        except Exception:
-            pass
-
-    return {
-        "py_files": sorted(py_files),
-        "total_lines": total_lines,
-        "file_hashes": file_hashes,
-        "line_counts": line_counts,
-    }
+    return capture_state_with_cache(project_root)
 
 
 def _compare_file_hashes(current: dict, baseline: dict) -> list[dict]:

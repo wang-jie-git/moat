@@ -240,6 +240,12 @@ class FullCheck(Check):
     def __init__(self, project_root: Path, config: dict[str, Any] | None = None):
         super().__init__(project_root, config)
         self.config = config or {}
+
+        # 🆕 支持环境变量跳过架构检查
+        import os
+        if os.environ.get("MOAT_SKIP_ARCHITECTURE", "").lower() == "true":
+            self.config["skip_architecture"] = True
+
         self.name = "FullCheck"
 
     def run(self) -> list[CheckResult]:
@@ -250,30 +256,37 @@ class FullCheck(Check):
         quick = QuickCheck(self.project, self.config)
         results.extend(quick.run())
 
-        # 2. 🆕 运行 L2 架构规则检查
-        from moat.checks.l2_architecture import run_architecture_check
+        # 2. 🆕 运行 L2 架构规则检查（除非跳过）
+        skip_architecture = self.config.get("skip_architecture", False)
 
-        # 加载基线数据（用于熵增检测）
-        from moat.baseline import BaselineManager
+        if not skip_architecture:
+            from moat.checks.l2_architecture import run_architecture_check
 
-        baseline_mgr = BaselineManager(self.project)
-        baseline = baseline_mgr.load()
+            # 加载基线数据（用于熵增检测）
+            from moat.baseline import BaselineManager
 
-        l2_errors = run_architecture_check(
-            self.project,
-            baseline=baseline,
-            quick_mode=False,
-        )
+            baseline_mgr = BaselineManager(self.project)
+            baseline = baseline_mgr.load()
 
-        # 转换为 CheckResult
-        for error in l2_errors:
-            results.append(CheckResult(
-                type="fail" if error.get("level") in ("ERROR", "CRITICAL") else "warn",
-                level=error.get("level", "WARN"),
-                file=error.get("file", ""),
-                line=0,
-                message=error.get("message", ""),
-            ))
+            l2_errors = run_architecture_check(
+                self.project,
+                baseline=baseline,
+                quick_mode=False,
+            )
+
+            # 转换为 CheckResult
+            for error in l2_errors:
+                results.append(CheckResult(
+                    type="fail" if error.get("level") in ("ERROR", "CRITICAL") else "warn",
+                    level=error.get("level", "WARN"),
+                    file=error.get("file", ""),
+                    line=0,
+                    message=error.get("message", ""),
+                    metadata={
+                        "l2_type": error.get("type", ""),
+                        "suggestion": error.get("suggestion", ""),
+                    },
+                ))
 
         # 3. TODO: 其他复杂规则检查（L1/L3/L4）
 

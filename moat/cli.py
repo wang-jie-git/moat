@@ -96,6 +96,18 @@ def cmd_check(args):
     elif args.full:
         # 完整检查模式
         print(f"\n🔍 完整检查模式（所有文件 + 复杂规则）...")
+
+        # 加载配置并添加 skip_architecture
+        from moat.runner import _load_config
+        config = _load_config(Path(args.project))
+        if args.skip_architecture:
+            config["skip_architecture"] = True
+
+        # 这里需要临时修改 config，简化处理：通过环境变量传递
+        import os
+        if args.skip_architecture:
+            os.environ["MOAT_SKIP_ARCHITECTURE"] = "true"
+
         result = run_all_checks(args.project, mode="full")
         return 0 if result.is_success() else 1
 
@@ -349,6 +361,8 @@ def build_parser() -> argparse.ArgumentParser:
                          help="完整检查模式（所有文件 + 复杂规则，可能很慢）")
     p_check.add_argument("--legacy", action="store_true",
                          help="使用旧版 L1 检查（向后兼容）")
+    p_check.add_argument("--skip-architecture", action="store_true",
+                         help="跳过 L2 架构检查（提升性能，完整模式有效）")
 
     # watch
     p_watch = sub.add_parser("watch", help="实时监控日志错误")
