@@ -1,6 +1,6 @@
 # Moat — AI 编码守门员 🚀
 
-> **当前版本**: v0.9.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
+> **当前版本**: v1.0.3 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
 **一句话**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员，零配置，实时拦截。
 
@@ -40,8 +40,8 @@
 
 ```bash
 # 核心检查
-moat check [--quick|--full|--diff|--legacy]  # 4种检查模式 ✨ v0.9.1
-moat init                                     # 零配置初始化 ✨ v0.9.1
+moat check [--quick|--full|--diff|--legacy]  # 4种检查模式 ✨ v1.0.3
+moat init                                     # 零配置初始化 ✨ v1.0.3
 moat watch                                    # 实时监控日志
 moat report                                   # 生成检查报告
 moat baseline [save|show|diff]               # 基线管理
@@ -71,7 +71,7 @@ moat dashboard [--port 8080]                  # 启动 Web 看板
 moat verify --all                             # 运行全部验收算子
 moat verify --operator <name>                 # 运行单个算子
 
-# 守门员规则 ✨ v0.9.1
+# 守门员规则 ✨ v1.0.3
 moat rules list                               # 列出所有规则
 moat gatekeeper check --file <path>          # 检查单个文件
 ```
@@ -90,6 +90,7 @@ moat gatekeeper check --file <path>          # 检查单个文件
 | v0.7 | 2026-07-08 | 架构验收 | 审计算子化架构（7个算子）、Gatekeeper 实时守门、Sidecar 守护进程 |
 | v0.8 | 2026-07-09 | 原则具象化 | Karpathy Principles Constitution、手术刀检查器、简单性检查器 |
 | **v0.9** | **2026-07-10** | **极速重构** | **零配置（18倍）、超快检查（40倍）、守门员规则（5条）、Bug 检测实战** |
+| **v1.0** | **2026-07-11** | **架构哨兵** | **L2 架构检查（熵增+依赖枢纽）、架构健康报告、性能优化（缓存+并行）、4.3x 加速** |
 
 ## 🤝 社区共创
 
@@ -194,10 +195,10 @@ moat check
 | 层级 | 作用 |
 |------|------|
 | **L0 语法** | 所有 Python/TypeScript 文件无语法错误 |
-| **L1 存活** | import 正常、API 能返回 200、核心模块可实例化、关键文件存在 |
-| **L2 结构** | API 返回的 JSON 字段符合契约（防前后端断裂） |
+| **L1 存活** | import 正常、API 能返回 200、核心模块可实例化、关键文件存在、**文件内容哈希校验** ✨ v1.0 |
+| **L2 结构** | API 返回的 JSON 字段符合契约（防前后端断裂）、**代码熵增检测** ✨ v1.0、**依赖枢纽识别** ✨ v1.0 |
 | **L3 关联** | 改了 A，B 还能用（防修一个出三个） |
-| **L4 基线** | 文件数不减少、代码量不退化（防隐性删除） |
+| **L4 基线** | 文件数不减少、代码量不退化、**文件哈希基线对比** ✨ v1.0、**代码熵增预警** ✨ v1.0 |
 
 **TypeScript 专项检查**（v0.2.0+）：
 
@@ -322,25 +323,88 @@ moat baseline show
 moat baseline diff
 ```
 
-## 完整示例
+### 9. 架构健康检查（v1.0+）
 
 ```bash
-# 初始化
+# 生成架构健康报告
+moat architecture
+
+# Markdown 格式（适合文档）
+moat architecture --format md
+
+# JSON 格式（适合 CI/CD）
+moat architecture --format json
+
+# 复制到剪贴板
+moat architecture --copy
+```
+
+**功能特性**：
+- **健康评分**：0-100 分量化架构健康度
+- **代码熵增检测**：识别增长过快的文件（>50% 黄色预警，>100% 红色预警）
+- **依赖枢纽识别**：统计被引用最多的核心模块
+- **文件内容变更**：基于哈希的变更检测
+- **智能改进建议**：基于检测结果的定制化建议
+
+**使用场景**：
+- 每周运行一次，监控架构健康度
+- 发现潜在的技术债务
+- 识别需要重构的模块
+- 评估架构演进质量
+
+## 完整示例
+
+### 日常开发流程
+
+```bash
+# 1. 初始化（首次使用）
 cd /path/to/project
 moat init
 
-# 改代码前
+# 2. 改代码前检查
 moat check
 
-# 改代码...
-# 改代码后
+# 3. 改代码...
+# vim src/api/users.py
+
+# 4. 改代码后检查
 moat check
 
-# 通过后提交
+# 5. 通过后提交
 git add .
 git commit -m "fix: ..."
+```
 
-# 服务器运行时实时监控
+### 每周架构健康检查
+
+```bash
+# 1. 生成架构健康报告
+moat architecture --format md > architecture_health.md
+
+# 2. 查看健康评分和问题
+cat architecture_health.md
+
+# 3. 如果发现问题，生成详细报告
+moat check --full
+
+# 4. 保存新的基线（如果已修复问题）
+moat baseline save
+```
+
+### CI/CD 集成
+
+```bash
+# GitHub Actions 中使用 --skip-architecture 加速
+moat check --full --skip-architecture
+
+# 或单独运行架构检查（每周一次）
+moat architecture --format json > architecture_report.json
+```
+
+### 服务器运行时监控
+
+```bash
+# 实时监控日志
 moat watch --log logs/backend.log
 ```
 
