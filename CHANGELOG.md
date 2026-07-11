@@ -5,6 +5,49 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [1.0.5] - 2026-07-11
+
+### 📚 文档更新
+
+#### README.md
+- ✅ 新增"Moat 的定位与安装方式"章节
+  - 明确 Moat 是 CLI 工具（不是 MCP）
+  - 说明与 Claude/Cursor 的协同方式
+  - 强调本地优先、数据安全
+- ✅ 新增"快速开始"引导（指向 setup.py）
+
+#### SETUP.md（新文件，611 行）
+- ✅ 详细的安装使用指南
+  - 3 种安装方式（pipx/pip/venv）
+  - 项目初始化说明
+  - 基线创建和管理
+  - 日常使用工作流（3 个场景）
+  - AI 工具集成（Claude/Cursor/Git Hook）
+  - 8 个常见问题解答
+  - 5 分钟快速开始
+
+### 🛠️ 工具
+
+#### setup.py（新文件，302 行）
+- ✅ 交互式安装引导脚本
+  - 检查 pipx 安装
+  - 自动安装 Moat
+  - 验证安装
+  - 初始化项目
+  - 创建基线
+  - 显示下一步操作
+- ✅ 支持非交互式模式
+  - `MOAT_PROJECT_PATH` 环境变量
+  - `MOAT_SKIP_BASELINE` 环境变量
+
+### 🔧 修复
+
+- ✅ setup.py 验证安装修复（`moat --version` → `moat --help` + `pip3 show`）
+- ✅ 支持非交互式模式（解决 stdin 管道问题）
+- ✅ 修正 Moat 定位描述（删除 MCP 错误描述）
+
+---
+
 ## [1.0.4] - 2026-07-11
 
 ### 🐛 Bug 修复
