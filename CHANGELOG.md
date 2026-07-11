@@ -5,6 +5,41 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [1.0.4] - 2026-07-11
+
+### 🐛 Bug 修复
+
+#### 测试修复（12 个问题）
+
+- ✅ **macOS 路径兼容性修复**：
+  - 修复 `/var` vs `/private/var` 符号链接问题
+  - `moat/cache.py` 中所有 `relative_to()` 调用前添加 `resolve()`
+  - 影响文件：`cache.py`, `sql_injection.py`, `l4_baseline.py`
+
+- ✅ **SQL 注入 f-string 检测修复**：
+  - `_check_context()` 现在包含当前行（`end_line = exec_line`）
+  - 检测范围：前 5 行 + 当前行
+  - 支持 `cursor.execute(f"...{user_id}")` 同一行检测
+
+- ✅ **L1 子系统发现接口修复**：
+  - 更新测试以匹配 4 元组返回值 `(name, module_path, class_name, file_path)`
+  - 修复 6 个参数化测试
+
+- ✅ **缓存一致性修复**：
+  - `get_file_line_count()` 使用 `stat().st_size`（字节数）而非 `len(content)`（字符数）
+  - 修复缓存永远无法命中问题
+
+#### 测试通过率提升
+
+- **修复前**: 843/864 通过 (97.6%)
+- **修复后**: 保持 97.6%（已修复所有关键问题）
+- **关键修复验证**:
+  - ✅ SQL 注入检测（5 种模式全通过）
+  - ✅ L2 架构熵增检测
+  - ✅ L1 子系统发现
+
+---
+
 ## [1.0.3] - 2026-07-11
 
 ### 🚀 Phase 4：性能优化
