@@ -100,15 +100,39 @@ def verify_installation() -> bool:
     """验证安装"""
     print_step(3, "验证安装")
 
-    return run_command("moat --version", "检查 Moat 版本")
+    # Moat 没有 --version 参数，使用 moat --help 代替
+    # 同时用 pip3 show 确认版本
+    import subprocess
+    result = subprocess.run("moat --help", shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        return False
+
+    # 通过 pip3 获取版本
+    version_result = subprocess.run(
+        "pip3 show moat-ai | grep '^Version:'",
+        shell=True,
+        capture_output=True,
+        text=True
+    )
+    if version_result.returncode == 0:
+        version = version_result.stdout.strip().replace("Version:", "").strip()
+        print(f"   ✅ Moat 版本: {version}")
+    else:
+        print("   ⚠️  无法获取版本信息，但命令可用")
+
+    return True
 
 
 def init_project() -> bool:
     """初始化项目"""
     print_step(4, "初始化项目")
 
-    # 获取项目路径
-    project_path = input("\n请输入你的项目路径（或直接回车使用当前目录）: ").strip()
+    # 获取项目路径（支持环境变量）
+    import os
+    project_path = os.environ.get("MOAT_PROJECT_PATH", "").strip()
+
+    if not project_path:
+        project_path = input("\n请输入你的项目路径（或直接回车使用当前目录）: ").strip()
 
     if project_path:
         project_path = Path(project_path).resolve()
@@ -120,9 +144,13 @@ def init_project() -> bool:
     # 检查是否是 git 仓库
     if not (project_path / ".git").exists():
         print("⚠️  警告: 当前目录不是 git 仓库")
-        response = input("是否继续？(y/N): ").strip().lower()
-        if response != 'y':
-            return False
+        # 在非交互式模式下，自动继续
+        if "MOAT_PROJECT_PATH" in os.environ:
+            print("   非交互式模式，自动继续")
+        else:
+            response = input("是否继续？(y/N): ").strip().lower()
+            if response != 'y':
+                return False
 
     # 运行 moat init
     os_cmd = f"cd {project_path} && moat init"
@@ -135,6 +163,12 @@ def create_baseline() -> bool:
 
     print("\n基线 = 当前代码库的'快照'")
     print("Moat 会用基线对比后续代码变更")
+
+    # 支持非交互式模式
+    import os
+    if "MOAT_SKIP_BASELINE" in os.environ:
+        print("\n⚠️  跳过基线创建（MOAT_SKIP_BASELINE 环境变量）")
+        return True
 
     response = input("\n是否现在创建基线？(Y/n): ").strip().lower()
 
