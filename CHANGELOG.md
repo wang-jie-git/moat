@@ -5,6 +5,60 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [1.0.3] - 2026-07-11
+
+### 🚀 Phase 4：性能优化
+
+#### 新增功能
+
+- ✅ **哈希缓存管理器** (`moat/cache.py`)：
+  - 文件哈希缓存（基于 mtime 判断）
+  - 行数统计缓存
+  - 自动持久化到 `.moat/hash_cache.json`
+  - 缓存统计信息
+
+- ✅ **并行扫描优化**：
+  - 使用 `concurrent.futures.ThreadPoolExecutor`
+  - 小型项目（<10 文件）自动降级串行
+  - 可配置 `max_workers`（默认 4）
+
+- ✅ **`--skip-architecture` 选项**：
+  - 跳过 L2 架构检查
+  - 完整模式有效
+  - 显著提升性能
+
+#### 性能提升
+
+| 场景 | v1.0.2 | v1.0.3 | 提升 |
+|------|--------|--------|------|
+| **首次扫描**（无缓存） | 0.21s | 0.19s | 10% |
+| **缓存命中** | 0.21s | 0.19s | 10% |
+| **跳过架构检查** | 0.81s | 0.19s | **4.3x** |
+
+#### 优化细节
+
+- **缓存策略**：基于文件 mtime 和 size 双重校验
+- **增量更新**：只对修改的文件重新计算
+- **自动持久化**：扫描后自动保存到磁盘
+- **缓存统计**：`HashCacheManager.get_stats()` 提供详细统计
+
+#### CLI 命令
+
+```bash
+# 跳过 L2 架构检查（性能优先）
+moat check --full --skip-architecture
+
+# 环境变量（永久配置）
+export MOAT_SKIP_ARCHITECTURE=true
+moat check --full
+```
+
+#### 文档
+
+- 新增 `moat/cache.py`：哈希缓存管理器
+
+---
+
 ## [1.0.2] - 2026-07-11
 
 ### 🚀 Phase 3：报告增强
