@@ -141,6 +141,11 @@ class ReportGenerator:
             "",
         ])
 
+        # 🆕 新增：L2 架构健康报告
+        arch_section = self._generate_architecture_section()
+        if arch_section:
+            lines.append(arch_section)
+
         # 失败列表
         if self.result.errors:
             lines.extend([
@@ -210,6 +215,11 @@ class ReportGenerator:
             f"```",
             "",
         ])
+
+        # 🆕 新增：L2 架构健康报告
+        arch_section = self._generate_architecture_section()
+        if arch_section:
+            lines.append(arch_section)
 
         if self.result.errors:
             lines.extend([
@@ -281,12 +291,20 @@ class ReportGenerator:
         if error.get("line"):
             lines.append(f"- **行号**: {error['line']}")
 
+        # 显示 L2 修复建议
+        suggestion = error.get("suggestion", "")
+        if suggestion:
+            lines.extend([
+                "",
+                f"**💡 修复建议**: {suggestion}",
+            ])
+
         # 影响分析
         impact = self._analyze_impact(error)
         if impact:
             lines.extend([
                 "",
-                f"**💡 影响分析**: {impact}",
+                f"**🎯 影响分析**: {impact}",
             ])
 
         lines.append("")
@@ -352,6 +370,54 @@ class ReportGenerator:
             )
 
         return suggestions[0] if suggestions else None
+
+    def _generate_architecture_section(self) -> str | None:
+        """生成 L2 架构健康报告章节
+
+        从检查结果中提取 L2 架构相关问题并格式化输出
+
+        Returns:
+            格式化后的架构健康章节文本，如果没有 L2 问题则返回 None
+        """
+        # 筛选 L2 架构相关问题
+        arch_errors = [
+            e for e in self.result.errors
+            if e.get("level") == "L2"
+        ]
+
+        if not arch_errors:
+            return None
+
+        lines = [
+            "",
+            "=" * 60,
+            "  🏗️  L2 架构健康报告",
+            "=" * 60,
+            "",
+        ]
+
+        # 直接输出所有 L2 错误（简化版本）
+        lines.append("⚠️  检测到以下架构问题：\n")
+
+        for error in arch_errors:
+            lines.append(f"  {error.get('message', '')}")
+            suggestion = error.get("suggestion", "")
+            if suggestion:
+                lines.append(f"    💡 {suggestion}")
+
+        lines.append("")
+
+        # 架构建议
+        lines.extend([
+            "💡 架构维护建议：",
+            "  • 定期运行 `moat check --full` 监控架构健康度",
+            "  • 使用 `moat baseline diff` 查看详细的基线对比",
+            "  • 对于熵增过快的文件，考虑拆分为多个职责清晰的模块",
+            "  • 依赖枢纽模块修改前，确保有充分的单元测试覆盖",
+            "",
+        ])
+
+        return "\n".join(lines)
 
 
 def generate_report(project_root: str = ".", result: MoatResult | None = None,

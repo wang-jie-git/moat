@@ -197,6 +197,23 @@ def cmd_report(args):
     return 0 if result.is_success() else 1
 
 
+def cmd_architecture(args):
+    """生成架构健康报告（L2）"""
+    from moat.architecture_report import generate_architecture_report
+
+    root = Path(args.project)
+
+    # 生成报告
+    report = generate_architecture_report(
+        project_root=str(root),
+        format=args.format,
+        copy=args.copy,
+    )
+
+    print(report)
+    return 0
+
+
 def cmd_adapter(args):
     """安装 AI 适配器"""
     from moat.adapters import install_claude_adapter, install_precommit_hook
@@ -356,6 +373,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_report.add_argument("--copy", action="store_true",
                           help="复制报告到剪贴板")
 
+    # 🆕 architecture - 架构健康报告
+    p_arch = sub.add_parser("architecture", help="生成架构健康报告（L2）")
+    _shared_args(p_arch)
+    p_arch.add_argument("--format", choices=["text", "md", "json"], default="text",
+                        help="输出格式（默认: text）")
+    p_arch.add_argument("--copy", action="store_true",
+                        help="复制报告到剪贴板")
+
     # baseline
     p_baseline = sub.add_parser("baseline", help="管理基线")
     _shared_args(p_baseline)
@@ -452,6 +477,7 @@ def main():
         "watch": cmd_watch,
         "init": cmd_init,
         "report": cmd_report,
+        "architecture": cmd_architecture,  # ← 新增：架构健康报告
         "fix": cmd_fix,
         "baseline": cmd_baseline,
         "dashboard": cmd_dashboard,
