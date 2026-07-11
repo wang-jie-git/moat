@@ -1,8 +1,23 @@
 # Moat — AI 编码守门员 🚀
 
-> **当前版本**: v1.0.8 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
+> **当前版本**: v1.0.9 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases)
 
 **一句话**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员，零配置，实时拦截。
+
+---
+
+## 🎯 Why Moat?
+
+| 特性 | 其他 Lint 工具 | Moat |
+|------|----------------|------|
+| **架构守护** | ❌ | ✅ (Real-time Gatekeeper) |
+| **安全注入拦截** | ❌ (高噪音) | ✅ (零误报, 处方级修复) |
+| **性能开销** | 高 | < 0.2s (秒级感知) |
+| **AI 上下文集成** | ❌ | ✅ (MCP / Claude Code Hook) |
+| **硬编码密钥检测** | ❌ | ✅ (SECRETS-001, 10+ 种模式) |
+| **依赖安全扫描** | ❌ | ✅ (DEPS-001, 内置漏洞数据库) |
+| **未使用导出检测** | ❌ | ✅ (UNUSED-001, Python/TS/Go) |
+| **Fail-open 策略** | ❌ | ✅ (外部依赖失败不阻塞) |
 
 ---
 

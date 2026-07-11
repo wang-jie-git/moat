@@ -123,6 +123,7 @@ class SecretsCheck(Check):
     # 占位符模式（用于排除 false positive）
     PLACEHOLDER_PATTERNS = [
         r"YOUR_",
+        r"_HERE$",
         r"<[^>]+>",
         r"\{\{.*\}\}",
         r"\[YOUR_",
@@ -173,13 +174,6 @@ class SecretsCheck(Check):
             files.extend(self.project.rglob(pattern))
         return files
 
-    def _find_code_files(self) -> list[Path]:
-        """查找代码文件"""
-        extensions = ["**/*.py", "**/*.js", "**/*.ts", "**/*.go", "**/*.java", "**/*.rb"]
-        files = []
-        for pattern in extensions:
-            files.extend(self.project.rglob(pattern))
-        return files
 
     def _should_skip(self, file_path: Path) -> bool:
         """判断是否跳过文件"""
@@ -205,6 +199,10 @@ class SecretsCheck(Check):
         Returns:
             检查结果列表
         """
+        # 检查是否应该跳过
+        if self._should_skip(file_path):
+            return []
+
         results = []
 
         try:
