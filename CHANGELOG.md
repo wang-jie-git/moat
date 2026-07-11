@@ -5,6 +5,57 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
 
+## [1.0.2] - 2026-07-11
+
+### 🚀 Phase 3：报告增强
+
+#### 新增功能
+
+- ✅ **L2 架构健康报告**：
+  - 集成到 `moat report` 命令
+  - 专门的架构健康章节
+  - 内容变更报告
+  - 熵增预警报告
+  - 依赖枢纽报告
+
+- ✅ **独立架构报告命令**：`moat architecture`
+  - 文本格式（默认）
+  - Markdown 格式（`--format md`）
+  - JSON 格式（`--format json`，用于 CI/CD）
+  - 复制到剪贴板（`--copy`）
+
+- ✅ **健康评分系统**：
+  - 0-100 分评分
+  - 🟢 健康（≥80）
+  - 🟡 警告（≥60）
+  - 🔴 需关注（<60）
+
+- ✅ **智能改进建议**：
+  - 基于检测结果的定制化建议
+  - 架构维护最佳实践
+
+#### CLI 命令
+
+```bash
+# 生成架构健康报告
+moat architecture
+
+# Markdown 格式
+moat architecture --format md
+
+# JSON 格式（用于 CI/CD）
+moat architecture --format json
+
+# 复制到剪贴板
+moat architecture --copy
+```
+
+#### 文档
+
+- 新增 `moat/architecture_report.py`：独立架构报告生成器
+
+---
+
 ## [1.0.1] - 2026-07-11
 
 ### 🚀 Phase 2：L2 架构规则检查
