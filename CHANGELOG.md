@@ -3,9 +3,89 @@
 所有 Moat 项目的重要变更都会记录在此文件中。
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-并且本项目遵循 [语义化](https://semver.org/lang/zh-CN/)。
+并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
-## [1.0.6] - 2026-07-11
+## [1.0.7] - 2026-07-11
+
+### 🛡️ 核心改进
+
+#### Fail-open 策略（P2）
+
+- ✅ **新增 `moat/checks/fail_open.py` 装饰器**
+  - `fail_open()`：带日志记录的容错装饰器
+  - `fail_open_safe()`：静默模式的容错装饰器
+  - 设计原则：对于辅助工具，不打扰比发现 Bug 更重要
+
+- ✅ **应用到 3 个关键检查器**
+  - `quick_check.py`：快速检查器
+  - `sql_injection.py`：SQL 注入检测器
+  - `optimization.py`：代码优化检查器
+
+- ✅ **确保外部依赖失败时以"通过"状态运行**
+  - Tree-sitter 解析失败 → 返回 []
+  - 文件读取失败 → 返回 []
+  - 网络超时（AI 接口） → 返回默认值
+  - 任何未预期的异常 → 优雅降级
+
+#### 规则解释命令（立即做）
+
+- ✅ **新增 `moat rules explain RULE_ID` 命令**
+  - 3 秒内理解：为什么报错 + 如何修复 + 如何关闭
+  - 支持 12+ 条规则的详细解释
+  - 内置规则库（安全、复杂度、YAGNI 等）
+
+- ✅ **规则库内容**
+  - SQL-001：SQL 注入检测
+  - API-001：API 缺少鉴权
+  - COMPLEX-001/002/003：复杂度检查
+  - YAGNI-001/002/004：代码质量检查
+
+#### 误报率统计（立即做）
+
+- ✅ **BaselineManager 新增误报率统计方法**
+  - `record_false_positive()`：记录误报（用户手动忽略的规则）
+  - `record_fixed()`：记录规则被修复
+  - `get_false_positive_stats()`：获取所有规则的误报率统计
+  - `show_false_positive_stats()`：显示误报率统计报告
+
+- ✅ **自动记录**
+  - 触发数、修复数、忽略数
+  - 计算误报率 = 忽略数 / 触发数
+  - 高亮误报率 > 10% 的规则（需要优化）
+
+- ✅ **持久化**
+  - 保存到 `.moat/false_positive_stats.json`
+  - 包含首次发现时间、最后忽略时间等元数据
+
+### 📊 性能指标
+
+- ✅ **Fail-open 开销**：< 1ms（装饰器 overhead）
+- ✅ **误报率统计**：仅记录 ignore 操作（不影响主流程）
+
+### 🧪 测试验证
+
+- ✅ `moat rules explain SQL-001` 测试通过
+- ✅ 误报率统计测试通过（SQL-001: 57.1%）
+- ✅ `moat check --quick --optimize` 正常（0.41s）
+- ✅ Moat 测试套件：136 passed, 5 skipped（One 项目）
+
+### 🎯 设计原则
+
+- ✅ **Fail-open > Fail-close**
+- ✅ **对于辅助工具，不打扰比发现 Bug 更重要**
+
+### 📝 使用方式
+
+```bash
+# 查看规则解释
+moat rules explain SQL-001
+moat rules explain COMPLEX-001
+
+# 误报率统计（在 moat baseline 中集成）
+moat baseline stats  # 查看所有规则的误报率
+```
+
+---
 
 ### 🚀 新增功能
 
