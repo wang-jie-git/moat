@@ -7,7 +7,7 @@ Moat — AI 编码的护城河
 防止 AI 工具修一个 bug 出三个 bug。
 """
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 __description__ = "AI 编码守门员 — 零配置 + 实时拦截 + 处方化提示"
 
 __all__ = ["cli", "runner", "checks", "ast", "pain", "memory", "evolution", "sidecar", "fixer"]
