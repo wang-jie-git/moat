@@ -20,11 +20,15 @@
 from __future__ import annotations
 
 import ast
+import logging
 import re
 from pathlib import Path
 from typing import Any
 
 from moat.checks.base import Check, CheckResult
+from moat.checks.fail_open import fail_open
+
+logger = logging.getLogger(__name__)
 
 
 # ==================== 规则定义（数据驱动） ====================
@@ -193,6 +197,7 @@ class OptimizationCheck(Check):
         except Exception:
             return []
 
+    @fail_open(default_return=[], log_level=logging.DEBUG)
     def _check_file(self, file_path: Path) -> list[CheckResult]:
         """检查单个文件"""
         results = []
@@ -200,12 +205,7 @@ class OptimizationCheck(Check):
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
         except Exception:
-            return [CheckResult(
-                type="warn",
-                level="WARN",
-                file=str(file_path.relative_to(self.project)),
-                message="无法读取文件",
-            )]
+            return []
 
         # Python 文件：AST 分析
         if file_path.suffix == ".py":

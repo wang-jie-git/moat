@@ -7,11 +7,15 @@
 
 这是"守门员"的本能：安全第一，误报可接受。
 """
+import logging
 import re
 from pathlib import Path
 from typing import Any
 
 from moat.checks.base import Check, CheckResult
+from moat.checks.fail_open import fail_open
+
+logger = logging.getLogger(__name__)
 
 # 尝试导入 tree-sitter
 try:
@@ -88,6 +92,7 @@ class SQLInjectionCheck(Check):
         file_str = str(file_path)
         return any(pattern in file_str for pattern in skip_patterns)
 
+    @fail_open(default_return=[], log_level=logging.DEBUG)
     def _check_file(self, file_path: Path) -> list[CheckResult]:
         """检查单个文件的 SQL 注入风险
 
