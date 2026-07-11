@@ -301,14 +301,125 @@ def cmd_sidecar(args):
     elif args.action == "restart":
         return daemon.restart()
     elif args.action == "status":
-        status = daemon.status()
-        from moat.sidecar.daemon import print_status
-        print_status(status)
+        print(daemon.status())
         return 0
-    else:
-        print(f"❌ 未知操作: {args.action}")
+    return 1
+
+
+def cmd_rules_explain(args):
+    """解释规则详情
+
+    让用户在 3 秒内理解：
+    1. 为什么报错
+    2. 如何修复
+    3. 如何关闭此检查
+    """
+    rule_id = args.rule_id.upper()
+
+    # 规则库（应该从配置文件读取，这里简化处理）
+    rules_db = {
+        # 安全规则
+        "SQL-001": {
+            "name": "SQL 注入检测",
+            "description": "检测 SQL 字符串拼接导致的注入风险",
+            "severity": "CRITICAL",
+            "why": "SQL 注入是 OWASP Top 10 第一安全风险，可能导致数据泄露、数据篡改甚至服务器被控制",
+            "fix": "使用参数化查询：cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))",
+            "disable": '在 .moat/config.json 中设置 {"rules": {"sql_injection": false}}',
+        },
+        "API-001": {
+            "name": "API 缺少鉴权",
+            "description": "检测 API 路由缺少鉴权装饰器",
+            "severity": "CRITICAL",
+            "why": "未鉴权的 API 可能导致未授权访问，造成数据泄露",
+            "fix": "添加鉴权装饰器：@login_required 或 @require_permission('admin')",
+            "disable": '在 .moat/config.json 中设置 {"rules": {"api_auth": false}}',
+        },
+        # 复杂度规则
+        "COMPLEX-001": {
+            "name": "圈复杂度超标",
+            "description": "函数圈复杂度超过阈值（默认 10）",
+            "severity": "MEDIUM",
+            "why": "高复杂度函数难以理解和维护，Bug 率随复杂度指数增长",
+            "fix": "将复杂函数拆分为多个小函数（每个 < 10 复杂度）",
+            "disable": '在 .moat/config.json 中设置 {"optimization": {"max_complexity": 15}}',
+        },
+        "COMPLEX-002": {
+            "name": "函数过长",
+            "description": "函数长度超过阈值（默认 50 行）",
+            "severity": "LOW",
+            "why": "长函数难以理解、测试和维护",
+            "fix": "按逻辑块拆分函数，提取辅助函数",
+            "disable": '在 .moat/config.json 中设置 {"optimization": {"max_function_length": 80}}',
+        },
+        "COMPLEX-003": {
+            "name": "认知复杂度超标",
+            "description": "函数认知复杂度超过阈值（默认 15）",
+            "severity": "MEDIUM",
+            "why": "高认知复杂度意味着代码难以被人理解，增加维护成本",
+            "fix": "减少嵌套层级，使用卫语句（Guard Clauses），提取复杂逻辑到独立函数",
+            "disable": '在 .moat/config.json 中设置 {"optimization": {"max_cognitive_complexity": 20}}',
+        },
+        # YAGNI 规则
+        "YAGNI-001": {
+            "name": "未使用的导入",
+            "description": "检测未使用的 import 语句",
+            "severity": "LOW",
+            "why": "未使用的导入增加依赖负担，降低代码可读性",
+            "fix": "删除未使用的导入，或使用工具（如 autoflake）自动清理",
+            "disable": '在 .moat/config.json 中设置 {"optimization": {"check_yagni": false}}',
+        },
+        "YAGNI-002": {
+            "name": "未处理的 TODO/FIXME",
+            "description": "检测过多的 TODO/FIXME 注释",
+            "severity": "LOW",
+            "why": "过多的 TODO 表明代码未完成或技术债积累",
+            "fix": "实现 TODO 对应的功能，或删除已过时的 TODO",
+            "disable": '在 .moat/config.json 中设置 {"optimization": {"check_yagni": false}}',
+        },
+        "YAGNI-004": {
+            "name": "死代码检测",
+            "description": "检测无法访问的代码（return/raise 后）",
+            "severity": "MEDIUM",
+            "why": "死代码增加代码体积，误导读者",
+            "fix": "删除 return/raise 后的代码，或将 cleanup 逻辑移到 finally",
+            "disable": '在 .moat/config.json 中设置 {"optimization": {"check_dead_code": false}}',
+        },
+    }
+
+    if rule_id not in rules_db:
+        print(f"❌ 未知规则: {rule_id}")
+        print(f"\n💡 可用规则:")
+        for rid, rinfo in sorted(rules_db.items()):
+            print(f"  {rid:12s} - {rinfo['name']}")
+        print(f"\n更多帮助: moat rules list")
         return 1
 
+    rule = rules_db[rule_id]
+
+    # 输出格式化说明
+    print(f"\n{'='*60}")
+    print(f"  📖 规则详情: {rule_id}")
+    print(f"{'='*60}\n")
+
+    print(f"**名称**: {rule['name']}")
+    print(f"**严重性**: {rule['severity']}")
+    print(f"**描述**: {rule['description']}\n")
+
+    print(f"**为什么报错**:")
+    print(f"  {rule['why']}\n")
+
+    print(f"**修复方法**:")
+    print(f"  {rule['fix']}\n")
+
+    print(f"**关闭此检查**:")
+    print(f"  {rule['disable']}\n")
+
+    print(f"{'='*60}")
+    print(f"  💡 提示: 如果这是误报，请考虑关闭此规则")
+    print(f"{'='*60}\n")
+
+    return 0
 
 def cmd_test(args) -> int:
     """AI 测试生成（已废弃，使用 moat immune）"""
@@ -398,6 +509,14 @@ def build_parser() -> argparse.ArgumentParser:
                           help="输出格式（默认: text）")
     p_report.add_argument("--copy", action="store_true",
                           help="复制报告到剪贴板")
+
+    # 🆕 rules - 规则管理
+    p_rules = sub.add_parser("rules", help="规则管理")
+    p_rules_sub = p_rules.add_subparsers(dest="rules_action", help="规则操作")
+
+    # rules explain
+    p_rules_explain = p_rules_sub.add_parser("explain", help="解释规则详情（为什么报错/如何修复/如何关闭）")
+    p_rules_explain.add_argument("rule_id", help="规则 ID（如 SQL-001, COMPLEX-001）")
 
     # 🆕 architecture - 架构健康报告
     p_arch = sub.add_parser("architecture", help="生成架构健康报告（L2）")
@@ -503,7 +622,8 @@ def main():
         "watch": cmd_watch,
         "init": cmd_init,
         "report": cmd_report,
-        "architecture": cmd_architecture,  # ← 新增：架构健康报告
+        "rules": lambda args: cmd_rules_explain(args) if hasattr(args, 'rule_id') else cmd_rules_explain(args),
+        "architecture": cmd_architecture,
         "fix": cmd_fix,
         "baseline": cmd_baseline,
         "dashboard": cmd_dashboard,
@@ -512,8 +632,8 @@ def main():
         "adapter": cmd_adapter,
         "verify": cmd_verify,
         "gatekeeper": cmd_gatekeeper,
-        "immune": cmd_immune,  # ← Moat Immune
-        "test": cmd_test,  # ← 已废弃，保留兼容性
+        "immune": cmd_immune,
+        "test": cmd_test,
     }
 
     sys.exit(commands[args.command](args))

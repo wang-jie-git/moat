@@ -13,7 +13,146 @@ class BaselineManager:
         self.baseline_path = self.project_root / ".moat" / "baseline.json"
         self.baselines_dir = self.project_root / ".moat" / "baselines"
         self.current_baseline_file = self.project_root / ".moat" / "current_baseline"
+        # 🆕 误报率统计文件
+        self.false_positive_stats_path = self.project_root / ".moat" / "false_positive_stats.json"
         self.baselines_dir.mkdir(parents=True, exist_ok=True)
+        self._load_false_positive_stats()
+
+    def _load_false_positive_stats(self) -> None:
+        """加载误报率统计数据"""
+        if self.false_positive_stats_path.exists():
+            try:
+                self.fp_stats = json.loads(self.false_positive_stats_path.read_text(encoding="utf-8"))
+            except Exception:
+                self.fp_stats = {}
+        else:
+            self.fp_stats = {}
+
+    def _save_false_positive_stats(self) -> None:
+        """保存误报率统计数据"""
+        try:
+            self.false_positive_stats_path.parent.mkdir(parents=True, exist_ok=True)
+            self.false_positive_stats_path.write_text(
+                json.dumps(self.fp_stats, indent=2, ensure_ascii=False),
+                encoding="utf-8"
+            )
+        except Exception:
+            pass
+
+    def record_false_positive(self, rule_id: str) -> None:
+        """记录误报（用户手动忽略的规则）
+
+        Args:
+            rule_id: 规则 ID（如 SQL-001）
+        """
+        if rule_id not in self.fp_stats:
+            self.fp_stats[rule_id] = {
+                "triggered": 0,
+                "fixed": 0,
+                "ignored": 0,
+                "first_seen": datetime.now().isoformat(),
+                "last_ignored": None,
+            }
+
+        stats = self.fp_stats[rule_id]
+        stats["triggered"] = stats.get("triggered", 0) + 1
+        stats["ignored"] = stats.get("ignored", 0) + 1
+        stats["last_ignored"] = datetime.now().isoformat()
+        self._save_false_positive_stats()
+
+    def record_fixed(self, rule_id: str) -> None:
+        """记录规则被修复
+
+        Args:
+            rule_id: 规则 ID
+        """
+        if rule_id not in self.fp_stats:
+            self.fp_stats[rule_id] = {
+                "triggered": 0,
+                "fixed": 0,
+                "ignored": 0,
+                "first_seen": datetime.now().isoformat(),
+                "last_ignored": None,
+            }
+
+        self.fp_stats[rule_id]["triggered"] = self.fp_stats[rule_id].get("triggered", 0) + 1
+        self.fp_stats[rule_id]["fixed"] = self.fp_stats[rule_id].get("fixed", 0) + 1
+        self._save_false_positive_stats()
+
+    def get_false_positive_stats(self) -> dict[str, dict]:
+        """获取所有规则的误报率统计
+
+        Returns:
+            {
+                "SQL-001": {
+                    "triggered": 42,
+                    "fixed": 38,
+                    "ignored": 4,
+                    "false_positive_rate": 9.5%
+                },
+                ...
+            }
+        """
+        result = {}
+        for rule_id, stats in self.fp_stats.items():
+            triggered = stats.get("triggered", 0)
+            ignored = stats.get("ignored", 0)
+            fixed = stats.get("fixed", 0)
+
+            # 误报率 = 忽略数 / 总触发数
+            fp_rate = (ignored / triggered * 100) if triggered > 0 else 0.0
+
+            result[rule_id] = {
+                "triggered": triggered,
+                "fixed": fixed,
+                "ignored": ignored,
+                "false_positive_rate": round(fp_rate, 1),
+            }
+        return result
+
+    def show_false_positive_stats(self) -> None:
+        """显示误报率统计报告"""
+        stats = self.get_false_positive_stats()
+
+        if not stats:
+            print("📊 暂无误报率统计数据")
+            print("   当用户手动忽略规则时，会自动记录统计信息")
+            return
+
+        print(f"\n{'='*70}")
+        print(f"  📊 误报率统计报告")
+        print(f"{'='*70}\n")
+
+        print(f"{'规则ID':<12} {'触发':>6} {'修复':>6} {'忽略':>6} {'误报率':>8}")
+        print(f"{'-'*70}")
+
+        for rule_id, stat in sorted(stats.items()):
+            fp_rate = stat["false_positive_rate"]
+            fp_indicator = "⚠️" if fp_rate > 10 else "✅"
+
+            print(f"{rule_id:<12} {stat['triggered']:>6} {stat['fixed']:>6} "
+                  f"{stat['ignored']:>6} {fp_rate:>7.1f}% {fp_indicator}")
+
+        print(f"{'-'*70}\n")
+
+        # 总结
+        high_fp_rules = [rid for rid, stat in stats.items() if stat["false_positive_rate"] > 10]
+        if high_fp_rules:
+            print(f"⚠️  检测到 {len(high_fp_rules)} 个误报率 > 10% 的规则:")
+            for rid in high_fp_rules:
+                print(f"   - {rid}: {stats[rid]['false_positive_rate']}%")
+            print(f"\n💡 建议:")
+            print(f"   - 优化规则逻辑，减少误报")
+            print(f"   - 考虑放宽阈值或添加白名单机制")
+        else:
+            print(f"✅ 所有规则误报率 < 10%（良好）")
+
+        print(f"\n📖 查看规则详情:")
+        print(f"   moat rules explain <RULE_ID>")
+        print(f"\n📖 关闭规则:")
+        print(f"   编辑 .moat/config.json")
+        print(f"\n{'='*70}\n")
+        self._load_false_positive_stats()
 
     # ========== L4 基线检查（原有功能）==========
 

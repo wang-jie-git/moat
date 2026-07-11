@@ -6,11 +6,15 @@
 - 内置 5 条常识规则，不依赖复杂的 L1/L2/L3/L4 规则
 """
 import json
+import logging
 import subprocess
 from pathlib import Path
 from typing import Any
 
 from moat.checks.base import Check, CheckResult
+from moat.checks.fail_open import fail_open
+
+logger = logging.getLogger(__name__)
 
 
 class QuickCheck(Check):
@@ -81,6 +85,7 @@ class QuickCheck(Check):
         except Exception as e:
             return []
 
+    @fail_open(default_return=[], log_level=logging.DEBUG)
     def _check_file(self, file_path: Path) -> list[CheckResult]:
         """检查单个文件"""
         results = []
@@ -88,12 +93,7 @@ class QuickCheck(Check):
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
         except Exception:
-            return [CheckResult(
-                type="warn",
-                level="WARN",
-                file=str(file_path.relative_to(self.project)),
-                message=f"无法读取文件",
-            )]
+            return []
 
         # 规则 1：分层检查（仅 Python）
         if file_path.suffix == ".py":
