@@ -105,15 +105,31 @@ class QuickCheck(Check):
         # 规则 3：竞态条件
         results.extend(self._check_race_condition(file_path, content))
 
-        # 规则 4：SQL 注入（使用专门的 SQLInjectionCheck）
+        # 规则 4：SQL 注入（使用增强的检测器）
         if file_path.suffix == ".py":
-            from moat.checks.sql_injection import SQLInjectionCheck
-            sql_check = SQLInjectionCheck(self.project, self.config)
+            from moat.checks.enhanced_sql_injection import EnhancedSQLInjectionCheck
+            sql_check = EnhancedSQLInjectionCheck(self.project, self.config)
             results.extend(sql_check._check_file(file_path))
 
         # 规则 5：错误处理
         if file_path.suffix == ".py":
             results.extend(self._check_error_handling(file_path, content))
+
+        # 规则 6：硬编码密钥检测（SECRETS-001）
+        from moat.checks.secrets import SecretsCheck
+        secrets_check = SecretsCheck(self.project, self.config)
+        results.extend(secrets_check._check_file(file_path))
+
+        # 规则 7：依赖项安全检测（DEPS-001）- 仅在依赖文件上运行
+        if file_path.name in ["requirements.txt", "pyproject.toml", "package.json"]:
+            from moat.checks.dependency_security import DependencySecurityCheck
+            deps_check = DependencySecurityCheck(self.project, self.config)
+            results.extend(deps_check._check_file(file_path))
+
+        # 规则 8：未使用的导出检测（UNUSED-001）
+        from moat.checks.unused_exports import UnusedExportsCheck
+        unused_check = UnusedExportsCheck(self.project, self.config)
+        results.extend(unused_check._check_file(file_path))
 
         return results
 
@@ -133,18 +149,46 @@ class QuickCheck(Check):
         return results
 
     def _check_auth(self, file_path: Path, content: str) -> list[CheckResult]:
-        """规则 2：API 鉴权"""
+        """规则 2：API 鉴权（增强版 - API-002）
+
+        支持框架：
+        - Python: Flask, FastAPI, Django REST Framework
+        - TypeScript: Express.js
+        - Go: Gin, Fiber
+        """
         results = []
 
-        # 通用检测：API 路由缺少鉴权
-        api_patterns = [
-            "@app.route(",  # Flask
-            "@router.",  # FastAPI
-            "@api_view",  # Django REST
-            "@RequestMapping",  # Spring/Java
-            "app.get(",  # FastAPI
-            "app.post(",  # FastAPI
-        ]
+        # Python 框架
+        python_api_patterns = {
+            "@app.route(": "Flask",
+            "@router.": "FastAPI",
+            "@router.get(": "FastAPI",
+            "@router.post(": "FastAPI",
+            "@api_view": "Django REST",
+            "@action": "Django REST ViewSet",
+            "app.get(": "FastAPI",
+            "app.post(": "FastAPI",
+        }
+
+        # TypeScript/JavaScript 框架
+        typescript_api_patterns = {
+            "app.get(": "Express.js",
+            "app.post(": "Express.js",
+            "app.put(": "Express.js",
+            "app.delete(": "Express.js",
+            "router.get(": "Express.js",
+            "router.post(": "Express.js",
+        }
+
+        # Go 框架
+        go_api_patterns = {
+            "r.GET(": "Gin",
+            "r.POST(": "Gin",
+            "r.PUT(": "Gin",
+            "r.DELETE(": "Gin",
+            "app.Get(": "Fiber",
+            "app.Post(": "Fiber",
+        }
 
         auth_patterns = [
             "login_required",
@@ -155,12 +199,40 @@ class QuickCheck(Check):
             "jwt",
             "oauth",
             "@current_user",
+            "@require_auth",  # FastAPI
+            "Depends(",  # FastAPI dependency injection
+            "get_current_user",  # FastAPI
+            "AuthenticationError",
+            "auth_required",  # Flask
+            "requires_auth",  # Flask
         ]
 
+        suffix = file_path.suffix.lower()
         lines = content.split("\n")
+
         for i, line in enumerate(lines, 1):
-            # 检查是否是 API 路由定义
-            is_api_route = any(api in line for api in api_patterns)
+            is_api_route = False
+            framework = ""
+
+            # 根据文件类型选择合适的模式集
+            if suffix == ".py":
+                for pattern, fw in python_api_patterns.items():
+                    if pattern in line:
+                        is_api_route = True
+                        framework = fw
+                        break
+            elif suffix in [".ts", ".js", ".tsx", ".jsx"]:
+                for pattern, fw in typescript_api_patterns.items():
+                    if pattern in line:
+                        is_api_route = True
+                        framework = fw
+                        break
+            elif suffix == ".go":
+                for pattern, fw in go_api_patterns.items():
+                    if pattern in line:
+                        is_api_route = True
+                        framework = fw
+                        break
 
             if is_api_route:
                 # 检查接下来的 10 行是否有鉴权
@@ -175,7 +247,7 @@ class QuickCheck(Check):
                             level="WARN",
                             file=str(file_path.relative_to(self.project)),
                             line=i,
-                            message=f"[鉴权] 第 {i} 行检测到 API 路由，建议添加鉴权",
+                            message=f"[鉴权] 第 {i} 行检测到 {framework} API 路由，建议添加鉴权",
                         ))
 
         return results
