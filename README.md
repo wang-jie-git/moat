@@ -281,26 +281,26 @@ pip install "moat-ai[sidecar]"
 pip install "moat-ai[vscode]"
 ```
 
-### 包含内容
+### 包含内容 / What's included
 
-**基础安装**（~5MB）：
-- ✅ 四层门禁检查（L0-L4）
-- ✅ 守门员规则系统（8 条安全规则）
-- ✅ Pain Score 评分
-- ✅ AI 辅助修复
-- ✅ 进化指标系统
-- ✅ 4 种检查模式（quick/full/diff/legacy）
-- ✅ 零配置初始化
-- ✅ **硬编码密钥检测**（SECRETS-001）✨ v1.0.8
-- ✅ **依赖项安全检测**（DEPS-001）✨ v1.0.8
-- ✅ **增强 SQL 注入检测**（SQL-002）✨ v1.0.8
-- ✅ **未使用导出检测**（UNUSED-001）✨ v1.0.8
-- ✅ **LRU 缓存优化**（1.7x 加速）✨ v1.0.8
+**Base install** (~5MB) / **基础安装**：
+- ✅ 4-layer gate check (L0-L4) / 四层门禁检查
+- ✅ Gatekeeper rules (8 security rules) / 守门员规则系统
+- ✅ Pain Score / 痛觉评分
+- ✅ AI-assisted fix / AI 辅助修复
+- ✅ Evolution metrics / 进化指标系统
+- ✅ 4 check modes (quick/full/diff/legacy)
+- ✅ Zero-config init / 零配置初始化
+- ✅ **Hardcoded secret detection** (SECRETS-001) ✨ v1.0.8
+- ✅ **Dependency security scan** (DEPS-001) ✨ v1.0.8
+- ✅ **Enhanced SQL injection detection** (SQL-002) ✨ v1.0.8
+- ✅ **Unused export detection** (UNUSED-001) ✨ v1.0.8
+- ✅ **LRU cache optimization** (1.7x speedup) ✨ v1.0.8
 
-**完整安装**（~50MB，在基础安装之上）：
-- Web 看板（FastAPI + 前端）
-- Sidecar 守护进程（实时监控 + REST API）
-- VS Code 插件辅助（剪贴板复制）
+**Full install** (~50MB, adds on top of base) / **完整安装**：
+- Web dashboard (FastAPI + frontend) / Web 看板
+- Sidecar daemon (real-time monitoring + REST API)
+- VS Code assistant (clipboard copy) / 插件辅助
 
 ### 依赖说明
 
@@ -326,6 +326,7 @@ moat init
 ```
 
 自动检测项目结构，保存基线数据，生成 AI 适配规则。
+Auto-detects project structure, saves baseline data, generates AI adapter rules.
 
 ### 2. Check before/after code changes / 改代码前/后检查
 
@@ -333,26 +334,27 @@ moat init
 moat check
 ```
 
+Runs all 4 defense layers + gatekeeper rules in ~12 seconds:
 12 秒跑完四层防线 + 守门员规则：
 
-| 层级 | 作用 |
-|------|------|
-| **L0 语法** | 所有 Python/TypeScript 文件无语法错误 |
-| **L1 存活** | import 正常、API 能返回 200、核心模块可实例化、关键文件存在、**文件内容哈希校验** ✨ v1.0 |
-| **L2 结构** | API 返回的 JSON 字段符合契约（防前后端断裂）、**代码熵增检测** ✨ v1.0、**依赖枢纽识别** ✨ v1.0 |
-| **L3 关联** | 改了 A，B 还能用（防修一个出三个） |
-| **L4 基线** | 文件数不减少、代码量不退化、**文件哈希基线对比** ✨ v1.0、**代码熵增预警** ✨ v1.0 |
-| **守门员规则** | **安全第一**：SQL 注入、硬编码密钥、API 鉴权、竞态条件、错误处理、依赖安全、未使用导出 ✨ v1.0.8 |
+| Layer | What it does / 作用 |
+|-------|-------------------|
+| **L0 Syntax** | No syntax errors in Python/TypeScript files / 语法零错误 |
+| **L1 Survival** | Imports work, APIs return 200, core modules instantiate, key files exist / 骨架存活 |
+| **L2 Structure** | API JSON fields match contracts (prevent frontend-backend mismatch), code entropy detection / 结构完整 |
+| **L3 Correlation** | Changed A doesn't break B (prevents "fix one, break three") / 关联安全 |
+| **L4 Baseline** | File count doesn't shrink, code volume doesn't regress, hash comparison / 基线不退化 |
+| **Gatekeeper Rules** | SQL injection, hardcoded secrets, API auth, race conditions, error handling, dep security, unused exports / 守门员规则 |
 
-**TypeScript 专项检查**（v0.2.0+）：
+**TypeScript-specific checks** (v0.2.0+) / **TypeScript 专项检查**：
 
-| 检查项 | 作用 |
-|--------|------|
-| **语法检查** | 调用 `tsc --noEmit` 验证 TypeScript 语法 |
-| **去重检查** | 去重/防抖代码必须有"为什么"注释 |
-| **竞态检查** | 竞态关键逻辑必须有时序注释 |
-| **时序文档** | 时序图文档必须存在（可选） |
-| **语义分析** | 基于 CodeGraph 的深度语义检查（可选） |
+| Check / 检查项 | What it does / 作用 |
+|----------------|-------------------|
+| **Syntax** / 语法 | Runs `tsc --noEmit` to validate / 验证语法 |
+| **Dedup** / 去重 | Dedup/debounce code must have "why" comments / 必须有注释说明 |
+| **Race condition** / 竞态 | Race-critical logic must have timing comments / 必须有时序注释 |
+| **Timing docs** / 时序文档 | Sequence diagram must exist (optional) / 时序图文档必须存在 |
+| **Semantic analysis** / 语义分析 | CodeGraph-based deep semantic check (optional) |
 
 **启用 TypeScript 检查**：
 
@@ -382,7 +384,7 @@ moat check
 - **依赖图查询**：基于 CodeGraph 知识图谱的深度语义分析
 - **竞态检测**：识别竞态条件和时序问题
 
-### 3. 实时监控
+### 3. Real-time monitoring / 实时监控
 
 ```bash
 moat watch --log logs/backend.log
@@ -419,7 +421,7 @@ moat watch --log logs/backend.log
 pkill -f "moat watch"
 ```
 
-### 4. 自动运行配置
+### 4. Auto-config / 自动运行配置
 
 Moat 支持多种自动运行模式，通过在 `.moat/moat.json` 中配置：
 
