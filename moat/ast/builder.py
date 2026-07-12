@@ -282,8 +282,10 @@ class ProjectSkeleton:
                 risk_level = "low"
 
             if direct_callers or indirect_callers:
+                all_callers = direct_callers + indirect_callers
                 impacts.append({
                     "change": change,
+                    "callers": all_callers,  # 兼容 cli.py 的访问方式
                     "direct_callers": direct_callers,
                     "indirect_callers": indirect_callers,
                     "total_callers": total_callers,
