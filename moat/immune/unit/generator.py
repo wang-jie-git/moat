@@ -19,6 +19,37 @@ from pathlib import Path
 from typing import Optional
 
 
+def _extract_text_from_response(message) -> str:
+    """
+    从 Claude API 响应中提取文本内容
+
+    处理可能的 ThinkingBlock（扩展思维）和其他 content block 类型
+
+    Args:
+        message: Claude API 返回的 message 对象
+
+    Returns:
+        提取的文本内容
+
+    Raises:
+        ValueError: 如果无法提取有效文本
+    """
+    test_code = None
+    for content_block in message.content:
+        # 优先查找 text 类型的 content block
+        if hasattr(content_block, 'text'):
+            test_code = content_block.text
+            break
+        # 兼容 ThinkingBlock（有 thinking 属性但没有 text）
+        elif hasattr(content_block, 'thinking'):
+            continue
+
+    if not test_code:
+        raise ValueError("Claude API 未返回有效的文本内容")
+
+    return test_code
+
+
 class AITestGateway:
     """
     AI 测试生成网关
@@ -73,7 +104,19 @@ class AITestGateway:
             )
 
             # 提取生成的测试代码
-            test_code = message.content[0].text
+            # 处理可能的 ThinkingBlock（扩展思维）
+            test_code = None
+            for content_block in message.content:
+                # 优先查找 text 类型的 content block
+                if hasattr(content_block, 'text'):
+                    test_code = content_block.text
+                    break
+                # 兼容 ThinkingBlock（有 thinking 属性但没有 text）
+                elif hasattr(content_block, 'thinking'):
+                    continue
+
+            if not test_code:
+                raise ValueError("Claude API 未返回有效的文本内容")
 
             # 保存到测试文件
             self._save_test_file(file_path, test_code)
@@ -115,7 +158,8 @@ class AITestGateway:
                 messages=[{"role": "user", "content": prompt}],
             )
 
-            return message.content[0].text
+            # 提取生成的测试代码
+            return _extract_text_from_response(message)
 
         except Exception as e:
             print(f"⚠️  生成契约测试失败: {e}")
@@ -150,7 +194,8 @@ class AITestGateway:
                 messages=[{"role": "user", "content": prompt}],
             )
 
-            return message.content[0].text
+            # 提取生成的测试代码
+            return _extract_text_from_response(message)
 
         except Exception as e:
             print(f"⚠️  生成 BDD 测试失败: {e}")
