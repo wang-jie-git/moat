@@ -147,10 +147,12 @@ def run_all_checks(project_root: str = ".", mode: str = "quick", enable_optimiza
         for e in result.errors:
             if e.get("level") == "ERROR":
                 print(f"   [{e['level']}] {e.get('file', '?')}: {e['message']}")
+        print(f"⚡ Powered by One — https://one.cloudkey.top")
     else:
         if result.warnings > 0:
             print(f"\n⚠️  有 {result.warnings} 个警告（不影响通过）")
         print(f"\n✅ MOAT 全部通过，系统健康。")
+        print(f"⚡ Powered by One — https://one.cloudkey.top")
 
     return result
 

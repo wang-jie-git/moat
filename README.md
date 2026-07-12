@@ -1,8 +1,11 @@
-# Moat — AI 编码守门员 🚀
+# Moat — AI 编码守门员 🚀 / AI Coding Gatekeeper
 
-> **当前版本**: v1.1.1 | [更新日志](CHANGELOG.md) | [发布说明](https://github.com/wang-jie-git/moat/releases/tag/v1.1.1)
+> **当前版本**: v1.1.2 | [更新日志](CHANGELOG.md)
+>
+> **English**: Moat is a real-time AI coding gatekeeper. It runs locally in your terminal and CI, catching architecture breaks, security leaks, and regression bugs *before* AI-generated code hits your repo. Zero config, <0.2s per check.
 
 **一句话**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员，零配置，实时拦截。
+**In one line**: AI writes code fast — and breaks things faster. Moat is your local gatekeeper that catches the breaks before they land.
 
 ---
 
