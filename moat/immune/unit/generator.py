@@ -34,14 +34,34 @@ def _extract_text_from_response(message) -> str:
     Raises:
         ValueError: 如果无法提取有效文本
     """
+    try:
+        from anthropic.types import TextBlock, ThinkingBlock
+    except ImportError:
+        # 如果无法导入类型，使用字符串检查作为 fallback
+        TextBlock = None
+        ThinkingBlock = None
+
     test_code = None
     for content_block in message.content:
-        # 优先查找 text 类型的 content block
+        # 方法 1: 使用 isinstance 检查（最可靠）
+        if TextBlock and ThinkingBlock:
+            if isinstance(content_block, TextBlock):
+                test_code = content_block.text
+                break
+            elif isinstance(content_block, ThinkingBlock):
+                # ThinkingBlock 不包含测试代码，跳过
+                continue
+
+        # 方法 2: 使用 hasattr 检查（兼容旧版本 SDK）
         if hasattr(content_block, 'text'):
-            test_code = content_block.text
-            break
-        # 兼容 ThinkingBlock（有 thinking 属性但没有 text）
+            try:
+                test_code = content_block.text
+                break
+            except AttributeError:
+                # text 属性存在但访问失败（可能是 ThinkingBlock 的 bug）
+                continue
         elif hasattr(content_block, 'thinking'):
+            # ThinkingBlock 有 thinking 属性但没有 text
             continue
 
     if not test_code:
@@ -105,13 +125,29 @@ class AITestGateway:
 
             # 提取生成的测试代码
             # 处理可能的 ThinkingBlock（扩展思维）
+            try:
+                from anthropic.types import TextBlock, ThinkingBlock
+            except ImportError:
+                TextBlock = None
+                ThinkingBlock = None
+
             test_code = None
             for content_block in message.content:
-                # 优先查找 text 类型的 content block
+                # 方法 1: 使用 isinstance 检查（最可靠）
+                if TextBlock and ThinkingBlock:
+                    if isinstance(content_block, TextBlock):
+                        test_code = content_block.text
+                        break
+                    elif isinstance(content_block, ThinkingBlock):
+                        continue
+
+                # 方法 2: 使用 hasattr 检查（兼容旧版本 SDK）
                 if hasattr(content_block, 'text'):
-                    test_code = content_block.text
-                    break
-                # 兼容 ThinkingBlock（有 thinking 属性但没有 text）
+                    try:
+                        test_code = content_block.text
+                        break
+                    except AttributeError:
+                        continue
                 elif hasattr(content_block, 'thinking'):
                     continue
 
@@ -325,7 +361,9 @@ if __name__ == "__main__":
 
     business_file = sys.argv[1]
     if not Path(business_file).exists():
-        print(f"❌ 文件不存在: {business_file}")
+        error_msg = "Error: File not found"
+        error_msg += business_file
+        print(error_msg)
         sys.exit(1)
 
     file_content = Path(business_file).read_text(encoding="utf-8")
