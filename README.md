@@ -373,6 +373,161 @@ moat watch --log logs/backend.log
 
 服务器运行中实时监控日志错误，分级着色显示。
 
+**过滤规则**：
+```bash
+# 自定义过滤关键词
+moat watch --log logs/backend.log --filter "ERROR|Traceback|ImportError"
+
+# 只监控 ERROR 和 Traceback
+moat watch -l logs/app.log -f "ERROR|Traceback"
+```
+
+**后台持久化运行**：
+
+```bash
+# 方法 1: nohup（推荐，简单）
+nohup moat watch --log logs/backend.log > logs/moat_watch.log 2>&1 &
+
+# 方法 2: screen（可以重新连接）
+screen -S moat_watch
+moat watch --log logs/backend.log
+# Ctrl+A+D 分离，screen -r moat_watch 恢复
+
+# 方法 3: tmux（现代替代品）
+tmux new -s moat_watch
+moat watch --log logs/backend.log
+# Ctrl+B+D 分离，tmux attach -t moat_watch 恢复
+
+# 停止后台监控
+pkill -f "moat watch"
+```
+
+### 4. 自动运行配置
+
+Moat 支持多种自动运行模式，通过在 `.moat/moat.json` 中配置：
+
+```json
+{
+  "check_on_commit": true,       // ✅ 提交时自动检查（推荐）
+  "auto_monitor": true,           // ✅ 启动时自动监控日志
+  "auto_check_on_save": false     // ❌ 保存时检查（可选，耗性能）
+}
+```
+
+#### 提交时自动检查
+
+**工作原理**：
+```bash
+git add .
+git commit -m "feat: 新增功能"
+# ⚡ Moat 自动检查中...
+# ✅ 通过 → 继续提交
+# ❌ 失败 → 阻止提交
+```
+
+**启用方式**：
+1. `moat init` 自动配置 git pre-commit hook
+2. 或手动配置：`moat adapter precommit`
+
+**优点**：
+- ✅ 零配置（moat init 自动启用）
+- ✅ 不影响开发速度
+- ✅ 确保提交的代码质量
+
+#### 保存时自动检查（可选）
+
+**工作原理**：
+```json
+{
+  "auto_check_on_save": true
+}
+```
+
+保存文件时自动触发检查，适合对质量要求极高的项目。
+
+**缺点**：
+- ⚠️  可能影响编辑器性能
+- ⚠️  增加系统开销
+
+#### VS Code / Cursor 编辑器集成
+
+**VS Code 配置**（`.vscode/tasks.json`）：
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Moat: 检查当前文件",
+      "type": "shell",
+      "command": "moat check --quick",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Moat: 全量检查",
+      "type": "shell",
+      "command": "moat check --full",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}
+```
+
+**快捷键绑定**（`.vscode/keybindings.json`）：
+```json
+{
+  "key": "ctrl+shift+m",
+  "command": "workbench.action.tasks.runTask",
+  "args": "Moat: 检查当前文件"
+}
+```
+
+**效果**：
+- 按 `Ctrl+Shift+M` → 检查当前文件
+- 保存时 → 可选触发检查
+
+#### 推荐工作流
+
+**日常开发**：
+1. **启动监控**（一次启动，持续运行）
+   ```bash
+   nohup moat watch --log logs/backend.log > logs/moat_watch.log 2>&1 &
+   ```
+
+2. **开发代码** → 编辑器显示语法错误
+
+3. **Moat 实时监控** → 后台捕获运行时错误
+
+4. **提交代码** → `git commit` 触发 Moat 检查
+
+5. **推送** → `git push`
+
+**完整示例**：
+```bash
+# 1. 初始化（只需一次）
+moat init
+
+# 2. 启动监控（后台运行）
+nohup moat watch --log logs/backend.log > logs/moat_watch.log 2>&1 &
+
+# 3. 开发...
+
+# 4. 提交前自动检查
+git add .
+git commit -m "feat: 新增功能"
+# Moat 自动拦截有问题的提交
+
+# 5. 推送
+git push
+```
+
 ### 4. Web 看板
 
 ```bash

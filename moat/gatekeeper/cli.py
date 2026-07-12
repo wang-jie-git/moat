@@ -59,7 +59,13 @@ def _cmd_status(args) -> int:
 
 def _cmd_check(args) -> int:
     """检查单个文件"""
-    project_path = Path(args.project).resolve()
+    # Bug 修复：检查必需的参数
+    if not args.file:
+        print("❌ 错误：必须指定 --file 参数")
+        print("用法: moat gatekeeper check --file <文件路径>")
+        return 1
+
+    project_path = Path(args.project).resolve() if args.project else Path.cwd().resolve()
     file_path = Path(args.file).resolve()
 
     if not file_path.exists():

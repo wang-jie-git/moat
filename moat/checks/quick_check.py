@@ -58,12 +58,36 @@ class QuickCheck(Check):
     def _get_changed_files(self) -> list[Path]:
         """获取修改的文件列表（git diff）
 
+        同时检测：
+        1. 已暂存的文件（staged）：git diff --cached
+        2. 未暂存的文件（unstaged）：git diff
+
         Returns:
             绝对路径列表
         """
         try:
-            # 使用 git diff 检测修改的文件
-            result = subprocess.run(
+            files = []
+
+            # 1. 检测已暂存的文件（staged changes）
+            # 这是最常见的场景：git add 后但没有 commit
+            staged_result = subprocess.run(
+                ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
+                cwd=str(self.project.resolve()),
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+
+            if staged_result.returncode == 0:
+                for line in staged_result.stdout.strip().split("\n"):
+                    if line:
+                        file_path = self.project / line
+                        if file_path.exists():
+                            files.append(file_path)
+
+            # 2. 检测未暂存的文件（unstaged changes）
+            # 使用 --diff-filter=ACMR 表示 Added, Copied, Modified, Renamed
+            unstaged_result = subprocess.run(
                 ["git", "diff", "--name-only", "--diff-filter=ACMR"],
                 cwd=str(self.project.resolve()),
                 capture_output=True,
@@ -71,18 +95,24 @@ class QuickCheck(Check):
                 timeout=5,
             )
 
-            if result.returncode != 0:
-                return []
+            if unstaged_result.returncode == 0:
+                for line in unstaged_result.stdout.strip().split("\n"):
+                    if line:
+                        file_path = self.project / line
+                        if file_path.exists() and file_path not in files:
+                            files.append(file_path)
 
-            files = []
-            for line in result.stdout.strip().split("\n"):
-                if line:
-                    file_path = self.project / line
-                    if file_path.exists():
-                        files.append(file_path)
+            # 去重（保持顺序）
+            seen = set()
+            unique_files = []
+            for f in files:
+                if str(f) not in seen:
+                    seen.add(str(f))
+                    unique_files.append(f)
 
-            return files
+            return unique_files
         except Exception as e:
+            logger.debug(f"获取修改文件失败: {e}")
             return []
 
     @fail_open(default_return=[], log_level=logging.DEBUG)
