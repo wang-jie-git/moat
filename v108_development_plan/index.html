@@ -1,0 +1,1084 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://wang-jie-git.github.io/moat/v108_development_plan/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Moat v1.0.8 开发计划 - Moat — AI Coding Gatekeeper</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#moat-v108" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Moat — AI Coding Gatekeeper" class="md-header__button md-logo" aria-label="Moat — AI Coding Gatekeeper" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Moat — AI Coding Gatekeeper
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Moat v1.0.8 开发计划
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wang-jie-git/moat" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wang-jie-git/moat
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Moat — AI Coding Gatekeeper" class="md-nav__button md-logo" aria-label="Moat — AI Coding Gatekeeper" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png" alt="logo">
+
+    </a>
+    Moat — AI Coding Gatekeeper
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wang-jie-git/moat" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wang-jie-git/moat
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v108" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 v1.0.8 目标
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 v1.0.8 目标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        核心主题：精准拦截 + 性能飞跃
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 功能清单
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 功能清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1️⃣ 新的守门员规则
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1️⃣ 新的守门员规则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-secrets-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 硬编码密钥检测（SECRETS-001）🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-deps-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 依赖项安全漏洞检测（DEPS-001）🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-unused-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 未使用的导出检测（UNUSED-001）🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-sql-sql-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 增强 SQL 注入检测（SQL-002）🔧
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-api-api-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 增强 API 鉴权检测（API-002）🔧
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2️⃣ 性能优化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2️⃣ 性能优化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 缓存优化（P1）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 增量扫描改进（P2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3️⃣ 体验改进
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3️⃣ 体验改进">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 更好的错误报告（P2）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-p3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 配置增强（P3）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 实施顺序
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 实施顺序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1p0p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1：P0/P1 功能（第一天）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2：P2 功能（第二天）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-p3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3：性能优化 + P3 功能（第三天）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 成功指标
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 成功指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试覆盖
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        新规则覆盖率
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📝 待讨论
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 下一步
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="moat-v108">Moat v1.0.8 开发计划<a class="headerlink" href="#moat-v108" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>版本</strong>: v1.0.8
+<strong>目标</strong>: 增强守门员规则 + 性能优化 + 体验改进
+<strong>时间</strong>: 2026-07-11</p>
+</blockquote>
+<hr />
+<h2 id="v108">🎯 v1.0.8 目标<a class="headerlink" href="#v108" title="Permanent link">&para;</a></h2>
+<h3 id="_1">核心主题：<strong>精准拦截 + 性能飞跃</strong><a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>v1.0.7 建立了"不打扰"的基础设施（Fail-open、规则解释、误报率统计）。
+v1.0.8 的目标是<strong>在这之上提升拦截精度和性能</strong>。</p>
+<hr />
+<h2 id="_2">📋 功能清单<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="1">1️⃣ 新的守门员规则<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<h4 id="11-secrets-001">1.1 硬编码密钥检测（SECRETS-001）🆕<a class="headerlink" href="#11-secrets-001" title="Permanent link">&para;</a></h4>
+<p><strong>优先级</strong>: P0（安全相关）
+<strong>严重性</strong>: CRITICAL</p>
+<p><strong>检测模式</strong>：
+- AWS Access Key ID
+- GitHub Token
+- API Key 硬编码
+- 密码明文
+- Private Key 泄漏</p>
+<p><strong>实现思路</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 使用正则 + 上下文分析</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">patterns</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="s2">&quot;aws_key&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;AKIA[0-9A-Z]</span><span class="si">{16}</span><span class="s1">&#39;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="s2">&quot;github_token&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;ghp_[0-9a-zA-Z]</span><span class="si">{36}</span><span class="s1">&#39;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="s2">&quot;generic_api_key&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;api[_-]?key[&quot;\s:]+[&quot;</span><span class="se">\&#39;</span><span class="s1">]([a-zA-Z0-9_\-]+)[&quot;</span><span class="se">\&#39;</span><span class="s1">]&#39;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># 排除 false positive：</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># - 测试文件（test_*.py, *.test.ts）</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># - 示例文件（example*, demo*）</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># - 环境变量读取（os.getenv, process.env）</span>
+</code></pre></div></p>
+<p><strong>文件</strong>: <code>moat/checks/secrets.py</code>（新建）</p>
+<hr />
+<h4 id="12-deps-001">1.2 依赖项安全漏洞检测（DEPS-001）🆕<a class="headerlink" href="#12-deps-001" title="Permanent link">&para;</a></h4>
+<p><strong>优先级</strong>: P1
+<strong>严重性</strong>: HIGH</p>
+<p><strong>检测模式</strong>：
+- Python：检查 <code>requirements.txt</code>、<code>pyproject.toml</code>
+- Node.js：检查 <code>package.json</code>
+- 使用本地漏洞数据库或在线 API（如 GitHub Advisory）</p>
+<p><strong>实现思路</strong>：
+- 使用 <code>pip-audit</code> 或 <code>safety</code>（可选依赖）
+- 或集成 GitHub Advisory API（免费）
+- 生成建议升级版本</p>
+<p><strong>文件</strong>: <code>moat/checks/dependency_security.py</code>（新建）</p>
+<hr />
+<h4 id="13-unused-001">1.3 未使用的导出检测（UNUSED-001）🆕<a class="headerlink" href="#13-unused-001" title="Permanent link">&para;</a></h4>
+<p><strong>优先级</strong>: P2
+<strong>严重性</strong>: LOW</p>
+<p><strong>检测模式</strong>：
+- Python：未使用的 <code>__all__</code> 导出
+- TypeScript/Go：未使用的导出函数/类型</p>
+<p><strong>实现思路</strong>：
+- 基于 AST 分析
+- 检测模块级 <code>__all__</code> 列表
+- 检查是否有外部导入使用</p>
+<p><strong>文件</strong>: <code>moat/checks/unused_exports.py</code>（新建）</p>
+<hr />
+<h4 id="14-sql-sql-002">1.4 增强 SQL 注入检测（SQL-002）🔧<a class="headerlink" href="#14-sql-sql-002" title="Permanent link">&para;</a></h4>
+<p><strong>优先级</strong>: P1
+<strong>严重性</strong>: CRITICAL</p>
+<p><strong>改进点</strong>：
+- 支持 ORM 框架（Django ORM, SQLAlchemy）
+- 检测 <code>filter()</code> 中的字符串拼接
+- 支持更多数据库驱动（asyncpg, psycopg2）</p>
+<p><strong>检测模式</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Django ORM</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">raw</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM users WHERE id = </span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># SQLAlchemy</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM users WHERE id = </span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># asyncpg</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM users WHERE id = </span><span class="si">{</span><span class="n">user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p><strong>文件</strong>: <code>moat/checks/sql_injection.py</code>（增强）</p>
+<hr />
+<h4 id="15-api-api-002">1.5 增强 API 鉴权检测（API-002）🔧<a class="headerlink" href="#15-api-api-002" title="Permanent link">&para;</a></h4>
+<p><strong>优先级</strong>: P2
+<strong>严重性</strong>: HIGH</p>
+<p><strong>改进点</strong>：
+- 支持 FastAPI（已有部分）
+- 支持 Flask、Django REST Framework
+- 支持 Express.js（TypeScript）
+- 支持 Gin/Fiber（Go）</p>
+<p><strong>文件</strong>: <code>moat/checks/api_auth.py</code>（增强）</p>
+<hr />
+<h3 id="2">2️⃣ 性能优化<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<h4 id="21-p1">2.1 缓存优化（P1）<a class="headerlink" href="#21-p1" title="Permanent link">&para;</a></h4>
+<p><strong>目标</strong>: 将 <code>moat check --full</code> 速度提升 20%</p>
+<p><strong>优化点</strong>：
+- 优化 <code>HashCacheManager</code>，添加 LRU 缓存
+- 并行扫描的粒度优化（按目录分组）
+- 延迟加载检查器（按需初始化）</p>
+<p><strong>预期效果</strong>：
+- 大型项目（&gt;20K 文件）：从 5s → 4s</p>
+<hr />
+<h4 id="22-p2">2.2 增量扫描改进（P2）<a class="headerlink" href="#22-p2" title="Permanent link">&para;</a></h4>
+<p><strong>目标</strong>: <code>moat check --diff</code> 更精准</p>
+<p><strong>改进点</strong>：
+- 基于 AST diff 而非 git diff
+- 检测函数签名变更的影响域
+- 检测导入变更的影响域</p>
+<hr />
+<h3 id="3">3️⃣ 体验改进<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<h4 id="31-p2">3.1 更好的错误报告（P2）<a class="headerlink" href="#31-p2" title="Permanent link">&para;</a></h4>
+<p><strong>改进点</strong>：
+- 错误分组（同类错误合并显示）
+- 严重性排序（CRITICAL → INFO）
+- 文件维度统计（每个文件的错误数）</p>
+<p><strong>示例输出</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>📊 错误摘要（按严重性）：
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  🔴 CRITICAL: 2
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  🟠 HIGH: 5
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  🟡 MEDIUM: 12
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  🔵 LOW: 8
+</code></pre></div></p>
+<hr />
+<h4 id="32-p3">3.2 配置增强（P3）<a class="headerlink" href="#32-p3" title="Permanent link">&para;</a></h4>
+<p><strong>新增配置项</strong>：
+- <code>.moat/config.json</code> 支持忽略规则
+- 支持项目级配置（<code>pyproject.toml</code> 或 <code>package.json</code>）
+- 支持目录级配置（<code>.moatignore</code>）</p>
+<hr />
+<h2 id="_3">🚀 实施顺序<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1p0p1">Phase 1：P0/P1 功能（第一天）<a class="headerlink" href="#phase-1p0p1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>硬编码密钥检测（SECRETS-001）</strong></li>
+<li>创建 <code>moat/checks/secrets.py</code></li>
+<li>实现核心检测逻辑</li>
+<li>
+<p>单元测试（15 个）</p>
+</li>
+<li>
+<p><strong>增强 SQL 注入检测（SQL-002）</strong></p>
+</li>
+<li>扩展 <code>moat/checks/sql_injection.py</code></li>
+<li>添加 ORM 检测</li>
+<li>
+<p>单元测试（+10 个）</p>
+</li>
+<li>
+<p><strong>依赖项安全检测（DEPS-001）</strong></p>
+</li>
+<li>创建 <code>moat/checks/dependency_security.py</code></li>
+<li>集成 GitHub Advisory API</li>
+<li>单元测试（10 个）</li>
+</ol>
+<p><strong>预期成果</strong>：3 个新检查器，+35 测试</p>
+<hr />
+<h3 id="phase-2p2">Phase 2：P2 功能（第二天）<a class="headerlink" href="#phase-2p2" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>未使用的导出检测（UNUSED-001）</strong></li>
+<li><strong>增强 API 鉴权检测（API-002）</strong></li>
+<li><strong>更好的错误报告</strong></li>
+</ol>
+<p><strong>预期成果</strong>：2 个新检查器，用户体验提升</p>
+<hr />
+<h3 id="phase-3-p3">Phase 3：性能优化 + P3 功能（第三天）<a class="headerlink" href="#phase-3-p3" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>缓存优化</strong></li>
+<li><strong>增量扫描改进</strong></li>
+<li><strong>配置增强</strong></li>
+</ol>
+<p><strong>预期成果</strong>：性能提升 20%，配置更灵活</p>
+<hr />
+<h2 id="_4">📊 成功指标<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h3 id="_5">测试覆盖<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>新增测试</strong>: +80 个</li>
+<li><strong>测试通过率</strong>: 保持 95%+</li>
+<li><strong>覆盖率</strong>: 保持 70%+</li>
+</ul>
+<h3 id="_6">性能指标<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>moat check --quick</strong>: &lt; 5s（保持）</li>
+<li><strong>moat check --full</strong>: &lt; 8s（提升 20%）</li>
+<li><strong>moat check --diff</strong>: &lt; 10s（保持）</li>
+</ul>
+<h3 id="_7">新规则覆盖率<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>SECRETS-001</strong>: 检测 10+ 种密钥模式</li>
+<li><strong>DEPS-001</strong>: 支持 3+ 种依赖管理</li>
+<li><strong>UNUSED-001</strong>: Python + TypeScript</li>
+<li><strong>SQL-002</strong>: 支持 3+ 种 ORM</li>
+<li><strong>API-002</strong>: 支持 4+ 种框架</li>
+</ul>
+<hr />
+<h2 id="_8">📝 待讨论<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>GitHub Advisory API 集成</strong>：</li>
+<li>是否需要 API Key？还是使用公开端点？</li>
+<li>
+<p>离线模式如何支持？</p>
+</li>
+<li>
+<p><strong>误报率问题</strong>：</p>
+</li>
+<li>硬编码密钥检测容易出现误报（测试文件、示例代码）</li>
+<li>
+<p>如何设计白名单机制？</p>
+</li>
+<li>
+<p><strong>性能 vs 精度</strong>：</p>
+</li>
+<li>增量扫描改进会增加复杂度</li>
+<li>
+<p>是否值得？</p>
+</li>
+<li>
+<p><strong>规则优先级</strong>：</p>
+</li>
+<li>是否需要重新评估所有规则的优先级？</li>
+<li>SQL 注入 vs 密钥泄漏，哪个更重要？</li>
+</ol>
+<hr />
+<h2 id="_9">🎯 下一步<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>请确认：
+1. ✅ 是否按这个计划开发？
+2. ✅ Phase 1-3 的顺序是否合理？
+3. ✅ 是否需要调整优先级？</p>
+<p>确认后立即开始 Phase 1！</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
