@@ -120,9 +120,9 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
-      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
       </label>
     
@@ -130,9 +130,9 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
-      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
       </label>
     
@@ -333,88 +333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../commands.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Commands
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../contributing.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contributing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../changelog.md" class="md-nav__link">
+      <a href="../../../CHANGELOG.md" class="md-nav__link">
         
   
   
@@ -731,15 +650,15 @@
 - 所有 SQL 查询都是硬编码字符串或使用参数化查询
 - WHERE 子句都是固定的（无动态拼接）
 - 示例（来自 <code>memory/filter.py:213-221</code>）:
-  <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="sd">    SELECT * FROM bug_memories</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="sd">    WHERE error_type = ? AND file_path = ? AND status = &#39;active&#39;</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="sd">    ORDER BY last_seen DESC</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sd">    LIMIT 1</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="p">(</span><span class="n">error_type</span><span class="p">,</span> <span class="n">file_path</span><span class="p">),</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+  <div class="highlight"><pre><span></span><code><span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SELECT * FROM bug_memories</span>
+<span class="sd">    WHERE error_type = ? AND file_path = ? AND status = &#39;active&#39;</span>
+<span class="sd">    ORDER BY last_seen DESC</span>
+<span class="sd">    LIMIT 1</span>
+<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="n">error_type</span><span class="p">,</span> <span class="n">file_path</span><span class="p">),</span>
+<span class="p">)</span>
 </code></pre></div></p>
 <p><strong>结论</strong>: Moat 自身<strong>不需要 SQL-003 规则</strong>，但这条规则对 One 项目有<strong>极高的价值</strong>。</p>
 <hr />
@@ -760,16 +679,16 @@
 <h4 id="21-moat">2.1 动态导入测试（Moat 已有但可增强）<a class="headerlink" href="#21-moat" title="Permanent link">&para;</a></h4>
 <p><strong>当前状态</strong>: Moat 有 <code>tests/test_import.py</code>（4 个测试）</p>
 <p><strong>可增强的场景</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 当前 Moat 覆盖的导入测试</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="err">✅</span> <span class="n">test_server_main_imports</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="err">✅</span> <span class="n">test_server_imports</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="err">✅</span> <span class="n">test_app_has_routes</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="err">✅</span> <span class="n">test_all_core_modules_import</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Moat 可以新增的动态导入测试</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="err">⏳</span> <span class="n">条件导入</span><span class="err">（</span><span class="n">如</span> <span class="n">SQLite</span> <span class="n">vs</span> <span class="n">PostgreSQL</span> <span class="n">后端切换</span><span class="err">）</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="err">⏳</span> <span class="n">可选依赖降级</span><span class="err">（</span><span class="n">如</span> <span class="n">rich</span> <span class="n">库不存在时的</span> <span class="n">fallback</span><span class="err">）</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="err">⏳</span> <span class="n">平台特定导入</span><span class="err">（</span><span class="n">Windows</span> <span class="n">vs</span> <span class="n">macOS</span><span class="err">）</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 当前 Moat 覆盖的导入测试</span>
+<span class="err">✅</span> <span class="n">test_server_main_imports</span>
+<span class="err">✅</span> <span class="n">test_server_imports</span>
+<span class="err">✅</span> <span class="n">test_app_has_routes</span>
+<span class="err">✅</span> <span class="n">test_all_core_modules_import</span>
+
+<span class="c1"># Moat 可以新增的动态导入测试</span>
+<span class="err">⏳</span> <span class="n">条件导入</span><span class="err">（</span><span class="n">如</span> <span class="n">SQLite</span> <span class="n">vs</span> <span class="n">PostgreSQL</span> <span class="n">后端切换</span><span class="err">）</span>
+<span class="err">⏳</span> <span class="n">可选依赖降级</span><span class="err">（</span><span class="n">如</span> <span class="n">rich</span> <span class="n">库不存在时的</span> <span class="n">fallback</span><span class="err">）</span>
+<span class="err">⏳</span> <span class="n">平台特定导入</span><span class="err">（</span><span class="n">Windows</span> <span class="n">vs</span> <span class="n">macOS</span><span class="err">）</span>
 </code></pre></div></p>
 <p><strong>建议</strong>: 在 Moat 的 <code>tests/</code> 目录下新增 <code>test_dynamic_import.py</code>，覆盖动态导入场景。</p>
 <h4 id="22-moat">2.2 环境依赖测试（Moat 未覆盖）<a class="headerlink" href="#22-moat" title="Permanent link">&para;</a></h4>
@@ -788,27 +707,27 @@
 <h4 id="31-moat">3.1 Moat 自身的知识库<a class="headerlink" href="#31-moat" title="Permanent link">&para;</a></h4>
 <p><strong>现状</strong>: Moat 有 <code>.moat/truth_document.md</code>（规则说明）</p>
 <p><strong>可以增强的方向</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gh"># .moat/truth_document.md 可以增加的内容：</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="gu">## 常见 Bug 模式库</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">-</span><span class="w"> </span>[Bug <span class="ni">#123</span>] SQL 动态拼接导致的潜在注入
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="k">-</span><span class="w"> </span>文件: memory_bridge.py:204
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="k">-</span><span class="w"> </span>修复方案: 白名单验证
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="k">-</span><span class="w"> </span>避免再次发生: 参考 SQL_Dynamic_Concatenation_Security.md
+<div class="highlight"><pre><span></span><code><span class="gh"># .moat/truth_document.md 可以增加的内容：</span>
+
+<span class="gu">## 常见 Bug 模式库</span>
+<span class="k">-</span><span class="w"> </span>[Bug <span class="ni">#123</span>] SQL 动态拼接导致的潜在注入
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>文件: memory_bridge.py:204
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>修复方案: 白名单验证
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>避免再次发生: 参考 SQL_Dynamic_Concatenation_Security.md
 </code></pre></div></p>
 <p><strong>价值</strong>: Moat 的用户也能建立自己的"项目免疫抗体"。</p>
 <h4 id="32-moat-bug">3.2 Moat 的 Bug 自动录入功能<a class="headerlink" href="#32-moat-bug" title="Permanent link">&para;</a></h4>
 <p><strong>建议</strong>: 在 <code>moat check --full</code> 后，自动生成 Bug 记忆库：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>moat<span class="w"> </span>check<span class="w"> </span>--full<span class="w"> </span>--record-insights
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>✅<span class="w"> </span>发现<span class="w"> </span><span class="m">1</span><span class="w"> </span>个潜在<span class="w"> </span>SQL<span class="w"> </span>风险
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>💡<span class="w"> </span>已录入知识库:<span class="w"> </span>.moat/insights/sql_dynamic_concatenation_20260712.md
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>💡<span class="w"> </span>下次检测到类似模式时，将自动提示此修复方案
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>moat<span class="w"> </span>check<span class="w"> </span>--full<span class="w"> </span>--record-insights
+✅<span class="w"> </span>发现<span class="w"> </span><span class="m">1</span><span class="w"> </span>个潜在<span class="w"> </span>SQL<span class="w"> </span>风险
+💡<span class="w"> </span>已录入知识库:<span class="w"> </span>.moat/insights/sql_dynamic_concatenation_20260712.md
+💡<span class="w"> </span>下次检测到类似模式时，将自动提示此修复方案
 </code></pre></div>
 <hr />
 <h3 id="4-moat-immune">优化 #4: Moat Immune 的测试生成能力增强 ⚠️ 待修复<a class="headerlink" href="#4-moat-immune" title="Permanent link">&para;</a></h3>
 <p><strong>One 项目发现的问题</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>moat<span class="w"> </span>immune<span class="w"> </span>unit<span class="w"> </span>--file<span class="w"> </span>test_moat_immune.py<span class="w"> </span>--scope<span class="w"> </span>missing
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>❌<span class="w"> </span>失败:<span class="w"> </span><span class="s1">&#39;ThinkingBlock&#39;</span><span class="w"> </span>object<span class="w"> </span>has<span class="w"> </span>no<span class="w"> </span>attribute<span class="w"> </span><span class="s1">&#39;text&#39;</span>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>moat<span class="w"> </span>immune<span class="w"> </span>unit<span class="w"> </span>--file<span class="w"> </span>test_moat_immune.py<span class="w"> </span>--scope<span class="w"> </span>missing
+❌<span class="w"> </span>失败:<span class="w"> </span><span class="s1">&#39;ThinkingBlock&#39;</span><span class="w"> </span>object<span class="w"> </span>has<span class="w"> </span>no<span class="w"> </span>attribute<span class="w"> </span><span class="s1">&#39;text&#39;</span>
 </code></pre></div></p>
 <p><strong>这是 Moat 自身的 Bug</strong>，需要修复。</p>
 <p><strong>优先级</strong>: 🔴 高（影响 Moat Immune 核心功能）</p>
@@ -818,12 +737,12 @@
 <p><strong>问题</strong>: <code>'ThinkingBlock' object has no attribute 'text'</code></p>
 <p><strong>文件</strong>: <code>moat/immune/</code> 相关模块</p>
 <p><strong>行动</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 1. 定位 Bug</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>grep<span class="w"> </span>-rn<span class="w"> </span><span class="s2">&quot;ThinkingBlock&quot;</span><span class="w"> </span>moat/immune/
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># 2. 添加测试</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># 3. 修复 Bug</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># 4. 验证修复</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. 定位 Bug</span>
+grep<span class="w"> </span>-rn<span class="w"> </span><span class="s2">&quot;ThinkingBlock&quot;</span><span class="w"> </span>moat/immune/
+
+<span class="c1"># 2. 添加测试</span>
+<span class="c1"># 3. 修复 Bug</span>
+<span class="c1"># 4. 验证修复</span>
 </code></pre></div></p>
 <hr />
 <h3 id="2-moat_1">优先级 2: 增强 Moat 的动态导入测试 🟡<a class="headerlink" href="#2-moat_1" title="Permanent link">&para;</a></h3>
@@ -833,18 +752,18 @@
 - ✅ 可选依赖降级（rich 库）
 - ✅ 平台特定导入</p>
 <p><strong>示例测试</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">TestDynamicImport</span><span class="p">:</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_sqlite_postgresql_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;测试 SQLite/PostgreSQL 后端动态切换&quot;&quot;&quot;</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="c1"># 模拟 PostgreSQL 不可用</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="c1"># 验证回退到 SQLite</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="k">pass</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_rich_library_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;测试 rich 库不存在时的降级&quot;&quot;&quot;</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="c1"># 移除 rich 模块</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="c1"># 验证使用纯文本输出</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="k">pass</span>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TestDynamicImport</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_sqlite_postgresql_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;测试 SQLite/PostgreSQL 后端动态切换&quot;&quot;&quot;</span>
+        <span class="c1"># 模拟 PostgreSQL 不可用</span>
+        <span class="c1"># 验证回退到 SQLite</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_rich_library_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;测试 rich 库不存在时的降级&quot;&quot;&quot;</span>
+        <span class="c1"># 移除 rich 模块</span>
+        <span class="c1"># 验证使用纯文本输出</span>
+        <span class="k">pass</span>
 </code></pre></div></p>
 <hr />
 <h3 id="3">优先级 3: 新增环境依赖测试 🟢<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
@@ -854,42 +773,42 @@
 - ✅ 配置文件缺失时的默认值处理
 - ✅ 环境变量检查（如 <code>PYTHONPATH</code>）</p>
 <p><strong>示例测试</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">TestEnvironmentDependency</span><span class="p">:</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_moat_dir_creation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;测试 .moat 目录不存在时自动创建&quot;&quot;&quot;</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>            <span class="n">project_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;test_project&quot;</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>            <span class="n">project_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>            <span class="c1"># 模拟 moat init</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>            <span class="n">moat_dir</span> <span class="o">=</span> <span class="n">project_dir</span> <span class="o">/</span> <span class="s2">&quot;.moat&quot;</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>            <span class="k">assert</span> <span class="ow">not</span> <span class="n">moat_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>            <span class="c1"># moat init 应该自动创建</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>            <span class="n">moat_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>            <span class="k">assert</span> <span class="n">moat_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">test_config_file_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;测试配置文件缺失时使用默认值&quot;&quot;&quot;</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>        <span class="c1"># 删除配置文件</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>        <span class="c1"># 验证 Moat 使用默认配置</span>
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>        <span class="k">pass</span>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TestEnvironmentDependency</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_moat_dir_creation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;测试 .moat 目录不存在时自动创建&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">project_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;test_project&quot;</span>
+            <span class="n">project_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
+
+            <span class="c1"># 模拟 moat init</span>
+            <span class="n">moat_dir</span> <span class="o">=</span> <span class="n">project_dir</span> <span class="o">/</span> <span class="s2">&quot;.moat&quot;</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="n">moat_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
+            <span class="c1"># moat init 应该自动创建</span>
+            <span class="n">moat_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">moat_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_config_file_fallback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;测试配置文件缺失时使用默认值&quot;&quot;&quot;</span>
+        <span class="c1"># 删除配置文件</span>
+        <span class="c1"># 验证 Moat 使用默认配置</span>
+        <span class="k">pass</span>
 </code></pre></div></p>
 <hr />
 <h3 id="4-moat">优先级 4: 建立 Moat 自身的知识资产库 🟢<a class="headerlink" href="#4-moat" title="Permanent link">&para;</a></h3>
 <p><strong>新增文件</strong>: <code>.moat/insights/</code></p>
 <p><strong>结构</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>.moat/
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>├── insights/
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>│   ├── README.md
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>│   ├── bug_patterns/
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>│   │   ├── sql_dynamic_concatenation.md
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>│   │   └── import_path_issues.md
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>│   └── fix_strategies/
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>│       └── whitelist_validation.md
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>├── moat.json
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>├── config.json
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>└── baseline.json
+<div class="highlight"><pre><span></span><code>.moat/
+├── insights/
+│   ├── README.md
+│   ├── bug_patterns/
+│   │   ├── sql_dynamic_concatenation.md
+│   │   └── import_path_issues.md
+│   └── fix_strategies/
+│       └── whitelist_validation.md
+├── moat.json
+├── config.json
+└── baseline.json
 </code></pre></div></p>
 <p><strong>价值</strong>: Moat 用户可以学习到如何建立自己的"项目免疫抗体"。</p>
 <hr />
@@ -1035,7 +954,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>

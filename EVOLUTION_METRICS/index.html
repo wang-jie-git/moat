@@ -120,9 +120,9 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
-      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
       </label>
     
@@ -130,9 +130,9 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
-      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
       </label>
     
@@ -333,88 +333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../commands.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Commands
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../contributing.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contributing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../changelog.md" class="md-nav__link">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
         
   
   
@@ -910,26 +829,26 @@
 <p><strong>含义</strong>: 重构后测试通过且 Pain Score 降低的比例</p>
 <p><strong>目标</strong>: &gt; 70%</p>
 <p><strong>采集方式</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">tracker</span> <span class="o">=</span> <span class="n">EvolutionTracker</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.moat&quot;</span><span class="p">))</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">tracker</span><span class="o">.</span><span class="n">record_refactor_success</span><span class="p">(</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">files_changed</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">tests_passed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">pain_score_before</span><span class="o">=</span><span class="mf">65.0</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">pain_score_after</span><span class="o">=</span><span class="mf">25.0</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
+
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">EvolutionTracker</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.moat&quot;</span><span class="p">))</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_refactor_success</span><span class="p">(</span>
+    <span class="n">files_changed</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">tests_passed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">pain_score_before</span><span class="o">=</span><span class="mf">65.0</span><span class="p">,</span>
+    <span class="n">pain_score_after</span><span class="o">=</span><span class="mf">25.0</span>
+<span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h3 id="2-performance-improvement-rate">2. 性能提升率（Performance Improvement Rate）🚀<a class="headerlink" href="#2-performance-improvement-rate" title="Permanent link">&para;</a></h3>
 <p><strong>含义</strong>: 代码优化带来的性能改善</p>
 <p><strong>目标</strong>: &gt; 50%（平均）</p>
 <p><strong>示例</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">tracker</span><span class="o">.</span><span class="n">record_performance_improvement</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;api_response_time&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">before</span><span class="o">=</span><span class="mf">250.0</span><span class="p">,</span>  <span class="c1"># 250ms</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">after</span><span class="o">=</span><span class="mf">80.0</span>     <span class="c1"># 80ms</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">tracker</span><span class="o">.</span><span class="n">record_performance_improvement</span><span class="p">(</span>
+    <span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;api_response_time&quot;</span><span class="p">,</span>
+    <span class="n">before</span><span class="o">=</span><span class="mf">250.0</span><span class="p">,</span>  <span class="c1"># 250ms</span>
+    <span class="n">after</span><span class="o">=</span><span class="mf">80.0</span>     <span class="c1"># 80ms</span>
+<span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h3 id="3-bug-bug-fix-time">3. Bug 修复时效（Bug Fix Time）🐛<a class="headerlink" href="#3-bug-bug-fix-time" title="Permanent link">&para;</a></h3>
@@ -960,17 +879,17 @@
 <hr />
 <h2 id="_5">🧠 "神经衰弱"检测机制<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <h3 id="_6">检测逻辑<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">evaluation</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate_evolution</span><span class="p">()</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">negative_ratio</span> <span class="o">=</span> <span class="n">evaluation</span><span class="p">[</span><span class="s2">&quot;fatigue_status&quot;</span><span class="p">][</span><span class="s2">&quot;negative_ratio&quot;</span><span class="p">]</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 综合负向维度和负向权重的影响</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">if</span> <span class="n">negative_ratio</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">:</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;critical&quot;</span>  <span class="c1"># 神经衰弱严重</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="k">elif</span> <span class="n">negative_ratio</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;warning&quot;</span>   <span class="c1"># 趋向保守</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">elif</span> <span class="n">negative_ratio</span> <span class="o">&lt;=</span> <span class="mf">0.15</span><span class="p">:</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;encourage&quot;</span> <span class="c1"># 鼓励创新</span>
+<div class="highlight"><pre><span></span><code><span class="n">evaluation</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate_evolution</span><span class="p">()</span>
+
+<span class="n">negative_ratio</span> <span class="o">=</span> <span class="n">evaluation</span><span class="p">[</span><span class="s2">&quot;fatigue_status&quot;</span><span class="p">][</span><span class="s2">&quot;negative_ratio&quot;</span><span class="p">]</span>
+<span class="c1"># 综合负向维度和负向权重的影响</span>
+
+<span class="k">if</span> <span class="n">negative_ratio</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;critical&quot;</span>  <span class="c1"># 神经衰弱严重</span>
+<span class="k">elif</span> <span class="n">negative_ratio</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;warning&quot;</span>   <span class="c1"># 趋向保守</span>
+<span class="k">elif</span> <span class="n">negative_ratio</span> <span class="o">&lt;=</span> <span class="mf">0.15</span><span class="p">:</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;encourage&quot;</span> <span class="c1"># 鼓励创新</span>
 </code></pre></div>
 <h3 id="_7">三态策略<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
 <h4 id="50">🔴 神经衰弱严重（负向占比 ≥ 50%）<a class="headerlink" href="#50" title="Permanent link">&para;</a></h4>
@@ -990,114 +909,114 @@
 <hr />
 <h2 id="cli">📊 CLI 使用<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
 <h3 id="_8">查看进化报告<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 最近 24 小时</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>moat<span class="w"> </span>evolution<span class="w"> </span>report
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 最近 7 天</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--window<span class="w"> </span><span class="m">168</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># JSON 输出</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--format<span class="w"> </span>json
+<div class="highlight"><pre><span></span><code><span class="c1"># 最近 24 小时</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report
+
+<span class="c1"># 最近 7 天</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--window<span class="w"> </span><span class="m">168</span>
+
+<span class="c1"># JSON 输出</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--format<span class="w"> </span>json
 </code></pre></div>
 <p><strong>输出示例</strong>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>============================================================
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  进化指标报告
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  时间窗口: 24 小时
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>============================================================
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>📊 综合得分: 0.723 / 1.000
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>📈 各维度得分:
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>   🟢 refactor_success: 0.85
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>   🟢 performance_improvement: 0.72
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>   🟡 bug_fix_time: 0.45
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>   🔴 false_positive_rate: 0.12  # 低分（误报少）是好事
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>🧠 神经衰弱检测:
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>   状态: normal
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>   负向指标占比: 12.5%
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>   👍 进化状态正常
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>💡 建议:
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>   🟢 [enable_innovation_mode] 鼓励创新：降低对实验性代码的拦截强度
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>============================================================
+<div class="highlight"><pre><span></span><code>============================================================
+  进化指标报告
+  时间窗口: 24 小时
+============================================================
+
+📊 综合得分: 0.723 / 1.000
+
+📈 各维度得分:
+   🟢 refactor_success: 0.85
+   🟢 performance_improvement: 0.72
+   🟡 bug_fix_time: 0.45
+   🔴 false_positive_rate: 0.12  # 低分（误报少）是好事
+
+🧠 神经衰弱检测:
+   状态: normal
+   负向指标占比: 12.5%
+   👍 进化状态正常
+
+💡 建议:
+   🟢 [enable_innovation_mode] 鼓励创新：降低对实验性代码的拦截强度
+
+============================================================
 </code></pre></div></p>
 <h3 id="_9">自动调整配置<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>moat<span class="w"> </span>evolution<span class="w"> </span>adjust<span class="w"> </span>--auto
+<div class="highlight"><pre><span></span><code>moat<span class="w"> </span>evolution<span class="w"> </span>adjust<span class="w"> </span>--auto
 </code></pre></div>
 <h3 id="_10">手动记录指标<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 记录一次重构成功</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>moat<span class="w"> </span>evolution<span class="w"> </span>record<span class="w"> </span>--metric-type<span class="w"> </span>refactor_success<span class="w"> </span>--value<span class="w"> </span><span class="m">0</span>.85
+<div class="highlight"><pre><span></span><code><span class="c1"># 记录一次重构成功</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>record<span class="w"> </span>--metric-type<span class="w"> </span>refactor_success<span class="w"> </span>--value<span class="w"> </span><span class="m">0</span>.85
 </code></pre></div>
 <hr />
 <h2 id="_11">🔄 集成到现有架构<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
 <h3 id="1-moat-check">1. 集成到 <code>moat check</code><a class="headerlink" href="#1-moat-check" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 在 runner.py 中添加</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_all_checks</span><span class="p">(</span><span class="n">project_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">tracker</span> <span class="o">=</span> <span class="n">EvolutionTracker</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">project_root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;.moat&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="c1"># ... 原有检查逻辑 ...</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="c1"># 检查完成后记录 Pain Score 趋势</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">avg_pain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pain_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pain_scores</span><span class="p">)</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="n">tracker</span><span class="o">.</span><span class="n">record_pain_score_trend</span><span class="p">(</span><span class="n">avg_pain</span><span class="p">)</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="c1"># 评估进化方向</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="n">evaluation</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate_evolution</span><span class="p">()</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="k">if</span> <span class="n">evaluation</span><span class="p">[</span><span class="s2">&quot;fatigue_status&quot;</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;critical&quot;</span><span class="p">]:</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️  </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;fatigue_status&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 在 runner.py 中添加</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_all_checks</span><span class="p">(</span><span class="n">project_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">EvolutionTracker</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">project_root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;.moat&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ... 原有检查逻辑 ...</span>
+
+    <span class="c1"># 检查完成后记录 Pain Score 趋势</span>
+    <span class="n">avg_pain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pain_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pain_scores</span><span class="p">)</span>
+    <span class="n">tracker</span><span class="o">.</span><span class="n">record_pain_score_trend</span><span class="p">(</span><span class="n">avg_pain</span><span class="p">)</span>
+
+    <span class="c1"># 评估进化方向</span>
+    <span class="n">evaluation</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate_evolution</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">evaluation</span><span class="p">[</span><span class="s2">&quot;fatigue_status&quot;</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;critical&quot;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️  </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;fatigue_status&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="2-feedback-loop">2. 集成到 Feedback Loop<a class="headerlink" href="#2-feedback-loop" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># 在 feedback.py 中添加</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">add_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_type</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">user_rating</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="c1"># ... 原有反馈逻辑 ...</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="c1"># 同步到进化指标</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="k">if</span> <span class="n">user_rating</span> <span class="o">==</span> <span class="s2">&quot;false_positive&quot;</span><span class="p">:</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">tracker</span><span class="o">.</span><span class="n">record_false_positive</span><span class="p">(</span><span class="n">error_type</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 在 feedback.py 中添加</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_type</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">,</span> <span class="n">user_rating</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># ... 原有反馈逻辑 ...</span>
+
+    <span class="c1"># 同步到进化指标</span>
+    <span class="k">if</span> <span class="n">user_rating</span> <span class="o">==</span> <span class="s2">&quot;false_positive&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracker</span><span class="o">.</span><span class="n">record_false_positive</span><span class="p">(</span><span class="n">error_type</span><span class="p">,</span> <span class="n">file_pattern</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="3-cicd">3. 集成到 CI/CD<a class="headerlink" href="#3-cicd" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># .github/workflows/evolution-check.yml</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check Evolution Health</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="no">pip install moat</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="no">moat evolution report --window 168</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="no"># 如果神经衰弱严重，失败</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="no">if moat evolution report --format json | grep -q &quot;critical&quot;; then</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">      </span><span class="no">echo &quot;❌ 系统神经衰弱严重，需要人工介入&quot;</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">      </span><span class="no">exit 1</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">    </span><span class="no">fi</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/evolution-check.yml</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check Evolution Health</span>
+<span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no">pip install moat</span>
+<span class="w">    </span><span class="no">moat evolution report --window 168</span>
+
+<span class="w">    </span><span class="no"># 如果神经衰弱严重，失败</span>
+<span class="w">    </span><span class="no">if moat evolution report --format json | grep -q &quot;critical&quot;; then</span>
+<span class="w">      </span><span class="no">echo &quot;❌ 系统神经衰弱严重，需要人工介入&quot;</span>
+<span class="w">      </span><span class="no">exit 1</span>
+<span class="w">    </span><span class="no">fi</span>
 </code></pre></div>
 <hr />
 <h2 id="_12">📈 使用场景<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
 <h3 id="1">场景 1: 每日站会<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># 查看过去 24 小时的进化报告</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>moat<span class="w"> </span>evolution<span class="w"> </span>report
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># 判断今天是否应该鼓励团队创新</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># 还是需要收紧质量管控</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看过去 24 小时的进化报告</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report
+
+<span class="c1"># 判断今天是否应该鼓励团队创新</span>
+<span class="c1"># 还是需要收紧质量管控</span>
 </code></pre></div>
 <h3 id="2">场景 2: 迭代回顾<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># 查看过去 7 天的进化趋势</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--window<span class="w"> </span><span class="m">168</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># 评估这个迭代的质量 vs 效率平衡</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看过去 7 天的进化趋势</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--window<span class="w"> </span><span class="m">168</span>
+
+<span class="c1"># 评估这个迭代的质量 vs 效率平衡</span>
 </code></pre></div>
 <h3 id="3">场景 3: 自动告警<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># GitHub Actions</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Evolution Alert</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="no">STATUS=$(moat evolution report --format json | jq -r &#39;.fatigue_status.status&#39;)</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="no">if [ &quot;$STATUS&quot; = &quot;critical&quot; ]; then</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">      </span><span class="no"># 发送告警到 Slack/Email</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">      </span><span class="no">curl -X POST $SLACK_WEBHOOK -d &quot;⚠️ Moat 神经衰弱严重！&quot;</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="no">fi</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># GitHub Actions</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Evolution Alert</span>
+<span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no">STATUS=$(moat evolution report --format json | jq -r &#39;.fatigue_status.status&#39;)</span>
+<span class="w">    </span><span class="no">if [ &quot;$STATUS&quot; = &quot;critical&quot; ]; then</span>
+<span class="w">      </span><span class="no"># 发送告警到 Slack/Email</span>
+<span class="w">      </span><span class="no">curl -X POST $SLACK_WEBHOOK -d &quot;⚠️ Moat 神经衰弱严重！&quot;</span>
+<span class="w">    </span><span class="no">fi</span>
 </code></pre></div>
 <hr />
 <h2 id="_13">🎯 关键设计决策<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
@@ -1181,7 +1100,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
