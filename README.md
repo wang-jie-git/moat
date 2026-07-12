@@ -973,4 +973,4 @@ moat/
 
 ## License
 
-MIT © 2026 One Team
+Apache 2.0 © 2026 One Team
