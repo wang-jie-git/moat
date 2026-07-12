@@ -134,7 +134,10 @@ def run_all_checks(project_root: str = ".", mode: str = "quick", enable_optimiza
 
     result.end_time = time.time()
 
-    # 5. 输出总结
+    # 5. 记录进化指标
+    _record_check_metrics(root, result)
+
+    # 6. 输出总结
     print(f"\n{'=' * 50}")
     print(f"  结果: {result.summary()}")
     print(f"{'=' * 50}")

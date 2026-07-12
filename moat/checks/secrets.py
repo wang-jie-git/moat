@@ -177,18 +177,30 @@ class SecretsCheck(Check):
 
     def _should_skip(self, file_path: Path) -> bool:
         """判断是否跳过文件"""
-        file_str = str(file_path).lower()
+        # 跳过常见目录
+        skip_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".next", ".nuxt"}
+        if any(part in skip_dirs for part in file_path.parts):
+            return True
 
-        # 跳过测试文件、示例文件
-        skip_patterns = {
-            ".venv", "venv", "__pycache__", ".git",
-            "node_modules", "test_", "_test.py", "tests/",
-            "example", "demo", "sample", "fixture",
-            ".env.example", ".env.sample",
-            "mock", "stub", "fake",
-        }
+        # 跳过测试文件（只匹配文件名，不匹配路径中的 test_）
+        file_name = file_path.name
+        if file_name.startswith("test_") or file_name.endswith("_test.py"):
+            return True
 
-        return any(pattern in file_str for pattern in skip_patterns)
+        # 跳过 tests/ 目录
+        if "tests/" in str(file_path) or "/tests/" in str(file_path):
+            return True
+
+        # 跳过示例、演示、测试文件
+        skip_keywords = ["example", "demo", "sample", "fixture", "mock", "stub", "fake"]
+        if any(keyword in file_name.lower() for keyword in skip_keywords):
+            return True
+
+        # 跳过 .env 示例文件
+        if file_name.startswith(".env."):
+            return True
+
+        return False
 
     def _check_file(self, file_path: Path) -> list[CheckResult]:
         """检查单个文件

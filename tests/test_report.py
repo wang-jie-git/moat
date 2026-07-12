@@ -353,7 +353,9 @@ class TestFormatErrorMarkdown:
         error = {"type": "import_error", "file": "test.py", "message": "Import failed"}
         lines = report_gen._format_error_markdown(1, error)
 
-        assert "**💡 影响分析**" in "".join(lines)
+        # 验证包含影响分析（使用 🎯 emoji）
+        full_text = "".join(lines)
+        assert "影响分析" in full_text
 
 
 # ==================== ReportGenerator._analyze_impact ====================

@@ -114,13 +114,21 @@ class UnusedExportsCheck(Check):
 
     def _should_skip(self, file_path: Path) -> bool:
         """判断是否跳过文件"""
-        skip_patterns = [
-            ".venv", "venv", "__pycache__", ".git",
-            "node_modules", "test_", "_test.py", "tests/",
-            "node_modules", ".next", ".nuxt",
-        ]
-        file_str = str(file_path)
-        return any(pattern in file_str for pattern in skip_patterns)
+        # 跳过常见目录
+        skip_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".next", ".nuxt"}
+        if any(part in skip_dirs for part in file_path.parts):
+            return True
+
+        # 跳过测试文件（只匹配文件名，不匹配路径中的 test_）
+        file_name = file_path.name
+        if file_name.startswith("test_") or file_name.endswith("_test.py"):
+            return True
+
+        # 跳过 tests/ 目录
+        if "tests/" in str(file_path) or "/tests/" in str(file_path):
+            return True
+
+        return False
 
     @fail_open(default_return=[], log_level=logging.DEBUG)
     def _check_python_file(self, file_path: Path) -> list[CheckResult]:
@@ -210,17 +218,22 @@ class UnusedExportsCheck(Check):
             if export_name == "default":
                 continue
 
-            # 计算使用次数（排除 export 声明本身）
+            # 计算使用次数
             usage_count = 0
             export_line = None
+            # 匹配 export 声明的正则
+            export_decl_pattern = re.compile(r'export\s+(?:default\s+)?(?:function|const|class|interface|type)\s+' + re.escape(export_name) + r'\b')
 
             for line_num, line in enumerate(lines, 1):
-                if f"export {export_name}" in line or f"export({export_name}" in line:
+                # 检查是否是 export 声明行
+                if export_decl_pattern.search(line):
                     export_line = line_num
                     continue
 
-                if re.search(r'\b' + re.escape(export_name) + r'\b', line):
-                    usage_count += 1
+                # 检查是否使用了该名称（排除注释行）
+                if not line.strip().startswith("//") and not line.strip().startswith("/*"):
+                    if re.search(r'\b' + re.escape(export_name) + r'\b', line):
+                        usage_count += 1
 
             # 如果只导出但从未在其他地方使用
             if usage_count == 0 and export_line:

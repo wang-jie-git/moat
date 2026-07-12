@@ -5,6 +5,79 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.1.0] - 2026-07-12
+
+### 🎯 核心主题：守门员规则 Bug 修复
+
+修复了 2 个关键 Bug，让守门员规则从"几乎失效"到"正常工作"。
+
+### ✅ Bug 修复
+
+#### Bug 1: QuickCheck 文件检测缺陷（严重）
+
+**问题**：`_get_changed_files()` 只使用 `git diff`，只能检测**未暂存**的文件
+- ❌ 无法检测 `git add` 后已暂存的文件
+- ❌ 守门员规则（SECRETS-001、SQL-002、DEPS-001、UNUSED-001、API-002）几乎无法工作
+- ❌ 用户感知不到 Moat 在工作
+
+**修复**：同时检测已暂存和未暂存的文件
+- ✅ `git diff --cached`（已暂存的文件）
+- ✅ `git diff`（未暂存的文件）
+- ✅ 去重处理
+
+**影响**：
+- ✅ 现在能检测到所有修改的文件
+- ✅ 守门员规则可以正常工作
+- ✅ 用户能感知到 Moat 的防护
+
+**文件**：`moat/checks/quick_check.py:58-86`
+
+---
+
+#### Bug 2: Gatekeeper 参数验证崩溃
+
+**问题**：`moat gatekeeper check` 不带 `--file` 参数时崩溃
+- ❌ `args.file` 为 `None`
+- ❌ `Path(None)` 抛出 TypeError
+- ❌ 用户体验差
+
+**修复**：添加参数验证
+- ✅ 检查 `args.file` 是否为 `None`
+- ✅ 提供友好的错误提示
+- ✅ 为 `args.project` 提供默认值（当前目录）
+
+**影响**：
+- ✅ 提供清晰的错误提示
+- ✅ 不再崩溃
+- ✅ 更好的用户体验
+
+**文件**：`moat/gatekeeper/cli.py:60-68`
+
+---
+
+### ✅ 验证结果
+
+```
+✅ Bug 1（文件检测）：已修复并验证
+✅ Bug 2（参数检查）：已修复
+✅ SQL 注入检测（SQL-002）：工作正常
+✅ 硬编码密钥检测（SECRETS-001）：工作正常
+✅ 文件检测（git diff --cached）：工作正常
+✅ 参数验证（gatekeeper check）：工作正常
+```
+
+---
+
+### 📚 文档更新
+
+**README.md**：
+- ✅ 添加过滤规则说明
+- ✅ 添加后台持久化运行说明（nohup/screen/tmux）
+- ✅ 添加自动运行配置说明（check_on_commit/auto_monitor/auto_check_on_save）
+- ✅ 添加 VS Code/Cursor 编辑器集成说明
+
+---
+
 ## [1.0.9] - 2026-07-11
 
 ### 🎯 核心主题：测试覆盖率优化 + README 焕新

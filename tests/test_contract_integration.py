@@ -7,6 +7,7 @@
 
 import sys
 import json
+import pytest
 from pathlib import Path
 
 # 直接导入（绕过 pytest 权限问题）
@@ -21,11 +22,9 @@ from moat.immune.contract.contracts import (
 from datetime import datetime
 
 
-def test_openapi_to_contracts():
-    """测试 1: OpenAPI → APIContract"""
-    print("📋 测试 1: OpenAPI 规范 → APIContract")
-
-    # 模拟一个真实的 OpenAPI spec
+@pytest.fixture
+def contracts():
+    """创建测试契约"""
     openapi_spec = {
         "openapi": "3.0.0",
         "info": {"title": "Moat API", "version": "1.0.0"},
@@ -42,11 +41,7 @@ def test_openapi_to_contracts():
                                     "schema": {
                                         "type": "object",
                                         "properties": {
-                                            "users": {
-                                                "type": "array",
-                                                "items": {
-                                                }
-                                            },
+                                            "users": {"type": "array", "items": {}},
                                             "total": {"type": "integer"},
                                         },
                                     }
@@ -146,15 +141,27 @@ def test_openapi_to_contracts():
     }
 
     generator = ContractGenerator()
-    contracts = generator.from_openapi(openapi_spec)
+    contracts_list = generator.from_openapi(openapi_spec)
 
+    assert len(contracts_list) == 4, f"应该生成 4 个契约，实际生成 {len(contracts_list)}"
+    print(f"   ✅ 生成了 {len(contracts_list)} 个契约")
+
+    for contract in contracts_list:
+        print(f"   - {contract.method:6s} {contract.endpoint:25s} | {contract.description}")
+
+    return contracts_list
+
+
+def test_openapi_to_contracts(contracts):
+    """测试 1: OpenAPI → APIContract"""
+    print("📋 测试 1: OpenAPI 规范 → APIContract")
+
+    # contracts fixture 已经生成了契约
     assert len(contracts) == 4, f"应该生成 4 个契约，实际生成 {len(contracts)}"
     print(f"   ✅ 生成了 {len(contracts)} 个契约")
 
     for contract in contracts:
         print(f"   - {contract.method:6s} {contract.endpoint:25s} | {contract.description}")
-
-    return contracts
 
 
 def test_pact_generation(contracts):
@@ -270,6 +277,18 @@ def test_change_detection():
     ]
 
     storage = ContractStorage()
+
+    # 先保存基线
+    from moat.immune.contract.contracts import ContractBaseline
+    baseline = ContractBaseline(
+        service_name="test-api",
+        version="1.0.0",
+        contracts=old_contracts,
+        created_at="2026-01-01T00:00:00",
+    )
+    storage.save_baseline(baseline)
+
+    # 检测变更
     changes = storage.detect_changes("test-api", new_contracts)
 
     assert len(changes) == 1, f"应该检测到 1 个变更，实际检测到 {len(changes)}"

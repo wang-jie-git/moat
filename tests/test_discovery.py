@@ -131,31 +131,32 @@ class TestInitProject:
         moat_dir = tmp_python_project / ".moat"
         assert moat_dir.exists()
 
-        # 检查必要文件
-        assert (moat_dir / "claude.md").exists()
-        assert (moat_dir / "config.json").exists()
+        # 检查必要文件（v1.1.0+ 只生成 moat.json）
+        assert (moat_dir / "moat.json").exists()
         assert (moat_dir / "baseline.json").exists()
 
     def test_init_project_creates_config(self, tmp_python_project):
-        """测试配置文件生成"""
+        """测试配置文件生成（v1.1.0+ 使用 moat.json）"""
         init_project(tmp_python_project, interactive=False)
 
-        config_file = tmp_python_project / ".moat" / "config.json"
-        assert config_file.exists()
+        moat_json = tmp_python_project / ".moat" / "moat.json"
+        assert moat_json.exists()
 
-        config = json.loads(config_file.read_text())
+        config = json.loads(moat_json.read_text())
         assert "project_name" in config
         assert config["project_name"] == "py_project"
 
     def test_init_project_claude_md(self, tmp_python_project):
-        """测试 CLAUDE.md 生成"""
+        """测试 Moat 配置生成（v1.1.0+ 使用 moat.json 替代 claude.md）"""
         init_project(tmp_python_project, interactive=False)
 
-        claude_md = tmp_python_project / ".moat" / "claude.md"
-        content = claude_md.read_text()
+        moat_json = tmp_python_project / ".moat" / "moat.json"
+        content = moat_json.read_text()
 
-        assert "Moat" in content
-        assert "moat check" in content
+        # 验证 moat.json 包含必要信息
+        config = json.loads(content)
+        assert "project_name" in config
+        assert "rules" in config or "checks" in config
 
     def test_init_project_with_typescript(self, tmp_mixed_project):
         """测试 TypeScript 项目初始化"""
@@ -574,7 +575,7 @@ class TestDiscoveryIntegration:
         info = discover_project(tmp_python_project)
         assert info["name"] == "py_project"
 
-        # 读取配置
-        config_file = tmp_python_project / ".moat" / "config.json"
-        config = json.loads(config_file.read_text())
+        # 读取配置（v1.1.0+ 使用 moat.json）
+        moat_json_file = tmp_python_project / ".moat" / "moat.json"
+        config = json.loads(moat_json_file.read_text())
         assert config["project_name"] == "py_project"

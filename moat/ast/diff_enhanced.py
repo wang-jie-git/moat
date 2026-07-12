@@ -103,7 +103,8 @@ class EnhancedASTDiffer:
                       file_path: Path) -> list[EnhancedChange]:
         """检测导入变更"""
         changes = []
-        rel_path = str(file_path.relative_to(self.project))
+        # macOS 兼容：使用 resolved 路径解决 /var vs /private/var 符号链接问题
+        rel_path = str(file_path.resolve().relative_to(self.project.resolve()))
 
         old_imports = self._extract_imports(old_tree)
         new_imports = self._extract_imports(new_tree)
@@ -148,7 +149,8 @@ class EnhancedASTDiffer:
                         file_path: Path) -> list[EnhancedChange]:
         """检测函数变更"""
         changes = []
-        rel_path = str(file_path.relative_to(self.project))
+        # macOS 兼容：使用 resolved 路径解决 /var vs /private/var 符号链接问题
+        rel_path = str(file_path.resolve().relative_to(self.project.resolve()))
 
         old_funcs = self._extract_functions(old_tree)
         new_funcs = self._extract_functions(new_tree)
@@ -209,7 +211,8 @@ class EnhancedASTDiffer:
                       file_path: Path) -> list[EnhancedChange]:
         """检测全局变量变更"""
         changes = []
-        rel_path = str(file_path.relative_to(self.project))
+        # macOS 兼容：使用 resolved 路径解决 /var vs /private/var 符号链接问题
+        rel_path = str(file_path.resolve().relative_to(self.project.resolve()))
 
         old_globals = self._extract_globals(old_tree)
         new_globals = self._extract_globals(new_tree)
@@ -316,7 +319,8 @@ class EnhancedASTDiffer:
     def _get_git_version(self, file_path: Path) -> str | None:
         """从 Git 获取文件旧版本"""
         try:
-            rel_path = file_path.relative_to(self.project)
+            # macOS 兼容：使用 resolved 路径解决 /var vs /private/var 符号链接问题
+            rel_path = file_path.resolve().relative_to(self.project.resolve())
             result = subprocess.run(
                 ["git", "show", f"HEAD:{rel_path}"],
                 capture_output=True,

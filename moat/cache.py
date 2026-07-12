@@ -123,9 +123,11 @@ class HashCacheManager:
                 cached_mtime = cache_entry.get("mtime", 0)
                 cached_size = cache_entry.get("size", 0)
 
-                # 如果文件未修改，直接返回缓存
+                # 如果文件未修改且缓存中有行数，直接返回缓存
                 if mtime == cached_mtime and size == cached_size:
-                    return cache_entry.get("lines")
+                    lines = cache_entry.get("lines")
+                    if lines is not None:
+                        return lines
             except Exception:
                 pass
 

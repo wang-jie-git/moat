@@ -238,18 +238,18 @@ class TestRunAllChecksIntegration:
     @patch("moat.runner.detect_project_type")
     @patch("moat.runner.create_check_instances")
     def test_run_all_checks_empty_project(self, mock_checks, mock_detect, tmp_path):
-        """空项目"""
+        """空项目（使用 legacy 模式以测试 mock）"""
         mock_detect.return_value = {}
         mock_checks.return_value = []
 
-        result = run_all_checks(str(tmp_path))
+        result = run_all_checks(str(tmp_path), mode="legacy")
         assert isinstance(result, MoatResult)
         assert result.total_checks == 0
 
     @patch("moat.runner.detect_project_type")
     @patch("moat.runner.create_check_instances")
     def test_run_all_checks_with_new_style_check(self, mock_checks, mock_detect, tmp_path):
-        """运行新风格检查"""
+        """运行新风格检查（使用 legacy 模式以测试 mock）"""
         from moat.checks.base import Check, CheckResult
 
         mock_detect.return_value = {"python": True}
@@ -264,7 +264,7 @@ class TestRunAllChecksIntegration:
 
         mock_checks.return_value = [("test_check", mock_check)]
 
-        result = run_all_checks(str(tmp_path))
+        result = run_all_checks(str(tmp_path), mode="legacy")
         assert result.passed == 1
         assert result.failed == 1
         assert result.total_checks == 2
@@ -286,7 +286,7 @@ class TestRunAllChecksIntegration:
     @patch("moat.runner.detect_project_type")
     @patch("moat.runner.create_check_instances")
     def test_run_all_checks_mixed_checks(self, mock_checks, mock_detect, tmp_path):
-        """混合新旧风格检查"""
+        """混合新旧风格检查（使用 legacy 模式以测试 mock）"""
         from moat.checks.base import Check, CheckResult
 
         mock_detect.return_value = {"python": True, "typescript": True}
@@ -304,7 +304,7 @@ class TestRunAllChecksIntegration:
             ("import检查", mock_module),
         ]
 
-        result = run_all_checks(str(tmp_path))
+        result = run_all_checks(str(tmp_path), mode="legacy")
         assert result.passed == 2
         assert result.total_checks == 2
 
@@ -312,7 +312,7 @@ class TestRunAllChecksIntegration:
     @patch("moat.runner.create_check_instances")
     @patch("moat.runner._record_check_metrics")
     def test_run_all_checks_records_metrics(self, mock_metrics, mock_checks, mock_detect, tmp_path):
-        """记录进化指标"""
+        """记录进化指标（使用 legacy 模式以测试 mock）"""
         mock_detect.return_value = {}
         mock_checks.return_value = []
 
@@ -320,17 +320,17 @@ class TestRunAllChecksIntegration:
         moat_dir = tmp_path / ".moat"
         moat_dir.mkdir()
 
-        result = run_all_checks(str(tmp_path))
+        result = run_all_checks(str(tmp_path), mode="legacy")
         mock_metrics.assert_called_once_with(tmp_path, result)
 
     @patch("moat.runner.detect_project_type")
     @patch("moat.runner.create_check_instances")
     def test_run_all_checks_output_summary(self, mock_checks, mock_detect, tmp_path, capsys):
-        """输出总结"""
+        """输出总结（使用 legacy 模式以测试 mock）"""
         mock_detect.return_value = {"python": True}
         mock_checks.return_value = []
 
-        result = run_all_checks(str(tmp_path))
+        result = run_all_checks(str(tmp_path), mode="legacy")
         captured = capsys.readouterr()
 
         assert "Moat" in captured.out
