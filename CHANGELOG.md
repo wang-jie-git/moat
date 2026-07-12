@@ -5,6 +5,81 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.1.2] - 2026-07-12
+
+### 🎯 核心主题：Moat Immune 修复 + 知识资产库建立
+
+基于 One 项目 Bug 检测战术指导，修复核心 Bug 并建立完整的知识资产体系。
+
+### ✅ Bug 修复
+
+#### Bug 1: Moat Immune ThinkingBlock AttributeError（核心功能）
+
+**问题**：调用 Claude API 时，如果响应包含 `ThinkingBlock`（扩展思维），会抛出 `AttributeError: 'ThinkingBlock' object has no attribute 'text'`
+- ❌ Moat Immune 的 AI 测试生成功能完全失效
+- ❌ 用户无法使用 `moat immune unit` 命令
+
+**修复**：实现三层防护机制
+- ✅ **第一层**：`isinstance` 检查（最可靠）
+- ✅ **第二层**：`hasattr` + `try/except`（兼容旧版本）
+- ✅ **第三层**：`hasattr(content_block, 'thinking')`（兜底）
+
+**文件**：`moat/immune/unit/generator.py:22-68`
+
+---
+
+### 🧪 测试增强
+
+#### 新增测试覆盖（+42 个测试）
+
+**1. Moat Immune Bug 修复测试**
+- `tests/test_thinking_block_fix.py` (6 个测试)
+- `tests/test_moat_immune_regression.py` (7 个回归测试)
+
+**2. 动态导入测试**
+- `tests/test_dynamic_import.py` (11 个测试)
+- 覆盖：可选依赖降级、条件导入、平台差异、延迟导入
+
+**3. 环境依赖测试**
+- `tests/test_environment_dependency.py` (18 个测试)
+- 覆盖：目录创建、配置文件、环境变量、数据库初始化
+
+**测试结果**：40 passed, 2 skipped ✅
+
+---
+
+### 📚 知识资产库
+
+#### 建立 `.moat/insights/` 知识库
+
+**防御模式清单**：
+- `DEFENSE_PATTERNS.md` - 知识库索引和使用指南
+- `README.md` - 项目免疫抗体建立指南
+
+**Bug 模式库**：
+- `bug_patterns/sql_dynamic_concatenation.md` - SQL 动态拼接模式
+- `bug_patterns/thinking_block_attribute_error.md` - ThinkingBlock 处理
+
+**修复策略库**：
+- `fix_strategies/whitelist_validation.md` - 白名单验证策略（SQL/路径/枚举/HTTP 方法）
+
+**最佳实践库**：
+- `best_practices/type_hint_priority.md` - 类型提示优先策略
+
+**防御模式文档**：
+- `patterns/sql_injection_pattern.md` - SQL 注入防御模式（正例/反例对比）
+
+---
+
+### 📚 文档更新
+
+**战术文档**：
+- `docs/fixes/MOAT_IMMUNE_THINKING_BLOCK_FIX.md` - Bug 修复报告
+- `docs/guides/MOAT_OPTIMIZATION_FROM_ONE.md` - One 项目优化建议
+- `docs/guides/MOAT_OPTIMIZATION_IMPLEMENTATION_PLAN.md` - 实施计划
+
+---
+
 ## [1.1.0] - 2026-07-12
 
 ### 🎯 核心主题：守门员规则 Bug 修复
