@@ -2,6 +2,12 @@
 
 > **当前版本**: v1.1.2 | [更新日志](CHANGELOG.md)
 >
+> [![PyPI version](https://img.shields.io/pypi/v/moat-ai.svg?style=flat-square&color=brightgreen)](https://pypi.org/project/moat-ai/)
+> [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
+> [![Python](https://img.shields.io/badge/python-3.10+-blue.svg?style=flat-square)](pyproject.toml)
+> [![Tests](https://img.shields.io/badge/tests-99.6%25-brightgreen?style=flat-square)](tests/)
+[![CI](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml/badge.svg)](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml)
+>
 > **English**: Moat is a real-time AI coding gatekeeper. It runs locally in your terminal and CI, catching architecture breaks, security leaks, and regression bugs *before* AI-generated code hits your repo. Zero config, <0.2s per check.
 
 **一句话**: AI 写代码太快，Bug 也埋得太快。Moat 是你本地化的架构守门员，零配置，实时拦截。
