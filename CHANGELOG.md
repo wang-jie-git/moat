@@ -80,6 +80,23 @@
 
 ---
 
+### Open Source Readiness
+
+#### Branding & Community
+- ⚡ `moat check` 输出尾部添加 `⚡ Powered by One — https://one.cloudkey.top`
+- 🌐 README 添加英文头部描述，支持双语
+- 🏷️ GitHub topics + description 更新为中英双语
+- ✅ License 统一为 Apache 2.0（README/PR模板/LICENSE 文件一致）
+- ✅ Release v1.1.2 发布
+
+#### One-Prime 工作流集成
+- ✅ pre-commit hook 修复 PYTHONPATH 兼容问题
+- ✅ 周期审计 cron: moat-daily-audit（每天 2:00）
+- ✅ CI 门禁: Moat Gate Workflow（one-cloudkey）
+- ✅ 知识图谱持久化
+
+---
+
 ## [1.1.0] - 2026-07-12
 
 ### 🎯 核心主题：守门员规则 Bug 修复
