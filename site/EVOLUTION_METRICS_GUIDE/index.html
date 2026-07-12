@@ -1,0 +1,1089 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://wang-jie-git.github.io/moat/EVOLUTION_METRICS_GUIDE/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>进化指标系统集成指南 - Moat — AI Coding Gatekeeper</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Moat — AI Coding Gatekeeper" class="md-header__button md-logo" aria-label="Moat — AI Coding Gatekeeper" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Moat — AI Coding Gatekeeper
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              进化指标系统集成指南
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wang-jie-git/moat" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wang-jie-git/moat
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Moat — AI Coding Gatekeeper" class="md-nav__button md-logo" aria-label="Moat — AI Coding Gatekeeper" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png" alt="logo">
+
+    </a>
+    Moat — AI Coding Gatekeeper
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wang-jie-git/moat" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wang-jie-git/moat
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 核心价值
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 六大进化指标
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 六大进化指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-refactor-success-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 重构成功率（Refactor Success Rate）✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-performance-improvement-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 性能提升率（Performance Improvement Rate）🚀
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-bug-bug-fix-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Bug 修复时效（Bug Fix Time）🐛
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-false-positive-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 误报率（False Positive Rate）⚠️
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-dev-velocity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 开发效率（Dev Velocity）⚡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-pain-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Pain Score 趋势📈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧠 "神经衰弱"检测机制
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🧠 &#34;神经衰弱&#34;检测机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检测逻辑
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        应对策略
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="应对策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 神经衰弱严重（负向占比 ≥ 50%）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#30-50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟡 趋向保守（负向占比 30-50%）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🟢 鼓励创新（负向占比 ≤ 30%）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 集成到现有架构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 集成到现有架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-pain-scorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 集成到 Pain Scorer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-feedback-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 集成到 Feedback Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. CLI 命令
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 使用场景
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📈 使用场景">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景 1: 每日站会
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景 2: 迭代回顾
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景 3: 配置调整
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 关键设计决策
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 关键设计决策">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1: 为什么误报率是负向指标？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2: 如何定义"好的进化"？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3: 如何避免"过度优化"？
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 参考资料
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 下一步
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="_1">进化指标系统集成指南<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h2 id="_2">🎯 核心价值<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>解决 Gemini 提出的"神经衰弱"问题：防止系统自我进化时变得越来越保守。</p>
+<hr />
+<h2 id="_3">📊 六大进化指标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h3 id="1-refactor-success-rate">1. 重构成功率（Refactor Success Rate）✅<a class="headerlink" href="#1-refactor-success-rate" title="Permanent link">&para;</a></h3>
+<p><strong>含义</strong>: 重构后测试通过且 Pain Score 降低的比例</p>
+<p><strong>采集方式</strong>:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
+
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">EvolutionTracker</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.moat&quot;</span><span class="p">))</span>
+
+<span class="c1"># 重构完成后记录</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_refactor_success</span><span class="p">(</span>
+    <span class="n">files_changed</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">tests_passed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">pain_score_before</span><span class="o">=</span><span class="mf">65.0</span><span class="p">,</span>
+    <span class="n">pain_score_after</span><span class="o">=</span><span class="mf">25.0</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;refactor_type&quot;</span><span class="p">:</span> <span class="s2">&quot;extract_method&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p><strong>评分逻辑</strong>:
+- 测试通过：+0.5 分
+- Pain Score 降低：+0-0.5 分（根据改善比例）
+- 满分：1.0</p>
+<hr />
+<h3 id="2-performance-improvement-rate">2. 性能提升率（Performance Improvement Rate）🚀<a class="headerlink" href="#2-performance-improvement-rate" title="Permanent link">&para;</a></h3>
+<p><strong>含义</strong>: 代码优化带来的性能改善</p>
+<p><strong>采集方式</strong>:
+<div class="highlight"><pre><span></span><code><span class="c1"># 性能优化后记录</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_performance_improvement</span><span class="p">(</span>
+    <span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;api_response_time&quot;</span><span class="p">,</span>
+    <span class="n">before</span><span class="o">=</span><span class="mf">250.0</span><span class="p">,</span>  <span class="c1"># 250ms</span>
+    <span class="n">after</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span>    <span class="c1"># 80ms</span>
+    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;endpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p><strong>评分逻辑</strong>:
+- 提升比例 = (before - after) / before
+- 满分：提升 100%+（性能翻倍）</p>
+<hr />
+<h3 id="3-bug-bug-fix-time">3. Bug 修复时效（Bug Fix Time）🐛<a class="headerlink" href="#3-bug-bug-fix-time" title="Permanent link">&para;</a></h3>
+<p><strong>含义</strong>: 从 Bug 发现到修复的耗时</p>
+<p><strong>采集方式</strong>:
+<div class="highlight"><pre><span></span><code><span class="c1"># Bug 修复后记录</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_bug_fix</span><span class="p">(</span>
+    <span class="n">bug_type</span><span class="o">=</span><span class="s2">&quot;race_condition&quot;</span><span class="p">,</span>
+    <span class="n">fix_time_seconds</span><span class="o">=</span><span class="mi">7200</span><span class="p">,</span>  <span class="c1"># 2 小时</span>
+    <span class="n">pain_score</span><span class="o">=</span><span class="mf">75.0</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p><strong>评分逻辑</strong>:
+- 1 小时内修复：1.0 分
+- 24 小时后修复：0.0 分
+- 严重 Bug 加权（Pain Score 越高，修复得分越高）</p>
+<hr />
+<h3 id="4-false-positive-rate">4. 误报率（False Positive Rate）⚠️<a class="headerlink" href="#4-false-positive-rate" title="Permanent link">&para;</a></h3>
+<p><strong>含义</strong>: Moat 误报的比例（负向指标）</p>
+<p><strong>采集方式</strong>:
+<div class="highlight"><pre><span></span><code><span class="c1"># 用户标记误报时记录</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_false_positive</span><span class="p">(</span>
+    <span class="n">error_type</span><span class="o">=</span><span class="s2">&quot;race_condition&quot;</span><span class="p">,</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;src/utils.py&quot;</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;user_comment&quot;</span><span class="p">:</span> <span class="s2">&quot;这是合法的缓存更新逻辑&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p><strong>负向权重</strong>: -0.15（误报会降低总体得分）</p>
+<hr />
+<h3 id="5-dev-velocity">5. 开发效率（Dev Velocity）⚡<a class="headerlink" href="#5-dev-velocity" title="Permanent link">&para;</a></h3>
+<p><strong>含义</strong>: 代码提交频率、PR 合并速度等</p>
+<p><strong>采集方式</strong>（建议通过 Git hooks 或 CI 集成）:
+<div class="highlight"><pre><span></span><code><span class="c1"># 每日统计</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_dev_velocity</span><span class="p">(</span>
+    <span class="n">commits_count</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">prs_merged</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">avg_pr_review_time_hours</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span>
+    <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;team_size&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p><strong>评分逻辑</strong>:
+- 基于历史基线计算相对效率
+- 0-1 分</p>
+<hr />
+<h3 id="6-pain-score">6. Pain Score 趋势📈<a class="headerlink" href="#6-pain-score" title="Permanent link">&para;</a></h3>
+<p><strong>含义</strong>: 项目整体 Pain Score 的变化趋势</p>
+<p><strong>自动采集</strong>: 每次 <code>moat check</code> 后自动记录</p>
+<p><strong>趋势分析</strong>:
+- 持续下降 = 正向 ✅
+- 持续上升 = 负向 ⚠️
+- 波动 = 正常 👍</p>
+<hr />
+<h2 id="_4">🧠 "神经衰弱"检测机制<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h3 id="_5">检测逻辑<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">evaluation</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate_evolution</span><span class="p">(</span><span class="n">window_hours</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
+
+<span class="c1"># 负向指标占比计算</span>
+<span class="n">negative_ratio</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="nb">abs</span><span class="p">(</span><span class="n">false_positive_weight</span> <span class="o">*</span> <span class="n">false_positive_score</span><span class="p">)</span> <span class="o">/</span>
+    <span class="n">total_absolute_weights</span>
+<span class="p">)</span>
+
+<span class="c1"># 状态判断</span>
+<span class="k">if</span> <span class="n">negative_ratio</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;critical&quot;</span>  <span class="c1"># 神经衰弱严重</span>
+<span class="k">elif</span> <span class="n">negative_ratio</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;warning&quot;</span>   <span class="c1"># 趋向保守</span>
+<span class="k">elif</span> <span class="n">negative_ratio</span> <span class="o">&lt;=</span> <span class="mf">0.3</span><span class="p">:</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;encourage&quot;</span> <span class="c1"># 鼓励创新</span>
+</code></pre></div>
+<h3 id="_6">应对策略<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<h4 id="50">🔴 神经衰弱严重（负向占比 ≥ 50%）<a class="headerlink" href="#50" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;reduce_pain_threshold&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;high&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;config_change&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;pain_threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;increase_false_positive_tolerance&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;high&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;config_change&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;false_positive_tolerance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>效果</strong>: 降低 Pain Score 阈值，允许更多代码通过检查</p>
+<h4 id="30-50">🟡 趋向保守（负向占比 30-50%）<a class="headerlink" href="#30-50" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust_pain_weights&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;config_change&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;weight_adjustment&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;core_business&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-5</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;auth_payment&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">-5</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>效果</strong>: 轻微降低高风险类别的权重</p>
+<h4 id="30">🟢 鼓励创新（负向占比 ≤ 30%）<a class="headerlink" href="#30" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;enable_innovation_mode&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;low&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;config_change&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;experimental_code_tolerance&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>效果</strong>: 降低对实验性代码的拦截强度</p>
+<hr />
+<h2 id="_7">🔄 集成到现有架构<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<h3 id="1-pain-scorer">1. 集成到 Pain Scorer<a class="headerlink" href="#1-pain-scorer" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">moat.pain.scorer</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_pain_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
+
+<span class="c1"># 每次检查后更新进化指标</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_with_evolution_tracking</span><span class="p">(</span><span class="n">project_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">EvolutionTracker</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">project_root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;.moat&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 1. 运行检查</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">run_all_checks</span><span class="p">(</span><span class="n">project_root</span><span class="p">)</span>
+
+    <span class="c1"># 2. 计算 Pain Score</span>
+    <span class="n">pain_scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">calculate_pain_score</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">]</span>
+
+    <span class="c1"># 3. 自动记录 Pain Score 趋势</span>
+    <span class="n">avg_pain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pain_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pain_scores</span><span class="p">)</span> <span class="k">if</span> <span class="n">pain_scores</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">tracker</span><span class="o">.</span><span class="n">record_pain_score_trend</span><span class="p">(</span><span class="n">avg_pain</span><span class="p">)</span>
+
+    <span class="c1"># 4. 评估进化方向</span>
+    <span class="n">evaluation</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate_evolution</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">evaluation</span><span class="p">[</span><span class="s2">&quot;fatigue_status&quot;</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;critical&quot;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️  </span><span class="si">{</span><span class="n">evaluation</span><span class="p">[</span><span class="s1">&#39;fatigue_status&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;建议调整:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">evaluation</span><span class="p">[</span><span class="s2">&quot;recommendation&quot;</span><span class="p">][</span><span class="s2">&quot;actions&quot;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">action</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">errors</span>
+</code></pre></div>
+<h3 id="2-feedback-loop">2. 集成到 Feedback Loop<a class="headerlink" href="#2-feedback-loop" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">moat.pain.feedback</span><span class="w"> </span><span class="kn">import</span> <span class="n">FeedbackStore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">moat.evolution_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvolutionTracker</span>
+
+<span class="c1"># 将用户反馈同步到进化指标</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sync_feedback_to_evolution</span><span class="p">(</span><span class="n">feedback_store</span><span class="p">:</span> <span class="n">FeedbackStore</span><span class="p">,</span> <span class="n">tracker</span><span class="p">:</span> <span class="n">EvolutionTracker</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">feedback</span> <span class="ow">in</span> <span class="n">feedback_store</span><span class="o">.</span><span class="n">feedback</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">feedback</span><span class="o">.</span><span class="n">user_rating</span> <span class="o">==</span> <span class="s2">&quot;false_positive&quot;</span><span class="p">:</span>
+            <span class="c1"># 误报也是进化指标（负向）</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">record_false_positive</span><span class="p">(</span>
+                <span class="n">error_type</span><span class="o">=</span><span class="n">feedback</span><span class="o">.</span><span class="n">error_type</span><span class="p">,</span>
+                <span class="n">file_path</span><span class="o">=</span><span class="n">feedback</span><span class="o">.</span><span class="n">file_pattern</span><span class="p">,</span>
+            <span class="p">)</span>
+</code></pre></div>
+<h3 id="3-cli">3. CLI 命令<a class="headerlink" href="#3-cli" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看进化报告</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report
+
+<span class="c1"># 输出示例</span>
+<span class="o">============================================================</span>
+<span class="w">  </span>进化指标报告
+<span class="w">  </span>时间窗口:<span class="w"> </span><span class="m">24</span><span class="w"> </span><span class="nv">小时</span>
+<span class="o">============================================================</span>
+
+📊<span class="w"> </span>综合得分:<span class="w"> </span><span class="m">0</span>.723<span class="w"> </span>/<span class="w"> </span><span class="m">1</span>.000
+
+📈<span class="w"> </span>各维度得分:
+<span class="w">   </span>🟢<span class="w"> </span>refactor_success:<span class="w"> </span><span class="m">0</span>.85
+<span class="w">   </span>🟢<span class="w"> </span>performance_improvement:<span class="w"> </span><span class="m">0</span>.72
+<span class="w">   </span>🟡<span class="w"> </span>bug_fix_time:<span class="w"> </span><span class="m">0</span>.45
+<span class="w">   </span>🔴<span class="w"> </span>false_positive_rate:<span class="w"> </span><span class="m">0</span>.12<span class="w">  </span><span class="c1"># 低分（误报少）是好事</span>
+
+🧠<span class="w"> </span>神经衰弱检测:
+<span class="w">   </span>状态:<span class="w"> </span>normal
+<span class="w">   </span>负向指标占比:<span class="w"> </span><span class="m">12</span>.5%
+<span class="w">   </span>👍<span class="w"> </span>进化状态正常
+
+💡<span class="w"> </span>建议:
+<span class="w">   </span>🟢<span class="w"> </span><span class="o">[</span>enable_innovation_mode<span class="o">]</span><span class="w"> </span>鼓励创新：降低对实验性代码的拦截强度
+
+<span class="o">============================================================</span>
+</code></pre></div>
+<hr />
+<h2 id="_8">📈 使用场景<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<h3 id="1">场景 1: 每日站会<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看过去 24 小时的进化报告</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report
+
+<span class="c1"># 判断今天是否应该鼓励团队创新</span>
+<span class="c1"># 还是需要收紧质量管控</span>
+</code></pre></div>
+<h3 id="2">场景 2: 迭代回顾<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 查看过去 7 天的进化趋势</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>report<span class="w"> </span>--window<span class="w"> </span><span class="m">168</span>
+
+<span class="c1"># 评估这个迭代的质量 vs 效率平衡</span>
+</code></pre></div>
+<h3 id="3">场景 3: 配置调整<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># 如果系统神经衰弱，自动降低阈值</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>adjust<span class="w"> </span>--auto
+
+<span class="c1"># 手动调整</span>
+moat<span class="w"> </span>evolution<span class="w"> </span>adjust<span class="w"> </span>--pain-threshold<span class="w"> </span><span class="m">40</span>
+</code></pre></div>
+<hr />
+<h2 id="_9">🎯 关键设计决策<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<h3 id="q1">Q1: 为什么误报率是负向指标？<a class="headerlink" href="#q1" title="Permanent link">&para;</a></h3>
+<p><strong>A</strong>: 误报本身不是坏事，但<strong>持续的、大量的误报</strong>意味着系统在"过度反应"，这是"神经衰弱"的前兆。</p>
+<h3 id="q2">Q2: 如何定义"好的进化"？<a class="headerlink" href="#q2" title="Permanent link">&para;</a></h3>
+<p><strong>A</strong>: 六大指标的平衡：
+- <strong>重构成功率</strong> &gt; 0.7（70% 的重构都成功）
+- <strong>性能提升率</strong> &gt; 0.5（平均提升 50%）
+- <strong>Bug 修复时效</strong> &lt; 4 小时（高严重性 Bug）
+- <strong>误报率</strong> &lt; 0.2（20% 以下）
+- <strong>开发效率</strong> 不下降（与历史基线对比）</p>
+<h3 id="q3">Q3: 如何避免"过度优化"？<a class="headerlink" href="#q3" title="Permanent link">&para;</a></h3>
+<p><strong>A</strong>: 进化指标系统会检测"过拟合"：
+- 如果连续 7 天负向指标上升 → 警告
+- 如果连续 30 天负向指标上升 → 触发自动调整</p>
+<hr />
+<h2 id="_10">📚 参考资料<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Gemini 建议的核心洞察："防止神经衰弱"</li>
+<li>Moat 现有架构：<code>moat/pain/feedback.py</code>（用户反馈闭环）</li>
+<li>Moat 现有架构：<code>moat/evolution.py</code>（元知识反向驱动）</li>
+<li>One Memory 梦境引擎：提供高维 Insight</li>
+</ul>
+<hr />
+<h2 id="_11">🚀 下一步<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>短期</strong>（1-2 天）：集成到 <code>moat check</code> 命令，自动采集 Pain Score 趋势</li>
+<li><strong>中期</strong>（1 周）：CLI 命令 <code>moat evolution report</code></li>
+<li><strong>长期</strong>（2 周）：自动调整配置（根据进化指标动态调整 Pain Score 阈值）</li>
+</ol>
+<hr />
+<p><strong>记住</strong>: 进化的方向性比进化速度更重要。🚀</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

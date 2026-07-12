@@ -1,0 +1,66 @@
+site_name: Moat — AI Coding Gatekeeper
+site_url: https://wang-jie-git.github.io/moat/
+repo_url: https://github.com/wang-jie-git/moat
+repo_name: wang-jie-git/moat
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  logo: https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png
+  favicon: https://raw.githubusercontent.com/wang-jie-git/moat/main/social-preview.png
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - Usage Guide: usage.md
+  - Changelog: ../CHANGELOG.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.tabbed
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  generator: false
+
+# Exclude internal docs from public site
+not_in_nav: |
+  /EVOLUTION_METRICS*.md
+  /GEMINI_*.md
+  /HANDOVER_*.md
+  /INSTALLATION.md
+  /PYPI_PUBLISHING.md
+  /READY_FOR_USE.md
+  /SOCIAL_PREVIEW.md
+  /ROADMAP_*.md
+  /V0.*.md
+  /v1*.md
+  /optimization_rules.md
+  /performance_test_report.md
+  /moat_v1_upgrade_plan.md
+  /bugfix/
+  /fixes/
+  /guides/
+  /releases/
