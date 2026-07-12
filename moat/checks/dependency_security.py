@@ -296,7 +296,7 @@ class DependencySecurityCheck(Check):
             if audit_results:
                 return audit_results
 
-        # 方法 3：检查本地漏洞数据库（如果有）
+        # 方法 3：检查本地缓存（如果有）
         cache_key = f"{language}:{package_name}:{version}"
         if cache_key in self.vulnerability_db:
             vuln = self.vulnerability_db[cache_key]
@@ -315,6 +315,12 @@ class DependencySecurityCheck(Check):
                     },
                 )
             )
+            return results
+
+        # 方法 4：静态漏洞检查（内置漏洞数据库）
+        static_results = self._static_vulnerability_check(package_name, version, language)
+        if static_results:
+            return static_results
 
         return results
 
@@ -438,12 +444,13 @@ class DependencySecurityCheck(Check):
 
         return results
 
-    def _static_vulnerability_check(self, package_name: str, version: str) -> list[CheckResult]:
+    def _static_vulnerability_check(self, package_name: str, version: str, language: str = "python") -> list[CheckResult]:
         """静态漏洞检查（基于已知漏洞数据库）
 
         Args:
             package_name: 包名
             version: 版本号
+            language: 语言（python/node）
 
         Returns:
             检查结果列表
