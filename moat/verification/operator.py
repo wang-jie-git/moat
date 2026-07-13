@@ -2,6 +2,8 @@
 审计算子基类 — 所有算子必须实现此协议
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 

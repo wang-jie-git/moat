@@ -5,6 +5,56 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.1.4] - 2026-07-13
+
+### 🎯 核心主题：`moat accept` — 架构验收 8 步法
+
+基于"Vibe Coding 验收 8 步法"，Moat 从"查 Bug 的工具"进化为"制定游戏规则的裁判"。
+`moat accept` 命令将项目代码审计结果按照结构化 8 步格式输出验收报告 + 真元文档。
+
+### ✅ 新增功能
+
+#### `moat accept` 架构验收命令（核心）
+
+**问题**：开发者最痛的不是 Lint，而是"AI 一顿操作猛如虎，回头发现架构烂透了"。Moat 之前只是高级 Linter，不具备"验收架构"的能力。
+
+**方案**：`moat accept` — 配置驱动的架构验收 8 步法
+
+- ✅ **规则注册表（YAML 驱动）** — `architect.yml` 声明式规则定义，不写死每个规则类
+- ✅ **8 步验收报告** — 覆盖步骤 1-8：架构规则审计 → 目录责任 → 模块演练 → 接口规范 → 框架边界 → 运行证据 → 真元文档 → Git 基线
+- ✅ **复用 5 个 verification operator** — 目录责任 / 最小模块演练 / 接口规范 / 框架边界 / 运行证据 / 真元文档
+- ✅ **半自动化设计** — 能自动检查的自动过，不能的生成人工核查清单
+- ✅ **门禁模式** — `--fail-on-score 60` / CRITICAL 违规拦截
+- ✅ **报告输出** — Markdown / JSON 格式，支持 `--output` 保存
+
+**文件**：`moat/checks/acceptance/`（3 个文件 ~400 行）
+
+#### 架构改进
+
+- ✅ `verification/operator.py` 修复 `TYPE_CHECKING` 导入 Bug（`from __future__ import annotations`）
+- ✅ `runner.py` 自动检查打印优化（降级为人工核查的规则清晰标注）
+
+### ✅ 工程改进
+
+- ✅ `architect.yml` 模板 — `moat accept --generate-rules` 一键生成
+- ✅ `ACCEPTANCE_REPORT.md` — 结构化 8 步报告，证据链完整
+- ✅ `.moat/truth_document.md` — 自动生成的架构实施真元文档
+
+### 🧪 测试
+
+- ✅ 1020 passed, 2 skipped（+11 个测试）
+- ✅ `moat accept` 在 moat 自己的仓库上：80/100 分，5/6 自动检查通过
+- ✅ `moat accept --json` 输出验证
+- ✅ `moat accept --fail-on-score` 门禁验证
+- ✅ `moat accept --output` 文件保存验证
+
+### 📚 文档
+
+- ✅ `moat accept --help` — 完整命令行帮助
+- ✅ CHANGELOG 记录
+
+---
+
 ## [1.1.3] - 2026-07-13
 
 ### 🎯 核心主题：ImportCompletenessChecker — 消灭"函数存在但未导入"类 Bug

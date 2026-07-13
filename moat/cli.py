@@ -190,6 +190,68 @@ def cmd_verify(args) -> int:
     return cmd_verify(args)
 
 
+def cmd_accept(args) -> int:
+    """🏗 架构验收 8 步法 — 生成标准化验收报告 + 真元文档
+
+    用法:
+        moat accept                         # 完整验收（使用内置默认规则）
+        moat accept --generate-rules        # 生成 architect.yml 模板
+        moat accept --output report.md      # 指定输出文件
+        moat accept --json                  # JSON 格式输出
+        moat accept --fail-on-score 60      # 评分阈值门禁
+        moat accept --rules architect.yml   # 使用自定义规则文件
+    """
+    from pathlib import Path
+    from moat.checks.acceptance import (
+        RuleRegistry,
+        ArchitectRunner,
+        AcceptanceReportGenerator,
+    )
+
+    project_root = Path(args.project).resolve()
+
+    # 生成规则模板
+    if args.generate_rules:
+        from moat.checks.acceptance.rule_registry import RuleRegistry
+        path = RuleRegistry.save_template(project_root)
+        print(f"✅ 架构规则模板已生成: {path}")
+        print(f"   编辑 {path.name} 后运行 moat accept 开始验收")
+        return 0
+
+    # 执行验收
+    rules_path = args.rules
+    runner = ArchitectRunner(project_root, rules_path=rules_path)
+    report = runner.run()
+
+    # 生成报告
+    gen = AcceptanceReportGenerator(report)
+
+    output_path = args.output
+    if output_path:
+        fmt = "json" if output_path.endswith(".json") else "md"
+        saved = gen.save(output_path, fmt=fmt)
+        print(f"\n📄 报告已保存: {saved}")
+
+    if args.json:
+        import json
+        print(json.dumps(report.to_dict(), indent=2, ensure_ascii=False))
+
+    # 门禁模式
+    if args.fail_on_score is not None:
+        threshold = args.fail_on_score
+        if report.overall_score < threshold:
+            print(f"\n❌ 架构评分 {report.overall_score:.0f}/100 低于阈值 {threshold}")
+            return 1
+
+    # CRITICAL 违规拦截
+    critical = sum(1 for r in report.rules for v in r.violations if v.get("severity") == "CRITICAL")
+    if critical > 0:
+        print(f"\n❌ 发现 {critical} 个 CRITICAL 违规")
+        return 1
+
+    return 0 if report.passed else 1
+
+
 def cmd_report(args):
     """生成检查报告"""
     from moat.report import generate_report
@@ -520,6 +582,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_rules_explain = p_rules_sub.add_parser("explain", help="解释规则详情（为什么报错/如何修复/如何关闭）")
     p_rules_explain.add_argument("rule_id", help="规则 ID（如 SQL-001, COMPLEX-001）")
 
+    # 🏗 accept - 架构验收 8 步法
+    p_accept = sub.add_parser("accept", help="🏗 架构验收 8 步法（生成标准化验收报告 + 真元文档）")
+    _shared_args(p_accept)
+    p_accept.add_argument("--generate-rules", action="store_true",
+                          help="生成 architect.yml 规则模板")
+    p_accept.add_argument("--rules", "-r",
+                          help="自定义规则文件路径（默认: architect.yml）")
+    p_accept.add_argument("--output", "-o", default="",
+                          help="输出报告文件路径（默认: 打印到终端）")
+    p_accept.add_argument("--json", action="store_true",
+                          help="JSON 格式输出")
+    p_accept.add_argument("--fail-on-score", type=int, metavar="SCORE",
+                          help="架构评分低于此阈值则失败")
+
     # 🆕 architecture - 架构健康报告
     p_arch = sub.add_parser("architecture", help="生成架构健康报告（L2）")
     _shared_args(p_arch)
@@ -621,6 +697,7 @@ def main():
 
     commands = {
         "check": cmd_check,
+        "accept": cmd_accept,
         "watch": cmd_watch,
         "init": cmd_init,
         "report": cmd_report,
