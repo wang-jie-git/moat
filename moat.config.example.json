@@ -1,0 +1,36 @@
+{
+  "ignore_modules": [
+    "conftest",
+    "conf",
+    "settings",
+    "manage",
+    "wsgi",
+    "asgi",
+    "setup",
+    "_version"
+  ],
+  "ignore_patterns": [
+    "*_pb2.py",
+    "*_pb2_grpc.py",
+    "*_test.py",
+    "test_*.py",
+    "*_test_*.py",
+    "*_grpc.py",
+    "migrations/*",
+    "versions/*"
+  ],
+  "import_completeness": {
+    "enabled": true,
+    "max_results_per_file": 10
+  },
+  "python": {
+    "max_complexity": 10,
+    "min_docstring_coverage": 80
+  },
+  "typescript": {
+    "tsc_path": "npx tsc",
+    "tsconfig": "tsconfig.json",
+    "require_timing_doc": false,
+    "enable_semantic_checks": false
+  }
+}

@@ -99,14 +99,65 @@ tests/test_call_chain.py
 
 | 优先级 | 方案 | 文件 | 工作量 | 收益 |
 |--------|------|------|--------|------|
-| 🔴 P0 | ImportCompletenessChecker | `moat/checks/import_completeness.py` + `runner.py` 集成 | ~150 行 | 消灭"函数存在但未导入"类 Bug |
+| 🔴 P0 | ImportCompletenessChecker | `moat/checks/import_completeness.py` + `runner.py` 集成 | ~400 行 | 消灭"函数存在但未导入"类 Bug |
 | 🟡 P1 | 调用链集成测试 | `tests/test_call_chain.py` | ~80 行 | 运行时验证关键路径 |
 | 🟡 P1 | dev 基础设施 | `.venv` + pytest 安装 | 5 行 | 开发者可本地跑测试 |
 | 🟢 P2 | 测试模式拆分 | `pyproject.toml` 或 Makefile | 10 行 | 提速 CI |
+| 🟢 P2 | Go/Rust 语言检查 | `checks/go.py` + `checks/rust.py` | 中等 | 语言覆盖完整 |
+
+## 四、实施状态
+
+| 阶段 | 项目 | 状态 | 日期 |
+|------|------|------|------|
+| 🟢 已实施 | ImportCompletenessChecker 核心 | ✅ 400+ 行 AST 扫描 | 2026-07-13 |
+| 🟢 已实施 | `runner.py` quick/full 模式集成 | ✅ 修改的文件 / 全量扫描 | 2026-07-13 |
+| 🟢 已实施 | 32 个测试（含扩展作用域） | ✅ 覆盖参数/解包/推导式/with/except | 2026-07-13 |
+| 🟢 已实施 | `moat check` 自检通过 | ✅ 0 failed | 2026-07-13 |
+| 🔴 未实施 | 调用链集成测试 | ❌ | — |
+| 🔴 未实施 | dev 环境问题 | ⚠️ 已知问题待解决 | — |
+| 🔴 未实施 | 测试模式拆分 | ❌ | — |
+| 🔴 未实施 | Go/Rust 语言检查 | ❌ | — |
+
+### 轮次 2：误报消除（已完成）
+
+| 问题 | 修复 | 效果 |
+|------|------|------|
+| 函数参数误报 | `_collect_definitions` 捕获 `args.args` | `project_root` 等不再误报 |
+| 解包变量误报 | `_add_name_target` 递归处理 `Tuple`/`List` | `for a, b in ...` 不再误报 |
+| 推导式变量误报 | 捕获 `ListComp`/`SetComp`/`DictComp`/`GeneratorExp` | `[f for f in items]` 不再误报 |
+| with-as 变量误报 | 捕获 `With`/`AsyncWith` `item.optional_vars` | `with x as tar:` 不再误报 |
+| except-as 变量误报 | 捕获 `ExceptHandler.name` | `except E as e:` 不再误报 |
+| lambda 参数误报 | 捕获 `Lambda.args.args` | `lambda x: x()` 不再误报 |
+
+### 轮次 3：性能优化（已完成）
+
+| 优化 | 说明 | 效果 |
+|------|------|------|
+| `_has_no_calls` 快速跳过 | 前 200 字节检查 `(` 字符 | 空文件/无调用文件 0 AST 解析 |
+| `ast_cache` | 可选 AST 缓存避免重复解析 | 降低同文件多次解析开销 |
+| 进度提示 | 每 50 文件输出一次（仅 >100 文件时） | 大项目用户体验提升 |
+
+### 轮次 4：开发者体验（已完成）
+
+| 改进 | 说明 |
+|------|------|
+| `moat check --diff` 防御性取值 | `impact.get("callers", [])` + `risk_level` fallback |
+| 测试路径独立化 | `test_diff_bugfix.py` 从 One 项目改为 `--project .` |
+| `pyproject.toml` dev 依赖 | 新增 `[project.optional-dependencies] dev` |
+| `__init__.py` 导出补全 | `__all__` 从 9 → 23 模块 |
+| 默认配置模板 | `.moat/moat.json` 含 ignore_modules + ignore_patterns |
+| QuickCheck 双重初始化 | 复用实例，避免重复构造 |
+
+### 轮次 5：跨文件引用提示（已完成）
+
+| 改进 | 说明 |
+|------|------|
+| `_find_definition_hint()` | 同目录搜索 `def name(`/`class name(` 定义位置 |
+| 建议格式 | `从 src/helpers.py 导入 foo`（含完整 import 语句） |
 
 ---
 
-## 四、ImportCompletenessChecker 详细设计
+## 五、ImportCompletenessChecker 详细设计
 
 ### 算法
 

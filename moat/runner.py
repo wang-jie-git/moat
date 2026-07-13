@@ -170,7 +170,17 @@ def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: b
         检查列表 [(name, check_instance), ...]
     """
     from moat.checks.quick_check import QuickCheck
-    checks = [("快速检查（修改的文件）", QuickCheck(root, config))]
+    quick_check = QuickCheck(root, config)
+    checks = [("快速检查（修改的文件）", quick_check)]
+
+    # 导入完备性检查 — 验证"函数存在但未导入"问题
+    # 复用同一个 QuickCheck 实例，避免重复初始化
+    modified_files = quick_check._get_changed_files()
+    if modified_files:
+        from moat.checks.import_completeness import ImportCompletenessCheck
+        # 只检查修改的文件，与 QuickCheck 保持一致
+        import_config = {**config, "target_files": modified_files}
+        checks.append(("导入完备性检查（修改的文件）", ImportCompletenessCheck(root, import_config)))
 
     # 战术建议 1：异步触发优化检查（默认不跑）
     if enable_optimization:
@@ -195,6 +205,11 @@ def _create_full_checks(project_type: dict[str, bool], root: Path, config: dict[
     """
     from moat.checks.quick_check import FullCheck
     checks = [("完整检查（所有文件）", FullCheck(root, config))]
+
+    # 导入完备性检查（完整模式扫描所有 Python 文件）
+    if project_type.get("python"):
+        from moat.checks.import_completeness import ImportCompletenessCheck
+        checks.append(("导入完备性检查（所有文件）", ImportCompletenessCheck(root, config)))
 
     # 战术建议 1：完整模式也支持优化检查
     if enable_optimization:
