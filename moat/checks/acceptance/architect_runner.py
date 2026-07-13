@@ -104,6 +104,13 @@ class ArchitectRunner:
         rules = self.registry.load(self.rules_path)
         summary = self.registry.summary()
 
+        # 检查是否使用了自定义规则文件
+        rules_file = self.project_root / "architect.yml"
+        if rules_file.exists():
+            print(f"📋 加载自定义规则: {rules_file.name}")
+        else:
+            print(f"📋 使用内置默认规则（运行 moat accept --generate-rules 生成自定义规则）")
+
         print(f"📋 加载 {summary['total']} 条架构规则")
         print(f"   🔧 可自动检查: {summary['auto_checkable']}")
         print(f"   👤 需要人工核查: {summary['manual']}\n")

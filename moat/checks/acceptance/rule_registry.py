@@ -346,8 +346,6 @@ class RuleRegistry:
                     import yaml
                     data = yaml.safe_load(raw)
                 except ImportError:
-                    # 内置 fallback: 用内置默认规则
-                    print("  ⚠ 未安装 PyYAML，使用内置默认规则")
                     return DEFAULT_RULES
             elif path.suffix == ".json":
                 data = json.loads(raw)

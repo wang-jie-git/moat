@@ -87,32 +87,77 @@ class FrameworkUsageOperator:
         )
 
     def _detect_frameworks(self, project_path: Path) -> list[str]:
-        """检测项目使用的框架"""
-        frameworks = []
+        """检测项目使用的框架
 
-        # 检查FastAPI
-        if (project_path / "requirements.txt").exists():
-            requirements = (project_path / "requirements.txt").read_text()
-            if "fastapi" in requirements.lower():
-                frameworks.append("fastapi")
+        策略：
+        1. 扫描源码中 import 语句（最准确）
+        2. 回退检查依赖声明文件（仅 main dependencies）
+        """
+        # 策略1：扫描源码 import 语句
+        frameworks_from_imports = set()
+        py_files = list(project_path.rglob("*.py"))
+        for py_file in py_files[:200]:  # 限制扫描数量
+            try:
+                # 只检查前 50 行（import 通常在文件顶部）
+                lines = py_file.read_text(encoding="utf-8", errors="ignore").split("\n")[:50]
+                for line in lines:
+                    line = line.strip()
+                    if line.startswith("import ") or line.startswith("from "):
+                        for fw_keyword in ["fastapi", "django", "flask"]:
+                            if fw_keyword in line:
+                                frameworks_from_imports.add(fw_keyword)
+            except Exception:
+                pass
 
-        if (project_path / "pyproject.toml").exists():
-            pyproject = (project_path / "pyproject.toml").read_text()
-            if "fastapi" in pyproject.lower():
-                frameworks.append("fastapi")
+        # 策略2：检查依赖声明文件（requirements.txt + pyproject.toml main deps）
+        frameworks_from_deps = set()
 
-        # 检查Django
-        if (project_path / "requirements.txt").exists():
-            requirements = (project_path / "requirements.txt").read_text()
-            if "django" in requirements.lower():
-                frameworks.append("django")
+        # 检查 requirements.txt
+        req_file = project_path / "requirements.txt"
+        if req_file.exists():
+            try:
+                req_text = req_file.read_text(encoding="utf-8").lower()
+                for fw, kw in [("fastapi", "fastapi"), ("django", "django"), ("flask", "flask")]:
+                    if kw in req_text:
+                        frameworks_from_deps.add(fw)
+            except Exception:
+                pass
 
-        # 检查Flask
-        if (project_path / "requirements.txt").exists():
-            requirements = (project_path / "requirements.txt").read_text()
-            if "flask" in requirements.lower():
-                frameworks.append("flask")
+        # 检查 pyproject.toml (仅 main dependencies)
+        if project_path / "pyproject.toml":
+            try:
+                # 使用 toml 解析（如果有），否则简单 grep
+                try:
+                    import tomllib  # Python 3.11+
+                    with open(project_path / "pyproject.toml", "rb") as f:
+                        data = tomllib.load(f)
+                    deps = data.get("project", {}).get("dependencies", [])
+                    dep_text = " ".join(deps).lower()
+                except (ImportError, Exception):
+                    # fallback: 只检查 [project] 下的 dependencies，跳过 optional-dependencies
+                    content = (project_path / "pyproject.toml").read_text(encoding="utf-8")
+                    # 提取 [project] 到下一个 [ 之间的内容
+                    in_project = False
+                    dep_section = []
+                    for line in content.split("\n"):
+                        stripped = line.strip()
+                        if stripped.startswith("[project]"):
+                            in_project = True
+                            continue
+                        if in_project:
+                            if stripped.startswith("["):
+                                break
+                            dep_section.append(line)
+                    dep_text = " ".join(dep_section).lower()
 
+                for fw, kw in [("fastapi", "fastapi"), ("django", "django"), ("flask", "flask")]:
+                    if kw in dep_text:
+                        frameworks_from_deps.add(fw)
+            except Exception:
+                pass
+
+        # 合并：优先使用 import 检测结果，回退使用依赖声明
+        frameworks = list(frameworks_from_imports) if frameworks_from_imports else list(frameworks_from_deps)
         return frameworks
 
     def _get_framework_capabilities(self, frameworks: list[str]) -> dict:
@@ -202,9 +247,12 @@ class FrameworkUsageOperator:
                 if not any(exempt in str(f) for exempt in exempt_patterns)
             ]
 
-        print(f"      扫描 {len(python_files)} 个Python文件...")
+        # 对于每个框架，先找出实际使用该框架的文件
+        framework_files: dict[str, list[str]] = {}
+        for fw in frameworks:
+            framework_files[fw] = []
 
-        for py_file in python_files[:30]:  # 限制扫描数量
+        for py_file in python_files:
             try:
                 file_path_str = str(py_file.relative_to(project_path))
 
@@ -214,20 +262,37 @@ class FrameworkUsageOperator:
 
                 content = py_file.read_text(encoding="utf-8", errors="ignore")
 
-                # FastAPI 特性检查
-                if "fastapi" in frameworks:
-                    usage_checks.extend(self._check_fastapi_features(content, file_path_str))
-
-                # Django 特性检查
-                if "django" in frameworks:
-                    usage_checks.extend(self._check_django_features(content, file_path_str))
-
-                # Flask 特性检查
-                if "flask" in frameworks:
-                    usage_checks.extend(self._check_flask_features(content, file_path_str))
+                # 对每个框架，检查文件是否实际 import 了该框架
+                for fw in frameworks:
+                    is_relevant = False
+                    for fw_keyword in [fw, fw.replace("-", "_")]:
+                        if f"import {fw_keyword}" in content or f"from {fw_keyword}" in content:
+                            is_relevant = True
+                            break
+                    if is_relevant:
+                        framework_files[fw].append((file_path_str, content))
 
             except Exception:
                 pass
+
+        print(f"      扫描 {len(python_files)} 个Python文件...")
+        for fw in frameworks:
+            fw_count = len(framework_files[fw])
+            print(f"      框架 {fw}: {fw_count} 个相关文件")
+
+        # 对每个框架的相关文件执行特性检查
+        for fw in frameworks:
+            if fw == "fastapi":
+                for file_path_str, content in framework_files["fastapi"]:
+                    usage_checks.extend(self._check_fastapi_features(content, file_path_str))
+
+            elif fw == "django":
+                for file_path_str, content in framework_files["django"]:
+                    usage_checks.extend(self._check_django_features(content, file_path_str))
+
+            elif fw == "flask":
+                for file_path_str, content in framework_files["flask"]:
+                    usage_checks.extend(self._check_flask_features(content, file_path_str))
 
         return usage_checks
 
