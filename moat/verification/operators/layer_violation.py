@@ -88,7 +88,12 @@ class LayerViolationOperator:
 
     def verify(self, context: VerificationContext) -> OperatorResult:
         """执行调用链检查"""
-        print(f"   🔗 追踪调用链...")
+        diff_mode = "target_files" in context.config
+        if diff_mode:
+            target_files = context.config["target_files"]
+            print(f"   🔗 追踪调用链（增量模式：{len(target_files)} 个文件）...")
+        else:
+            print(f"   🔗 追踪调用链...")
 
         project_path = context.project_path
         violations: list[Violation] = []

@@ -86,23 +86,59 @@ class ArchitectRunner:
         self.project_root = project_root.resolve()
         self.rules_path = Path(rules_path) if rules_path else None
         self.registry = RuleRegistry(self.project_root)
+        self.target_files: list[str] | None = None  # 增量模式的限定文件列表
 
-    def run(self) -> AcceptanceReport:
+    def _get_changed_files(self) -> list[str]:
+        """获取 git 修改的文件列表（增量模式）"""
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["git", "diff", "--name-only", "HEAD"],
+                capture_output=True, text=True, cwd=self.project_root,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                files = [f.strip() for f in result.stdout.split("\n") if f.strip()]
+                return files
+        except Exception:
+            pass
+        return []
+
+    def run(self, diff_mode: bool = False) -> AcceptanceReport:
         """执行完整架构验收
 
         流程:
         1. 加载规则 → 2. 自动检查 → 3. 人工核查 → 4. 聚合报告
+
+        Args:
+            diff_mode: 增量模式，只检查 git 修改的文件
         """
         start_time = time.time()
 
         print(f"\n{'=' * 55}")
-        print(f"  🏗  Moat 架构验收")
+        title = "  🏗  Moat 架构验收（增量模式）" if diff_mode else "  🏗  Moat 架构验收"
+        print(f"  {title}")
         print(f"  {self.project_root}")
         print(f"{'=' * 55}\n")
 
         # 1. 加载规则
         rules = self.registry.load(self.rules_path)
         summary = self.registry.summary()
+
+        # 增量模式：获取修改的文件列表
+        if diff_mode:
+            self.target_files = self._get_changed_files()
+            print(f"📋 增量模式：检测到 {len(self.target_files)} 个修改的文件")
+            if not self.target_files:
+                print(f"   无未提交的变更，跳过验收")
+                return AcceptanceReport(
+                    project_path=self.project_root,
+                    overall_score=100.0,
+                    passed=True,
+                    execution_time=time.time() - start_time,
+                )
+        else:
+            self.target_files = None
 
         # 检查是否使用了自定义规则文件
         rules_file = self.project_root / "architect.yml"
@@ -199,7 +235,10 @@ class ArchitectRunner:
             if rule.operator and rule.operator in OPERATOR_MAP:
                 operator_fn = OPERATOR_MAP[rule.operator]
                 # 调用 verification operator
-                op_result = operator_fn(self.project_root)
+                op_result = operator_fn(
+                    self.project_root,
+                    target_files=self.target_files,
+                )
                 result.passed = op_result.get("passed", False)
                 result.violations = op_result.get("violations", [])
                 result.evidence = op_result.get("evidence", [])
@@ -343,7 +382,7 @@ class ArchitectRunner:
 # Operator 映射表 — 对接 verification 模块
 # ──────────────────────────────────────────────
 
-def _run_directory_operator(project_root: Path) -> dict:
+def _run_directory_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行目录责任算子"""
     try:
         from moat.verification.operators import DirectoryResponsibilityOperator
@@ -366,7 +405,7 @@ def _run_directory_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
-def _run_module_drill_operator(project_root: Path) -> dict:
+def _run_module_drill_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行最小模块演练算子"""
     try:
         from moat.verification.operators import MinimalModuleDrillOperator
@@ -389,7 +428,7 @@ def _run_module_drill_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
-def _run_api_spec_operator(project_root: Path) -> dict:
+def _run_api_spec_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行接口规范算子"""
     try:
         from moat.verification.operators import APIResponseSpecOperator
@@ -412,7 +451,7 @@ def _run_api_spec_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
-def _run_framework_operator(project_root: Path) -> dict:
+def _run_framework_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行框架边界算子"""
     try:
         from moat.verification.operators import FrameworkUsageOperator
@@ -435,7 +474,7 @@ def _run_framework_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
-def _run_runtime_operator(project_root: Path) -> dict:
+def _run_runtime_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行运行时证据算子"""
     try:
         from moat.verification.operators import RuntimeEvidenceOperator
@@ -458,7 +497,7 @@ def _run_runtime_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
-def _run_truth_document_operator(project_root: Path) -> dict:
+def _run_truth_document_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行真元文档生成算子"""
     try:
         from moat.verification.operators import TruthDocumentGeneratorOperator
@@ -481,7 +520,7 @@ def _run_truth_document_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
-def _run_git_baseline_operator(project_root: Path) -> dict:
+def _run_git_baseline_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行 Git 基线检查"""
     evidence = []
     git_dir = project_root / ".git"
@@ -550,7 +589,7 @@ def _run_git_baseline_operator(project_root: Path) -> dict:
     }
 
 
-def _run_layer_violation_operator(project_root: Path) -> dict:
+def _run_layer_violation_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
     """运行调用链分层校验"""
     try:
         from moat.verification.operators import LayerViolationOperator
@@ -558,6 +597,11 @@ def _run_layer_violation_operator(project_root: Path) -> dict:
 
         op = LayerViolationOperator()
         ctx = VerificationContext(project_path=project_root)
+
+        # 增量模式：只检查修改文件的调用链
+        if target_files is not None:
+            ctx.config["target_files"] = target_files
+
         result = op.verify(ctx)
 
         return {

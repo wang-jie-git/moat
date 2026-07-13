@@ -221,7 +221,7 @@ def cmd_accept(args) -> int:
     # 执行验收
     rules_path = args.rules
     runner = ArchitectRunner(project_root, rules_path=rules_path)
-    report = runner.run()
+    report = runner.run(diff_mode=args.diff)
 
     # 生成报告
     gen = AcceptanceReportGenerator(report)
@@ -595,6 +595,8 @@ def build_parser() -> argparse.ArgumentParser:
                           help="JSON 格式输出")
     p_accept.add_argument("--fail-on-score", type=int, metavar="SCORE",
                           help="架构评分低于此阈值则失败")
+    p_accept.add_argument("--diff", action="store_true",
+                          help="增量验收模式（只检查 git 修改的文件）")
 
     # 🆕 architecture - 架构健康报告
     p_arch = sub.add_parser("architecture", help="生成架构健康报告（L2）")

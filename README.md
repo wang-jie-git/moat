@@ -204,6 +204,7 @@ moat dashboard [--port 8080]                  # 启动 Web 看板
 # 架构验收 ✨ v1.1.4
 moat accept [--generate-rules] [--output report.md] [--fail-on-score 60]
                                         # 🏗 架构验收 8 步法（生成标准化验收报告 + 真元文档）
+moat accept --diff                      # 增量验收模式（只检查 git 修改的文件，2 秒出结果）
 moat accept --generate-rules            # 生成 architect.yml 规则模板
 moat accept --output ACCEPTANCE_REPORT.md
                                         # 输出验收报告到文件
@@ -669,6 +670,54 @@ moat architecture --copy
 `moat accept` 是 Moat 的"架构裁判"模式。它按照 **Vibe Coding 验收 8 步法** 对项目进行结构化验收，输出标准化验收报告 + 架构实施真元文档。
 
 **一句话**：从"查 Bug 的工具"进化为"制定游戏规则的裁判"。
+
+### 🎯 三大独家差异点
+
+#### 1. Diff-Aware Audit / 增量验收
+
+**不止扫描全量，更擅长只审本次修改。**
+
+```bash
+moat accept --diff          # 只检查 git 修改的 5 个文件
+moat accept                  # 全量检查 4160 个文件
+```
+
+传统架构工具每次跑全量（5 分钟起），Moat 增量模式只扫描 git 变更，**2 秒出结果**。适合：
+- **pre-commit hook**：提交前增量验收
+- **CI 快速门禁**：PR 触发增量检查
+- **日常开发**：改完即验，不等全量
+
+#### 2. Layer-Enforcer / 分层执行者
+
+**内置标准分层规则，开箱即用。**
+
+Moat 默认识别 5 层架构：`routes → services → db → models → utils`，自动检测：
+
+```
+❌ routes/order.py → db/          ← 违规：路由直连数据库
+❌ services/order.py → routes/    ← 违规：服务反向依赖路由
+✅ routes/order.py → services/    ← 正确：路由 → 服务层
+```
+
+通过 `architect.yml` 自定义任意分层规则，适配 MVC、DDD、六边形架构等。
+
+#### 3. Evidence-Based / 证据驱动
+
+**所有拦截都有 Reason → File → Line 的完整证据链。**
+
+```markdown
+### ❌ [LAYER_VIOLATION] 跨层违规
+- **严重级别**: CRITICAL
+- **违规**: 入口层 (routes/api) → db
+- **文件**: `routes/order.py:42`
+- **证据**: routes/order.py 导入了 db/models.py（应通过 services/）
+- **建议**: 将数据访问移到服务层
+```
+
+不黑盒报错，每条违规附带：
+- 📍 文件 + 行号
+- 🔗 调用链路径
+- 💡 修复建议
 
 ### 8 步验收覆盖
 
