@@ -178,7 +178,8 @@ class SecretsCheck(Check):
     def _should_skip(self, file_path: Path) -> bool:
         """判断是否跳过文件"""
         # 跳过常见目录
-        skip_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".next", ".nuxt"}
+        skip_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".next", ".nuxt",
+                     "build", "dist", "target", "vendor", ".tox", "htmlcov"}
         if any(part in skip_dirs for part in file_path.parts):
             return True
 
