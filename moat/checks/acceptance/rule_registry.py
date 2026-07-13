@@ -190,9 +190,10 @@ DEFAULT_RULES = [
         title="固化版本，留存稳定基线",
         description="验收通过后提交 Git 版本，首个稳定版本标记为基线，后续迭代基于此基线。",
         step=8,
-        type="manual",
+        type="runtime",
         severity="RECOMMENDED",
-        auto_checkable=False,
+        operator="git_baseline",
+        auto_checkable=True,
         config={
             "items": [
                 "当前是否有 Git 仓库",

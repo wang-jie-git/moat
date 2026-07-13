@@ -481,6 +481,75 @@ def _run_truth_document_operator(project_root: Path) -> dict:
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
+def _run_git_baseline_operator(project_root: Path) -> dict:
+    """运行 Git 基线检查"""
+    evidence = []
+    git_dir = project_root / ".git"
+
+    if not git_dir.exists():
+        return {
+            "passed": False,
+            "violations": [{"message": "未发现 Git 仓库", "severity": "CRITICAL"}],
+            "evidence": ["❌ 未发现 Git 仓库"],
+            "suggestion": "使用 git init 初始化仓库",
+        }
+
+    evidence.append("✅ Git 仓库已存在")
+
+    try:
+        import subprocess
+
+        # 最近一次提交
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%h %ai %s"],
+            capture_output=True, text=True, cwd=project_root,
+            timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            evidence.append(f"最新提交: {result.stdout.strip()}")
+        else:
+            evidence.append("⚠️  无提交记录")
+
+        # 是否有未提交变更
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True, text=True, cwd=project_root,
+            timeout=5,
+        )
+        changes = [l for l in result.stdout.split("\n") if l.strip()]
+        if changes:
+            evidence.append(f"未提交变更: {len(changes)} 个文件")
+        else:
+            evidence.append("✅ 工作区干净")
+
+        # 检查 tag
+        result = subprocess.run(
+            ["git", "tag", "--list", "v*"],
+            capture_output=True, text=True, cwd=project_root,
+            timeout=5,
+        )
+        tags = [t for t in result.stdout.split("\n") if t.strip()]
+        if tags:
+            evidence.append(f"基线标签: {', '.join(tags[:5])}")
+        else:
+            evidence.append("⚠️  未创建基线标签 (建议: git tag v1.0)")
+
+    except Exception as e:
+        evidence.append(f"⚠️  Git 信息获取失败: {e}")
+
+    violations = []
+    warnings = [e for e in evidence if "⚠️" in e or "❌" in e]
+    for w in warnings:
+        violations.append({"message": w, "severity": "HIGH"})
+
+    return {
+        "passed": len(violations) == 0,
+        "violations": violations,
+        "evidence": evidence,
+        "suggestion": "运行 git tag v1.0 创建基线标签" if any("基线标签" in e for e in evidence if "⚠️" in e) else None,
+    }
+
+
 # operator 名称 → 执行函数映射
 OPERATOR_MAP = {
     "directory_responsibility": _run_directory_operator,
@@ -489,4 +558,5 @@ OPERATOR_MAP = {
     "framework_usage": _run_framework_operator,
     "runtime_evidence": _run_runtime_operator,
     "truth_document": _run_truth_document_operator,
+    "git_baseline": _run_git_baseline_operator,
 }
