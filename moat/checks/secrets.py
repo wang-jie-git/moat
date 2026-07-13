@@ -61,8 +61,20 @@ class SecretsCheck(Check):
             "Google API Key",
         ),
         (
+            "openai_api_key",
+            r'sk-[a-zA-Z0-9_-]{20,}',
+            "CRITICAL",
+            "OpenAI API Key (sk-)",
+        ),
+        (
+            "stripe_api_key",
+            r'(?:sk_live|pk_live|sk_test|pk_test)_[a-zA-Z0-9]{10,}',
+            "CRITICAL",
+            "Stripe API Key",
+        ),
+        (
             "generic_api_key",
-            r'api[_-]key["\s:=]+["\x27]([a-zA-Z0-9_-]{16,})["\x27]',
+            r'(?i)api[_-]key["\s:=]+["\x27]([a-zA-Z0-9_-]{16,})["\x27]',
             "HIGH",
             "Generic API Key",
         ),
