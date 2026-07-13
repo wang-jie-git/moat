@@ -5,6 +5,71 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.1.3] - 2026-07-13
+
+### 🎯 核心主题：ImportCompletenessChecker — 消灭"函数存在但未导入"类 Bug
+
+基于 One 项目 WebSocket 导入 Bug 的真实教训（`_build_system_prompt` 缺失导入导致运行时崩溃），新增 ImportCompletenessChecker 算子，用 AST 静态分析检测调用链完整性。
+
+### ✅ 新增功能
+
+#### ImportCompletenessChecker（核心）
+
+**问题**：Moat 之前只检查模块能否导入、函数是否存在，但不检查"模块 A 调用了函数 B，但没导入 B"
+- ❌ `_build_system_prompt` 在 `ws_full_handler.py` 中被调用但未导入 → 运行时崩溃
+- ❌ 静态分析的"盲区"：函数存在 ≠ 调用路径完整
+
+**方案**：基于 Python AST 的导入完备性检查器，按需扫描策略
+
+- ✅ 扫描文件中的所有 `ast.Call` 节点（函数调用点）
+- ✅ 验证每个调用名是否在当前文件的 import 列表中
+- ✅ 内置函数豁免（70+ 个 Python 内置函数）
+- ✅ `self.xxx` / `cls.xxx` 方法调用豁免
+- ✅ 同文件定义函数豁免
+- ✅ `for` 循环解包变量豁免（`for a, b in ...`）
+- ✅ 赋值上下文变量豁免
+- ✅ `fail_open` 装饰器：单个文件解析失败不阻塞全量检查
+
+**文件**：`moat/checks/import_completeness.py`（320 行）
+
+#### 性能优化
+
+- ✅ 跳过 >500KB 超大文件
+- ✅ 跳过 AST 节点 < 200 的"单体文件"
+- ✅ QuickCheck 避免双重初始化
+- ✅ 在 moat 自己仓库上跑零误报（扫描 168 个 py 文件，0 errors/0 warnings）
+
+#### 跨文件引用提示
+
+- ✅ 对未解析的调用名，搜索项目内同名函数定义位置
+- ✅ 报错中输出 `→ 建议：在 file.py:line 有定义 def foo()` 提示
+
+### ✅ 工程改进
+
+#### 开发者体验
+
+- ✅ `Makefile` — `make test` / `make check` / `make clean` / `make dev`
+- ✅ `pyproject.toml` — 新增 `[dev]` 可选依赖（pytest/pytest-cov/build/twine）
+- ✅ `.envrc` — `unset PYTHONPATH` 消除 SRE Module Mismatch
+
+#### Bug 修复
+
+- ✅ `--diff` 模式 `KeyError: 'callers'` → 全部改用 `.get()` 防御性取值
+- ✅ `test_diff_bugfix.py` 硬编码 One 项目路径 → 改为 `--project .`
+- ✅ `__init__.py` 导出不完整 → `__all__` 从 9 补全到 23 模块
+
+### 🧪 测试
+
+- ✅ 1009 passed, 2 skipped（+1 个新测试 `test_import_completeness_checker.py`）
+- ✅ 快速模式（diff）：3.71s
+- ✅ 完整模式（全量）：4.73s
+
+### 📚 文档
+
+- ✅ `docs/OPTIMIZATION_PLAN.md` — 完整优化方案（ImportCompletenessChecker + 调用链测试 + 测试模式拆分）
+
+---
+
 ## [1.1.2] - 2026-07-12
 
 ### 🎯 核心主题：Moat Immune 修复 + 知识资产库建立

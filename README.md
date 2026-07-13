@@ -1,11 +1,11 @@
 # Moat — AI 编码守门员 🚀 / AI Coding Gatekeeper
 
-> **当前版本**: v1.1.2 | [更新日志](CHANGELOG.md)
+> **当前版本**: v1.1.3 | [更新日志](CHANGELOG.md)
 >
 > [![PyPI version](https://img.shields.io/pypi/v/moat-ai.svg?style=flat-square&color=brightgreen)](https://pypi.org/project/moat-ai/)
 > [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
 > [![Python](https://img.shields.io/badge/python-3.10+-blue.svg?style=flat-square)](pyproject.toml)
-> [![Tests](https://img.shields.io/badge/tests-99.6%25-brightgreen?style=flat-square)](tests/)
+> [![Tests](https://img.shields.io/badge/tests-1009%20passed-brightgreen?style=flat-square)](tests/)
 [![CI](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml/badge.svg)](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml)
 >
 > **English**: Moat is a real-time AI coding gatekeeper. It runs locally in your terminal and CI, catching architecture breaks, security leaks, and regression bugs *before* AI-generated code hits your repo. Zero config, <0.2s per check.
@@ -21,13 +21,14 @@
 |---------|-----------------|------|
 | **Architecture Guard** / 架构守护 | ❌ | ✅ (Real-time Gatekeeper) |
 | **Security Injection** / 安全注入拦截 | ❌ (High noise) | ✅ (Zero false positives) |
+| **Import Completeness** / 导入完整性检查 | ❌ | ✅ (ImportCompletenessChecker, AST 静态分析) |
 | **Performance** / 性能开销 | High | **< 0.2s** (per check) |
 | **AI Context Integration** | ❌ | ✅ (MCP / Claude Code Hook) |
 | **Hardcoded Secret Detection** | ❌ | ✅ (SECRETS-001, 10+ patterns) |
 | **Dependency Security Scan** | ❌ | ✅ (DEPS-001, built-in DB) |
 | **Unused Export Detection** | ❌ | ✅ (UNUSED-001, Python/TS/Go) |
 | **Fail-open Strategy** | ❌ | ✅ (External failures never block) |
-| **Test Coverage** | ❌ | ✅ **99.6%+** (963+/968 tests) |
+| **Test Coverage** | ❌ | ✅ **99.8%+** (1009/1011 tests) |
 
 ---
 
@@ -226,6 +227,8 @@ moat gatekeeper check --file <path>          # 检查单个文件
 | **v1.0** | **2026-07-11** | **架构哨兵** | **L2 架构检查（熵增+依赖枢纽）、架构健康报告、性能优化（缓存+并行）、4.3x 加速** |
 | **v1.0.8** | **2026-07-11** | **精准拦截 + 性能飞跃** | **SECRETS-001 硬编码密钥检测、SQL-002 增强 SQL 注入检测（ORM 支持）、DEPS-001 依赖项安全检测、UNUSED-001 未使用导出检测、API-002 增强鉴权检测、LRU 缓存优化（1.7x 加速）、AST diff 增量扫描、增强报告生成器、多源配置支持** |
 | **v1.1.1** | **2026-07-12** | **质量提升 + Bug 修复** | **测试覆盖率 96.9% → 99.6%+（+26 测试）、8 个关键 Bug 修复、ThinkingBlock 兼容性修复、macOS 路径修复、TypeScript 检测增强、发布到 GitHub & PyPI** |
+| **v1.1.2** | **2026-07-12** | **Moat Immune 修复 + 知识资产库** | **ThinkingBlock AttributeError 三层防护、+42 个测试、知识资产库（防御模式/Bug 模式/修复策略）、文档站点 + CI 自动化** |
+| **v1.1.3** | **2026-07-13** | **导入完备性检查** | **ImportCompletenessChecker 算子（AST 静态分析）、性能优化（跳过超大文件/单体文件）、跨文件引用提示、Makefile/dev 依赖/SRE 污染修复、1009/1011 测试通过** |
 
 ## Community / 社区共创
 
