@@ -63,14 +63,16 @@ def cmd_check(args):
 
         if impacts:
             for impact in impacts:
-                change = impact["change"]
-                print(f"\n   📍 {change['file']}::{change['function']}")
-                print(f"      影响 {len(impact['callers'])} 个调用方:")
-                for caller in impact["callers"][:5]:  # 最多显示 5 个
+                change = impact.get("change", {})
+                callers = impact.get("callers", [])
+                risk_level = impact.get("risk_level", "unknown")
+                print(f"\n   📍 {change.get('file', '?')}::{change.get('function', '?')}")
+                print(f"      影响 {len(callers)} 个调用方:")
+                for caller in callers[:5]:  # 最多显示 5 个
                     print(f"        - {caller}")
-                if len(impact["callers"]) > 5:
-                    print(f"        ... 还有 {len(impact['callers']) - 5} 个")
-                print(f"      风险等级: {impact['risk_level']}")
+                if len(callers) > 5:
+                    print(f"        ... 还有 {len(callers) - 5} 个")
+                print(f"      风险等级: {risk_level}")
         else:
             print(f"   ✅ 未检测到直接影响")
 

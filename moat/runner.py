@@ -7,6 +7,7 @@ import json
 import time
 from pathlib import Path
 from datetime import datetime
+from typing import Any
 
 from moat.checks.base import Check, CheckResult
 from moat.checks import detect_project_type, create_check_instances

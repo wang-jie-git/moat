@@ -12,11 +12,11 @@ def test_diff_bug_fix():
     print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     result = subprocess.run(
-        ["moat", "check", "--diff", "--project", "/Users/mac/Desktop/oh-agent-panel"],
+        ["moat", "check", "--diff", "--project", "."],
         cwd="/Users/mac/Desktop/moat",
         capture_output=True,
         text=True,
-        timeout=30
+        timeout=60
     )
 
     print("STDOUT:")

@@ -39,8 +39,10 @@ dashboard = ["fastapi>=0.100", "uvicorn>=0.22"]
 sidecar = ["watchdog>=3.0", "fastapi>=0.100", "uvicorn>=0.22"]
 # VS Code 插件辅助（剪贴板复制）
 vscode = ["pyperclip>=1.8"]
+# 开发环境（测试 + 构建）
+dev = ["pytest>=7.0", "pytest-cov>=4.0", "build>=1.0", "twine>=4.0"]
 # 全部功能
-all = ["moat-ai[dashboard,sidecar,vscode]"]
+all = ["moat-ai[dashboard,sidecar,vscode,dev]"]
 
 [project.urls]
 Homepage = "https://github.com/wang-jie-git/moat"
