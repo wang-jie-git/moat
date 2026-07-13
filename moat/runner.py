@@ -173,14 +173,17 @@ def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: b
     quick_check = QuickCheck(root, config)
     checks = [("快速检查（修改的文件）", quick_check)]
 
-    # 导入完备性检查 — 验证"函数存在但未导入"问题
-    # 复用同一个 QuickCheck 实例，避免重复初始化
+    # 复用同一个 QuickCheck 实例获取修改的文件列表
     modified_files = quick_check._get_changed_files()
+
+    # 导入完备性检查 — 验证"函数存在但未导入"问题
     if modified_files:
         from moat.checks.import_completeness import ImportCompletenessCheck
-        # 只检查修改的文件，与 QuickCheck 保持一致
         import_config = {**config, "target_files": modified_files}
         checks.append(("导入完备性检查（修改的文件）", ImportCompletenessCheck(root, import_config)))
+
+    # ── 安全检测（SECRETS-001 / DEPS-001 / UNUSED-001 / SQL-002）──
+    _add_security_checks(checks, root, config, modified_files if modified_files else None)
 
     # 战术建议 1：异步触发优化检查（默认不跑）
     if enable_optimization:
@@ -211,6 +214,9 @@ def _create_full_checks(project_type: dict[str, bool], root: Path, config: dict[
         from moat.checks.import_completeness import ImportCompletenessCheck
         checks.append(("导入完备性检查（所有文件）", ImportCompletenessCheck(root, config)))
 
+    # ── 安全检测（SECRETS-001 / DEPS-001 / UNUSED-001 / SQL-002）──
+    _add_security_checks(checks, root, config, target_files=None)
+
     # 战术建议 1：完整模式也支持优化检查
     if enable_optimization:
         from moat.checks.optimization import OptimizationCheck
@@ -239,6 +245,57 @@ def _run_legacy_check(module, name: str, root: Path) -> list[dict]:
             return []
     except Exception as e:
         return [{"type": "error", "level": "ERROR", "file": name, "message": str(e)}]
+
+
+def _add_security_checks(checks: list, root: Path, config: dict, target_files: list[str] | None = None) -> None:
+    """添加安全检测到检查列表（SECRETS-001 / DEPS-001 / UNUSED-001 / SQL-002）
+
+    Args:
+        checks: 检查列表（就地修改）
+        root: 项目根目录
+        config: 配置
+        target_files: 如果提供，只检测这些文件（快速模式）；None 表示全量（完整模式）
+    """
+    # 是否启用安全检测（默认启用）
+    security_config = config.get("security", {})
+    enabled = security_config.get("enabled", True)
+    if not enabled:
+        return
+
+    # 1. 硬编码密钥检测（SECRETS-001）
+    if security_config.get("secrets", True):
+        try:
+            from moat.checks.secrets import SecretsCheck
+            sc_config = {**config, "target_files": target_files} if target_files else config
+            checks.append(("🔑 密钥检测 SECRETS-001", SecretsCheck(root, sc_config)))
+        except Exception:
+            pass  # fail-open
+
+    # 2. 依赖安全检测（DEPS-001）
+    if security_config.get("dependencies", True):
+        try:
+            from moat.checks.dependency_security import DependencySecurityCheck
+            checks.append(("📦 依赖安全 DEPS-001", DependencySecurityCheck(root, config)))
+        except Exception:
+            pass
+
+    # 3. 未使用导出检测（UNUSED-001）
+    if security_config.get("unused_exports", True):
+        try:
+            from moat.checks.unused_exports import UnusedExportsCheck
+            ue_config = {**config, "target_files": target_files} if target_files else config
+            checks.append(("📤 未使用导出 UNUSED-001", UnusedExportsCheck(root, ue_config)))
+        except Exception:
+            pass
+
+    # 4. SQL 注入检测（SQL-002）
+    if security_config.get("sql_injection", True):
+        try:
+            from moat.checks.sql_injection import SqlInjectionCheck
+            si_config = {**config, "target_files": target_files} if target_files else config
+            checks.append(("💉 SQL 注入 SQL-002", SqlInjectionCheck(root, si_config)))
+        except Exception:
+            pass
 
 
 def _load_config(root: Path) -> dict:

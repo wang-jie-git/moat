@@ -32,6 +32,22 @@
 
 **文件**：`moat/checks/import_completeness.py`（320 行）
 
+#### 安全检测管道集成（SECRETS-001 / DEPS-001 / UNUSED-001 / SQL-002）
+
+**问题**：`secrets.py`、`dependency_security.py`、`unused_exports.py`、`sql_injection.py` 代码完整，但未注册到 runner 管道。用户运行 `moat check` 时安全检测一个都没跑。
+
+**方案**：新增 `_add_security_checks()` 统一集成函数
+
+- ✅ 硬编码密钥检测（SECRETS-001）— 检测密码/AWS Key/GitHub Token 等 10+ 模式
+- ✅ 依赖安全检测（DEPS-001）— 扫描 pyproject.toml/requirements.txt/package.json
+- ✅ 未使用导出检测（UNUSED-001）— 检测 `__all__` / `export` 中的未使用项
+- ✅ SQL 注入检测（SQL-002）— Tree-sitter 或正则回退
+- ✅ 按文件范围注入：快速模式只扫修改文件，完整模式扫所有文件
+- ✅ 可配置禁用（`security.enabled: false`）
+- ✅ fail-open 设计：任何检测模块出错不影响其他检查
+
+**文件**：`moat/runner.py`（+51 行）
+
 #### 性能优化
 
 - ✅ 跳过 >500KB 超大文件
