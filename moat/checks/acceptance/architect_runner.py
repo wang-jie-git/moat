@@ -550,6 +550,29 @@ def _run_git_baseline_operator(project_root: Path) -> dict:
     }
 
 
+def _run_layer_violation_operator(project_root: Path) -> dict:
+    """运行调用链分层校验"""
+    try:
+        from moat.verification.operators import LayerViolationOperator
+        from moat.verification.types import VerificationContext
+
+        op = LayerViolationOperator()
+        ctx = VerificationContext(project_path=project_root)
+        result = op.verify(ctx)
+
+        return {
+            "passed": result.passed,
+            "violations": [
+                {"message": v.message, "severity": v.severity.value, "file": v.file_path, "line": v.line}
+                for v in result.violations
+            ],
+            "evidence": [f"{k}: {v}" for k, v in result.evidence.items()],
+            "suggestion": result.suggestions[0] if result.suggestions else None,
+        }
+    except Exception as e:
+        return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
+
+
 # operator 名称 → 执行函数映射
 OPERATOR_MAP = {
     "directory_responsibility": _run_directory_operator,
@@ -559,4 +582,5 @@ OPERATOR_MAP = {
     "runtime_evidence": _run_runtime_operator,
     "truth_document": _run_truth_document_operator,
     "git_baseline": _run_git_baseline_operator,
+    "layer_violation": _run_layer_violation_operator,
 }

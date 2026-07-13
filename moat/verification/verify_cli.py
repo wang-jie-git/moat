@@ -36,6 +36,7 @@ def cmd_verify(args) -> int:
             RuntimeEvidenceOperator,
             ArchitectureHealthScoreOperator,
             TruthDocumentGeneratorOperator,
+            LayerViolationOperator,
         )
 
         orchestrator.register_operator(DirectoryResponsibilityOperator())
@@ -45,6 +46,7 @@ def cmd_verify(args) -> int:
         orchestrator.register_operator(RuntimeEvidenceOperator())
         orchestrator.register_operator(ArchitectureHealthScoreOperator())
         orchestrator.register_operator(TruthDocumentGeneratorOperator())
+        orchestrator.register_operator(LayerViolationOperator())
 
     except ImportError as e:
         print(f"❌ 算子加载失败: {e}")

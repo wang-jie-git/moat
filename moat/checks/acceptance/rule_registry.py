@@ -146,6 +146,16 @@ DEFAULT_RULES = [
         auto_checkable=True,
     ),
     RuleDefinition(
+        id="LAYER_VIOLATION",
+        title="调用链分层校验",
+        description="检测跨层调用违规：路由层不应直接访问数据库，服务层调用方向需正确，无循环依赖。",
+        step=3,
+        type="call_chain",
+        severity="CRITICAL",
+        operator="layer_violation",
+        auto_checkable=True,
+    ),
+    RuleDefinition(
         id="API_CONSISTENCY",
         title="接口统一返回规范",
         description="所有 API 接口响应格式统一：HTTP 状态码 + JSON 结构 + 错误处理，覆盖全场景。",

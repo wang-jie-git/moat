@@ -9,6 +9,7 @@ from .framework_usage import FrameworkUsageOperator
 from .runtime_evidence import RuntimeEvidenceOperator
 from .architecture_health_score import ArchitectureHealthScoreOperator
 from .truth_document import TruthDocumentGeneratorOperator
+from .layer_violation import LayerViolationOperator
 
 __all__ = [
     "DirectoryResponsibilityOperator",
@@ -18,4 +19,5 @@ __all__ = [
     "RuntimeEvidenceOperator",
     "ArchitectureHealthScoreOperator",
     "TruthDocumentGeneratorOperator",
+    "LayerViolationOperator",
 ]

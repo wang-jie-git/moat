@@ -201,9 +201,15 @@ moat adapter precommit                        # 安装 pre-commit hook
 # Web 看板
 moat dashboard [--port 8080]                  # 启动 Web 看板
 
-# 架构验收
-moat verify --all                             # 运行全部验收算子
-moat verify --operator <name>                 # 运行单个算子
+# 架构验收 ✨ v1.1.4
+moat accept [--generate-rules] [--output report.md] [--fail-on-score 60]
+                                        # 🏗 架构验收 8 步法（生成标准化验收报告 + 真元文档）
+moat accept --generate-rules            # 生成 architect.yml 规则模板
+moat accept --output ACCEPTANCE_REPORT.md
+                                        # 输出验收报告到文件
+moat accept --fail-on-score 60          # 评分阈值门禁（低于 60 分返回非零退出码）
+moat verify --all                       # 运行全部验收算子
+moat verify --operator <name>           # 运行单个算子
 
 # 守门员规则 ✨ v1.0.3
 moat rules list                               # 列出所有规则
@@ -229,6 +235,8 @@ moat gatekeeper check --file <path>          # 检查单个文件
 | **v1.1.1** | **2026-07-12** | **质量提升 + Bug 修复** | **测试覆盖率 96.9% → 99.6%+（+26 测试）、8 个关键 Bug 修复、ThinkingBlock 兼容性修复、macOS 路径修复、TypeScript 检测增强、发布到 GitHub & PyPI** |
 | **v1.1.2** | **2026-07-12** | **Moat Immune 修复 + 知识资产库** | **ThinkingBlock AttributeError 三层防护、+42 个测试、知识资产库（防御模式/Bug 模式/修复策略）、文档站点 + CI 自动化** |
 | **v1.1.3** | **2026-07-13** | **导入完备性检查** | **ImportCompletenessChecker 算子（AST 静态分析）、性能优化（跳过超大文件/单体文件）、跨文件引用提示、Makefile/dev 依赖/SRE 污染修复、1009/1011 测试通过** |
+| **v1.1.4** | **2026-07-13** | **架构验收 8 步法** | **`moat accept` 命令、规则注册表 (architect.yml)、复用 6 个 verification operator、半自动化设计、门禁模式、1020 测试通过** |
+| **v1.1.5** | **2026-07-13** | **调用链追踪器** | **LayerViolationOperator（routes→services→db 分层校验）、GIT_BASELINE 自动检查、framework_usage 误报从 41→2、One 项目(4160 py)实测验证** |
 
 ## Community / 社区共创
 
@@ -655,6 +663,83 @@ moat architecture --copy
 - 发现潜在的技术债务
 - 识别需要重构的模块
 - 评估架构演进质量
+
+## 🏗 架构验收（`moat accept`）✨ v1.1.4
+
+`moat accept` 是 Moat 的"架构裁判"模式。它按照 **Vibe Coding 验收 8 步法** 对项目进行结构化验收，输出标准化验收报告 + 架构实施真元文档。
+
+**一句话**：从"查 Bug 的工具"进化为"制定游戏规则的裁判"。
+
+### 8 步验收覆盖
+
+| 步骤 | 检查项 | 自动/人工 |
+|------|--------|----------|
+| 1 | 架构规则审计 | 👤 人工核查 |
+| 2 | 目录责任边界 | ✅ 自动（DirectoryResponsibilityOperator） |
+| 3 | 最小模块演练 + 调用链分层校验 | ✅ 自动（LayerViolationOperator） |
+| 4 | 接口统一返回规范 | ✅ 自动（APIResponseSpecOperator） |
+| 5 | 框架复用与封装边界 | ✅ 自动（FrameworkUsageOperator） |
+| 6 | 运行证据固定 | ✅ 自动（RuntimeEvidenceOperator） |
+| 7 | 收口验收结果 → 真元文档 | ✅ 自动（TruthDocumentGeneratorOperator） |
+| 8 | Git 基线固化 | ✅ 自动（git_baseline） |
+
+### 使用场景
+
+- **项目启动时**：`moat accept --generate-rules` 生成架构规则 → 编辑 `architect.yml` → `moat accept`
+- **每次大变更后**：`moat accept --output ACCEPTANCE_REPORT.md` 生成验收报告
+- **CI 门禁**：`moat accept --fail-on-score 60` 评分低于阈值则构建失败
+- **新成员入职**：查看 `ACCEPTANCE_REPORT.md` 了解项目架构全貌
+
+### 输出示例
+
+```bash
+$ moat accept --project /path/to/project
+=======================================================
+  🏗  Moat 架构验收
+  /path/to/project
+=======================================================
+
+📋 使用内置默认规则（运行 moat accept --generate-rules 生成自定义规则）
+📋 加载 8 条架构规则
+   🔧 可自动检查: 7  👤 需要人工核查: 1
+
+   🔧 自动检查阶段
+   ✅ [DIR_BOUNDARIES] 目录责任边界
+   ✅ [LAYER_VIOLATION] 调用链分层校验
+   ✅ [FRAMEWORK_BOUNDARY] 框架复用与封装边界
+   ✅ [GIT_BASELINE] 固化版本，留存稳定基线
+   ...
+   
+   👤 人工核查阶段
+   📋 [ARCH_RULES] 架构规则审计
+      □ 规则来源是否清晰标注（架构文档/项目规范/框架约定）
+      □ 每条规则是否有对应的代码检查覆盖
+
+=======================================================
+  📊 验收完成
+     评分: 80/100, 自动检查: 7/7, 人工核查: 1 项
+=======================================================
+```
+
+### 自定义规则
+
+编辑项目根目录的 `architect.yml` 自定义验收规则：
+
+```yaml
+# architect.yml
+project: "my-project"
+version: 1.0
+rules:
+  - id: LAYER_VIOLATION
+    title: "调用链分层校验"
+    step: 3
+    type: call_chain
+    severity: CRITICAL
+    operator: layer_violation
+```
+
+运行 `moat accept --generate-rules` 一键生成模板。
+
 
 ## 完整示例
 
