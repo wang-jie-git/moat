@@ -14,13 +14,9 @@
   83.33333333333334%{transform:translateX(-400px)}
   to{transform:translateX(-400px)}
 }
-.a{fill:#282d35}
-.f{fill:#b9c0cb;white-space:pre}
-.h{fill:#e06c75;white-space:pre}
-.w{fill:#e5c07b;white-space:pre}
-.e{fill:#98c379;white-space:pre}
-.c{fill:#56b6c2;white-space:pre}
-.d{fill:#61afef;white-space:pre}
+.a{fill:#282d35}.f{fill:#b9c0cb;white-space:pre}.h{fill:#e06c75;white-space:pre}
+.w{fill:#e5c07b;white-space:pre}.e{fill:#98c379;white-space:pre}
+.c{fill:#56b6c2;white-space:pre}.d{fill:#61afef;white-space:pre}
 </style>
 <g font-family="Monaco,Consolas,Menlo,monospace" font-size="1.67">
 <path fill="#282d35" d="M0 0h480v52.104H0z"/>
@@ -86,8 +82,4 @@
 <text x="0" y="30.393999999999995" class="e">✅ 演示完成</text>
 <text x="0" y="32.565" class="e">📦 pip install moat-ai</text>
 </svg>
-</svg>
-</g>
-</g>
-</svg>
-</svg>
+</svg></g></g></svg></svg>
