@@ -5,6 +5,25 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.1.10] - 2026-07-14
+
+### 🎯 核心主题：ImportCompletenessCheck target_files 修复 + SSH 密钥认证 + 工作流集成
+
+#### 🐛 Bug 修复
+- **ImportCompletenessCheck.target_files 跳过修复**：`ImportCompletenessCheck.run()` 不再对 `target_files` 配置视而不见。现在增量模式只扫指定文件，避免全量 `rglob("*.py")` 扫入 84,723 个虚拟环境文件导致挂死。
+- **sshpass 明文密码移除**：删除 Claude Code 授权列表中的 `sshpass` + `scp *` + `tar czf *`，共减少 4 个高危权限（62% → 49% 闲置率）。
+- **SSH 密钥认证部署**：删除明文密码后，通过 SSH 密钥（`~/.ssh/id_ed25519`）认证连接到本机 Tailscale 服务器，`~/.ssh/config` 已配置。
+
+#### ✨ 新增功能
+- **GitHub Action 集成**：`moat ci` 自动生成 `.github/workflows/moat.yml`，含 `moat check --quick` → `--leak` → `moat accept --diff --fail-on-score 60` → PR Comment 闭环。支持 `--platform gitlab` 生成 `.gitlab-ci.yml`。
+- **PDF 合规报告**：`moat report --format pdf -o report.pdf`，依赖 `fpdf2`，降级兼容 Markdown。
+- **通知推送**：`moat notify --webhook <url>`，自动检测 Slack / 飞书 / Discord 格式。
+- **AI 工具权限审计**：`moat audit --permissions` 扫描 `settings.local.json`，分类 156 个已授权命令，生成瘦身建议。
+
+#### 🔒 安全增强
+- **LeakageChecker 增强**：新增 `--scan-ai` 模式，扫描 AI 工具配置目录（`~/.claude/`、`~/.codex/`、`~/.grok/`），检测敏感路径暴露、symlink 越界、`.gitignore` 覆盖遗漏。
+- **Security Manifesto**：Zero-Telemetry + Transparent Audit + Self-Sovereignty 三原则。
+
 ## [1.1.4] - 2026-07-13
 
 ### 🎯 核心主题：`moat accept` — 架构验收 8 步法

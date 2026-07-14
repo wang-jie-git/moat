@@ -55,9 +55,6 @@ moat = "moat.cli:main"
 Homepage = "https://github.com/wang-jie-git/moat"
 Source = "https://github.com/wang-jie-git/moat"
 
-[project.scripts]
-moat = "moat.cli:main"
-
 [tool.setuptools.packages.find]
 include = ["moat*"]
 exclude = ["tests*", "examples*"]

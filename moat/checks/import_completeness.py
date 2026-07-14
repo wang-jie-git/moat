@@ -106,6 +106,7 @@ class ImportCompletenessCheck(Check):
         self.ignore_patterns: list[str] = list(
             config.get("ignore_patterns", []) if config else []
         )
+        self._target_files: list[str] | None = config.get("target_files") if config else None
         # 默认忽略的模块
         self.ignore_modules.update({"conftest", "conf", "settings"})
 
@@ -113,7 +114,12 @@ class ImportCompletenessCheck(Check):
         """运行导入完备性检查"""
         results: list[CheckResult] = []
 
-        py_files = sorted(self.project.rglob("*.py"))
+        if self._target_files:
+            py_files = sorted(Path(f) if Path(f).is_absolute() else self.project / f
+                              for f in self._target_files)
+            py_files = [p for p in py_files if p.suffix == ".py" and p.exists()]
+        else:
+            py_files = sorted(self.project.rglob("*.py"))
 
         # ── AST 缓存：避免重复解析相同文件 ──
         ast_cache: dict[str, tuple[ast.Module | None, str]] = {}
