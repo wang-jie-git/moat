@@ -1,6 +1,6 @@
-# Moat — AI 编码护城河 🛡️
+# Moat — AI Moat: The Brake for AI Engineering 🛡️
 
-> **版本**: v1.1.10 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
+> **Version**: v1.1.10 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
 >
 > [![PyPI version](https://img.shields.io/pypi/v/moat-ai.svg?style=flat-square&color=brightgreen)](https://pypi.org/project/moat-ai/)
 > [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
@@ -8,270 +8,325 @@
 > [![Tests](https://img.shields.io/badge/tests-1020%20passed-brightgreen?style=flat-square)](tests/)
 > [![CI](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml/badge.svg)](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml)
 
-**"AI 时代的首席架构官"** — 不是 Linter，不是 SAST，是代码库的自动驾驶防碰撞系统。
+**🌐 [中文版本 🇨🇳](README.zh.md)**
 
-AI 改代码很快。AI 搞坏系统也很快。Moat 在改代码前/后各跑一次，几秒内告诉你系统有没有被搞坏。
+> **"The Chief Architect for the AI Era"** — Not a linter, not a SAST tool. It's the collision avoidance system for your codebase.
+
+AI writes code fast. AI breaks things fast too. Moat runs before and after every code change, telling you in seconds whether your system is still intact.
 
 ---
 
 ## 🛡️ Security Manifesto: Your Code, Your Domain
 
-在 AI Agent 普遍通过旁路通道窃取代码配置的背景下（如 **2026 年 7 月 Grok CLI 事件**：自动打包代码库 + 跨目录读取 `~/.claude/` API 密钥），Moat 坚持 **Local-First 原则**，绝不在安全上妥协。
+In the wake of the **July 2026 Grok CLI incident** (auto-packaging codebases + reading `~/.claude/` API keys across directories), Moat upholds the **Local-First** principle — no compromise on security.
 
-| 承诺 | 说明 |
-|------|------|
-| **Zero-Telemetry** | Moat 不会主动上传任何代码快照、配置文件或 API 密钥。所有检查在本地完成。 |
-| **Transparent Audit** | Moat 的每一次文件读取都在你的本地审计之下，不存在"静默旁路通道"。 |
-| **Self-Sovereignty** | 你的架构规则、基线数据、记忆索引全部在你的控制下，没有第三方服务器。 |
+| Commitment | Description |
+|------------|-------------|
+| **Zero-Telemetry** | Moat never uploads code snapshots, configs, or API keys. All checks run locally. |
+| **Transparent Audit** | Every file read is under your local audit. No silent side channels. |
+| **Self-Sovereignty** | Your architecture rules, baselines, and memory indices stay under your control. |
 
-### 📺 演示
+### 📺 Demos
 
 <p align="center">
-  <img src="docs/demo-bug-intercept-compact.svg" alt="Moat: Bug 拦截 + AI 审计" width="700">
+  <img src="docs/demo-bug-intercept-compact.svg" alt="Moat: Bug Interception + AI Audit" width="700">
   <br>
-  <em>Bug 拦截 → AI 工具配置审计 → 三道防线</em>
+  <em>Bug Interception → AI Tool Config Audit → Three Lines of Defense</em>
 </p>
 
 <p align="center">
-  <img src="docs/demo-leak-detection.svg" alt="Moat: 泄露风险检测" width="700">
+  <img src="docs/demo-leak-detection.svg" alt="Moat: Leak Detection" width="700">
   <br>
-  <em>符号链接泄露、敏感文件暴露、AI 工具痕迹检测</em>
+  <em>Symlink leaks, sensitive file exposure, AI tool trace detection</em>
 </p>
 
 <p align="center">
-  <img src="docs/demo-scan-ai.svg" alt="Moat: AI 工具系统审计" width="700">
+  <img src="docs/demo-scan-ai.svg" alt="Moat: AI Tool System Audit" width="700">
   <br>
-  <em>扫描 Claude Code / Codex / Grok 系统配置中的敏感信息泄露</em>
+  <em>Scan Claude Code / Codex / Grok configs for sensitive info leaks</em>
 </p>
 
-### 🚨 发现泄露风险
+### 🚨 Leak Detection
 
-**`moat check --leak`** — 检测 AI 工具跨目录读取、敏感文件暴露：
+**`moat check --leak`** — Detect AI tool cross-directory reads and sensitive file exposure:
 
 ```bash
 moat check --leak
 ```
 
-检测内容：
-- **AI 工具痕迹**：`.grok/`、`.claude/`、`.codex/` 等配置是否被项目引用
-- **敏感文件暴露**：`.env`、`credentials.json` 是否被 `.gitignore` 排除
-- **符号链接泄露**：是否有 symlink 指向项目外敏感目录（`.ssh/`、`.aws/`）
-- **硬编码路径**：代码中是否写死了 `~/` 或 `/home/` 敏感路径
+Scans for:
+- **AI tool traces**: `.grok/`, `.claude/`, `.codex/` configs referenced by the project
+- **Sensitive file exposure**: `.env`, `credentials.json` not excluded by `.gitignore`
+- **Symlink leaks**: Symlinks pointing outside the project (`.ssh/`, `.aws/`)
+- **Hardcoded paths**: `~/` or `/home/` sensitive paths in code
 
 ```
-🔒 代码泄露风险检测...
-   🔍 扫描泄露风险...
-   🔴 [CRITICAL] 发现 AI 工具痕迹: .grok (Grok CLI 会话目录)
+🔒 Scanning for code leak risks...
+   🔍 Scanning for leaks...
+   🔴 [CRITICAL] AI tool traces found: .grok (Grok CLI session dir)
      📍 /project/.grok/
-     💡 检查 .grok 是否引入了敏感配置。如不需要，请从项目中移除。
-   🟡 [WARNING] 符号链接指向项目外: secret.key → ~/.ssh/id_rsa
+     💡 Check if .grok introduces sensitive configs. Remove from project if not needed.
+   🟡 [WARNING] Symlink pointing outside project: secret.key → ~/.ssh/id_rsa
      📍 secret.key
-     💡 使用相对路径或复制文件到项目内。
+     💡 Use relative paths or copy the file into the project.
 
-✅ 未检测到代码泄露风险
+✅ No code leak risks detected
 ```
 
-## ⚔️ Killer 对比：Moat vs 传统工具
+### 👁️ AI Tool System Audit
 
-> Moat 不是 Linter 的替代品，是全新品类：**AI Engineering OS**
-> Linter 检查语法，SAST 扫描漏洞，Moat 治理架构。
+**`moat check --scan-ai`** — Scan local AI tool configurations for security risks:
 
-| 维度 | 🛡️ Moat | 🔧 传统 Linter | 📊 SonarQube |
-|------|----------|----------------|--------------|
-| **核心定位** | AI Engineering OS | 代码风格检查 | 代码质量平台 |
-| **架构治理** | ✅ 8 步验收闭环 | ❌ 仅语法/风格 | ⚠️ 仅代码气味 |
-| **分层执行** | ✅ 内置 5 层规则 + 自定义 | ❌ | ❌ |
-| **增量审计** | ✅ `--diff` 2 秒出结果 | ⚠️ 仅文件级 | ❌ 全量扫描 |
-| **门禁模式** | ✅ `--fail-on-score` 拦截 | ⚠️ 部分支持 | ✅ |
-| **证据链** | ✅ Reason → File → Line | ❌ 仅行号 | ✅ |
-| **安全注入拦截** | ✅ 零误报 | ❌ 高噪音 | ✅ |
-| **AI 上下文集成** | ✅ MCP / Claude Code Hook | ❌ | ❌ |
-| **性能** | **< 0.2s** / 次 | 中等 | 慢（全量扫描） |
-| **测试覆盖率** | **99.8%+** (1020 tests) | ❌ | ❌ |
-| **配置** | 零配置 | 需配置 | 需配置 |
+```bash
+moat check --scan-ai
+```
+
+Detects:
+- **Claude Code / Codex / Grok** config directories
+- **Telemetry data** accumulation
+- **Authorized sensitive commands** (sshpass, scp, tar+curl combinations)
+- **Session history** containing sensitive conversation data
+
+```
+🕵️ AI tool system config security audit...
+   📋 Found Claude Code config: /Users/mac/.claude
+   🟡 [WARNING] Claude Code telemetry data: 24 files, 302.3 KB
+     📍 /Users/mac/.claude/telemetry
+   ℹ️ [INFO] Claude Code session history: 421.9 KB
+     📍 /Users/mac/.claude/history.jsonl
+   🟡 [WARNING] Claude Code has 19 sensitive commands authorized
+     📍 /Users/mac/.claude/settings.local.json
+```
+
+### 🔐 Permission Audit
+
+**`moat audit --permissions`** — Audit AI tool permissions and get a "slimming" recommendation:
+
+```bash
+moat audit --permissions
+```
+
+```
+🔍 AI Tool Permission Audit...
+   📋 Analyzing 156 authorized commands...
+   🔴 [CRITICAL] 4 plaintext passwords found in command args
+   🟡 [HIGH] 4 high-risk commands never used
+   🟢 [INFO] 59 safe commands actively used
+   📊 Idle rate: 62% (96 unused permissions)
+   💡 Recommended: remove 4 plaintext passwords, remove 4 unused commands
+```
 
 ---
 
-## ✨ 三大独家差异点
+## ⚔️ Moat vs Traditional Tools
 
-### 🔍 Diff-Aware Audit（增量验收）
+> Moat is not a linter replacement. It's a new category: **AI Engineering OS**
+> Linters check syntax, SAST scans vulnerabilities, Moat governs architecture.
 
-全量扫描 4160 个文件？太慢。**`moat accept --diff`** 只扫描本次修改的 5 个文件，2 秒完成架构级审计。
+| Dimension | 🛡️ Moat | 🔧 Traditional Linter | 📊 SonarQube |
+|-----------|----------|----------------------|--------------|
+| **Core Positioning** | AI Engineering OS | Code style check | Code quality platform |
+| **Architecture Governance** | ✅ 8-step acceptance loop | ❌ Syntax/style only | ⚠️ Code smells only |
+| **Layer Enforcement** | ✅ Built-in 5 layers + custom | ❌ | ❌ |
+| **Incremental Audit** | ✅ `--diff` 2s results | ⚠️ File-level only | ❌ Full scan |
+| **Gate Mode** | ✅ `--fail-on-score` | ⚠️ Partial | ✅ |
+| **Evidence Chain** | ✅ Reason → File → Line | ❌ Line only | ✅ |
+| **Security Injection** | ✅ Zero false positives | ❌ High noise | ✅ |
+| **AI Context Integration** | ✅ MCP / Claude Code Hook | ❌ | ❌ |
+| **Performance** | **< 0.2s/run** | Medium | Slow (full scan) |
+| **Test Coverage** | **99.8%+** (1020 tests) | ❌ | ❌ |
+| **Configuration** | Zero config | Requires config | Requires config |
+
+---
+
+## ✨ Three Key Differentiators
+
+### 🔍 Diff-Aware Audit (Incremental Acceptance)
+
+Full scan of 4160 files? Too slow. **`moat accept --diff`** scans only the 5 files you changed, completing architecture-level audit in 2 seconds.
 
 ```bash
-# 改了几个文件后，增量验收
+# Incremental acceptance after changing a few files
 moat accept --diff --fail-on-score 60
 
-# 全量验收
+# Full acceptance
 moat accept --output ACCEPTANCE_REPORT.md
 ```
 
-### 🧱 Layer-Enforcer（分层执行者）
+### 🧱 Layer-Enforcer
 
-内置标准 MVC/DDD 分层规则，自动检测 `routes/` 直接调用 `db/` 等跨层违规。
+Built-in standard MVC/DDD layer rules, auto-detects cross-layer violations like `routes/` directly calling `db/`.
 
 ```bash
-# 默认 5 层规则：routes → services → db / models / utils
+# Default 5-layer rule: routes → services → db / models / utils
 moat accept --diff
 ```
 
-通过 `architect.yml` 自定义任意分层规则。
+Customize any layer rules via `architect.yml`.
 
-### 📋 Evidence-Based（证据驱动）
+### 📋 Evidence-Based
 
-所有拦截都有完整的证据链，不是黑盒报错：
+All blocks come with a complete evidence chain, not black-box errors:
 
 ```
-❌ LAYER_VIOLATION: routes/ 不应直接导入 db/
-  → Reason: 分层违规（routes → services → db）
+❌ LAYER_VIOLATION: routes/ should not directly import db/
+  → Reason: Layer violation (routes → services → db)
   → File: app/routes/user.py:15
-  → Detail: 直接 import db.session
+  → Detail: Direct import db.session
 ```
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
 ```bash
-# 安装
+# Install
 pip install moat-ai
 
-# 零配置初始化
+# Zero-config init
 moat init
 
-# 基本检查
-moat check --quick       # 秒级检查
-moat check --full        # 完整检查（含架构审计）
-moat check --leak        # 🔒 泄露风险检测（2 秒）
+# Basic checks
+moat check --quick        # Second-level check
+moat check --full         # Full check (includes architecture audit)
+moat check --leak         # 🔒 Leak detection (2s)
+moat check --scan-ai      # 👁️ AI tool config audit
 
-# 架构验收（v1.1.4+）
-moat accept              # 8 步架构验收
-moat accept --diff       # 增量验收（2 秒）
-moat accept --output report.md  # 生成报告
+# Architecture acceptance (v1.1.4+)
+moat accept               # 8-step architecture acceptance
+moat accept --diff        # Incremental acceptance (2s)
+moat accept --output report.md  # Generate report
 
-# 门禁模式
-moat accept --diff --fail-on-score 60  # 低于 60 分拦截
+# Gate mode
+moat accept --diff --fail-on-score 60  # Block if score < 60
 
-# CI/CD 集成
-moat ci                             # 自动生成 GitHub Actions 工作流
-moat notify --webhook <url>         # 发送结果到 Slack/飞书
+# Permission audit (v1.1.9+)
+moat audit --permissions  # 🔐 AI tool permission audit + slimming
+
+# CI/CD integration
+moat ci                   # Auto-generate GitHub Actions workflow
+moat notify --webhook <url>  # Send results to Slack/Feishu/Discord
 ```
 
 ---
 
-## 📍 安装方式
+## 📍 Installation
 
-Moat 是一个标准 Python 包，运行在你的本地机器上，代码绝不离开你的机器。
+Moat is a standard Python package, runs on your local machine. Code never leaves your machine.
 
 ```bash
-pip install moat-ai       # 项目 venv 或全局安装
+pip install moat-ai       # Project venv or global install
 ```
 
-### 与 Claude/Cursor 配合
+### Integration with Claude/Cursor
 
-**方式 1：直接调用 CLI（推荐）**
+**Method 1: Direct CLI (Recommended)**
 
-Claude 直接在终端中执行 Moat 命令，就像人类开发者一样：
+Claude executes Moat commands directly in the terminal, just like a human developer:
 
 ```bash
-moat check --full              # 完整检查
-moat accept                    # 架构验收
-moat gatekeeper check --file app.py  # 单文件检查
+moat check --full              # Full check
+moat accept                    # Architecture acceptance
+moat gatekeeper check --file app.py  # Single file check
 ```
 
-**方式 2：Sidecar 守护进程**
+**Method 2: Sidecar Daemon**
 
 ```bash
-moat sidecar start             # 启动守护进程
+moat sidecar start             # Start daemon
 curl http://localhost:7777/api/health  # REST API
 ```
 
-**方式 3：静态规则注入**
+**Method 3: Static Rule Injection**
 
 ```bash
-moat adapter claude            # 生成 CLAUDE.md
-moat adapter all               # 生成所有 AI 工具规则
+moat adapter claude            # Generate CLAUDE.md
+moat adapter all               # Generate rules for all AI tools
 ```
 
 ---
 
-## 📋 完整命令参考
+## 📋 Full Command Reference
 
 ```bash
-# 核心检查
-moat check [--quick|--full|--diff]  # 4 种检查模式
-moat check --leak                   # 🔒 泄露风险检测
-moat init                           # 零配置初始化
-moat watch                          # 实时监控日志
-moat report [--format pdf|md|json]  # 生成报告（支持 PDF）
-moat baseline [save|show|diff]      # 基线管理
+# Core checks
+moat check [--quick|--full|--diff]  # 4 check modes
+moat check --leak                   # 🔒 Leak detection
+moat check --scan-ai                # 👁️ AI tool config audit
+moat init                           # Zero-config init
+moat watch                          # Real-time log monitoring
+moat report [--format pdf|md|json]  # Generate report (PDF supported)
+moat baseline [save|show|diff]      # Baseline management
 
-# 架构验收（v1.1.4+）
-moat accept                         # 8 步架构验收
-moat accept --diff                  # 增量验收
-moat accept --output report.md      # 生成报告
-moat accept --fail-on-score 60      # 门禁模式
+# Architecture acceptance (v1.1.4+)
+moat accept                         # 8-step architecture acceptance
+moat accept --diff                  # Incremental acceptance
+moat accept --output report.md      # Generate report
+moat accept --fail-on-score 60      # Gate mode
 
-# CI/CD 集成（v1.1.6+）
-moat ci                             # ⚡ 生成 GitHub Actions / GitLab CI
-moat notify --webhook <url>         # 🔔 发送结果到 Slack / 飞书 / Discord
+# Permission audit (v1.1.9+)
+moat audit --permissions            # 🔐 Permission audit + slimming
 
-# 优化检查
-moat check --quick --optimize       # 快速 + 优化规则
-moat check --full --optimize        # 完整 + 优化规则
+# CI/CD integration (v1.1.6+)
+moat ci                             # ⚡ Generate GitHub Actions / GitLab CI
+moat notify --webhook <url>         # 🔔 Send results to Slack / Feishu / Discord
 
-# 进化指标
-moat evolution report               # 查看进化报告
-moat evolution adjust               # 自动调整配置
+# Optimization checks
+moat check --quick --optimize       # Quick + optimization rules
+moat check --full --optimize        # Full + optimization rules
 
-# Sidecar 守护进程
-moat sidecar start                  # 启动守护进程
-moat sidecar status                 # 查看状态
-moat sidecar stop                   # 停止守护进程
+# Evolution metrics
+moat evolution report               # View evolution report
+moat evolution adjust               # Auto-adjust configuration
 
-# AI 适配器
-moat adapter claude                 # 安装 Claude Code 适配器
-moat adapter all                    # 安装所有 AI 工具适配器
-moat adapter precommit              # 安装 pre-commit hook
+# Sidecar daemon
+moat sidecar start                  # Start daemon
+moat sidecar status                 # View status
+moat sidecar stop                   # Stop daemon
+
+# AI adapters
+moat adapter claude                 # Install Claude Code adapter
+moat adapter all                    # Install all AI tool adapters
+moat adapter precommit              # Install pre-commit hook
 ```
 
 ---
 
-## 📚 文档
+## 📚 Documentation
 
-- [快速开始](docs/快速开始.md) — 5 分钟上手
-- [常见问题](docs/常见问题.md) — FAQ
-- [项目地图](docs/项目地图.md) — 功能全景图
-- [CHANGELOG](CHANGELOG.md) — 版本更新日志
-- [ROADMAP](ROADMAP.md) — 未来路线图
-- [贡献指南](CONTRIBUTING.md) — 如何贡献代码
+- [Quick Start](docs/QuickStart.md) — Get started in 5 minutes
+- [FAQ](docs/FAQ.md) — Frequently Asked Questions
+- [Project Map](docs/ProjectMap.md) — Feature overview
+- [CHANGELOG](CHANGELOG.md) — Version history
+- [ROADMAP](ROADMAP.md) — Future roadmap
+- [Contributing](CONTRIBUTING.md) — How to contribute
 
 ---
 
-## 🔑 核心哲学
+## 🔑 Core Philosophy
 
-> **AI 是一个会撒谎、会贪快、会产生幻觉的个体。**
+> **AI lies, cuts corners, and hallucinates.**
 > 
-> **Moat 真正的价值在于：它是 AI 的"刹车片"。**
+> **Moat's real value: it's the brake for AI.**
 >
-> 无论 AI 怎么进化，物理定律不变——高速运动需要刹车，复杂系统需要检查点，连续输出需要暂停验证。
+> No matter how AI evolves, physics doesn't change — high speed needs brakes, complex systems need checkpoints, continuous output needs validation pauses.
 
-**为什么这个定位重要**：
-- ❌ **玩具 vs 工具**：如果定义为"AI 工程操作系统"，它是玩具。如果定义为"刹车片"，它是工具。
-- ❌ **AI 会变强，但不会变诚实**：未来 AI 能力更强，但仍有"偷懒倾向"和"记忆盲区"。
-- ✅ **"刹车"的永恒价值**：高速运动需要刹车，复杂系统需要检查点。
+**Why this positioning matters**:
+- ❌ **Toy vs. Tool**: If defined as "AI Engineering OS", it's a toy. If defined as "the brake", it's a tool.
+- ❌ **AI will get stronger, not more honest**: Future AI will be more capable, but still have "lazy tendencies" and "memory blind spots".
+- ✅ **The eternal value of a "brake"**: High-speed motion needs brakes. Complex systems need checkpoints.
 
 **You own the code, you own the guard.**
 
 ---
 
-## 🏷️ 标签
+## 🏷️ Tags
 
 `ai-agent` `architecture-guard` `security-tool` `code-review` `static-analysis`
 `python` `gatekeeper` `devtools` `lint` `architecture` `mcp`
 
 ---
 
-## 许可
+## License
 
 Apache 2.0
