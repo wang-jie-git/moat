@@ -2,15 +2,20 @@
 Moat CLI — 护城河命令行工具
 
 用法:
-  moat check         改代码前/后检查（默认快速模式 < 5 秒）
-  moat check --full  完整检查（所有文件，可能很慢）
-  moat check --diff  增量检查（AST 对比 + 影响域分析 < 10 秒）
-  moat watch         实时监控日志错误
-  moat init          初始化到当前项目
-  moat dashboard     启动 Web 错误看板
-  moat adapter       安装 AI 工具适配器
-  moat baseline      管理基线数据
-  moat verify        架构验收
+  moat check          改代码前/后检查（默认快速模式 < 5 秒）
+  moat check --full   完整检查（所有文件，可能很慢）
+  moat check --diff   增量检查（AST 对比 + 影响域分析 < 10 秒）
+  moat check --leak   泄露风险检测（AI 工具跨目录读取、敏感文件暴露）
+  moat accept         8 步架构验收
+  moat ci             自动生成 CI/CD 工作流
+  moat notify         发送检查结果到 Slack / 飞书
+  moat report         生成报告（支持 text / md / json / pdf）
+  moat watch          实时监控日志错误
+  moat init           初始化到当前项目
+  moat dashboard      启动 Web 错误看板
+  moat adapter        安装 AI 工具适配器
+  moat baseline       管理基线数据
+  moat verify         架构验收
 """
 
 import argparse
@@ -26,8 +31,41 @@ def cmd_check(args):
     - moat check（默认）：快速检查（只检查修改的文件）< 5 秒
     - moat check --full：完整检查（所有文件 + 复杂规则）可能很慢
     - moat check --diff：增量检查（AST 对比 + 影响域分析）< 10 秒
+    - moat check --leak：代码泄露风险检测 < 3 秒
     """
     from moat.runner import run_all_checks
+
+    # 泄露检测模式
+    if args.leak:
+        print(f"\n🔒 代码泄露风险检测...")
+        from moat.verification.operators.leakage_detection import LeakageDetectionOperator
+        from moat.verification.types import VerificationContext
+
+        op = LeakageDetectionOperator()
+        ctx = VerificationContext(project_path=Path(args.project))
+        result = op.verify(ctx)
+
+        print(f"\n{'=' * 55}")
+        if result.passed:
+            print(f"  ✅ 未检测到代码泄露风险")
+        else:
+            print(f"  ❌ 发现 {len(result.violations)} 个泄露风险")
+            for v in result.violations:
+                severity = "🔴" if v.severity.value == "critical" else "🟡"
+                print(f"  {severity} [{v.severity.value.upper()}] {v.message}")
+                if v.file_path:
+                    print(f"     📍 {v.file_path}")
+                if v.suggestion:
+                    print(f"     💡 {v.suggestion}")
+        print(f"{'=' * 55}\n")
+
+        if result.suggestions:
+            print("📋 建议:")
+            for s in result.suggestions:
+                print(f"  {s}")
+        print()
+
+        return 0 if result.passed else 1
 
     # 优先使用 --diff 模式（增量检查）
     if args.diff:
@@ -276,6 +314,7 @@ def cmd_report(args):
         project_root=str(root),
         format=args.format,
         copy=args.copy,
+        output_path=args.output,
     )
 
     if not result.is_success() and args.copy:
@@ -497,6 +536,18 @@ def cmd_immune(args) -> int:
     return cmd_immune(args)
 
 
+def cmd_ci(args) -> int:
+    """生成 CI/CD 工作流文件"""
+    from moat.ci_generator import cmd_ci
+    return cmd_ci(args)
+
+
+def cmd_notify(args) -> int:
+    """发送通知到 webhook"""
+    from moat.notifier import cmd_notify
+    return cmd_notify(args)
+
+
 def cmd_evolution(args):
     """进化指标管理"""
     from moat.evolution_cli import cmd_evolution
@@ -550,6 +601,8 @@ def build_parser() -> argparse.ArgumentParser:
                          help="跳过 L2 架构检查（提升性能，完整模式有效）")
     p_check.add_argument("--optimize", action="store_true",
                          help="启用代码优化检查（Ponytail 集成：YAGNI、复杂度、标准库优先）")
+    p_check.add_argument("--leak", action="store_true",
+                         help="🔒 代码泄露风险检测 — 检测 AI 工具跨目录读取、敏感文件暴露")
 
     # watch
     p_watch = sub.add_parser("watch", help="实时监控日志错误")
@@ -569,10 +622,12 @@ def build_parser() -> argparse.ArgumentParser:
     # report
     p_report = sub.add_parser("report", help="生成检查报告")
     _shared_args(p_report)
-    p_report.add_argument("--format", choices=["text", "md", "json"], default="text",
-                          help="输出格式（默认: text）")
+    p_report.add_argument("--format", choices=["text", "md", "json", "pdf"], default="text",
+                          help="输出格式（默认: text, 新增: pdf）")
     p_report.add_argument("--copy", action="store_true",
                           help="复制报告到剪贴板")
+    p_report.add_argument("--output", "-o", default="",
+                          help="输出文件路径（PDF 模式必填）")
 
     # 🆕 rules - 规则管理
     p_rules = sub.add_parser("rules", help="规则管理")
@@ -597,6 +652,22 @@ def build_parser() -> argparse.ArgumentParser:
                           help="架构评分低于此阈值则失败")
     p_accept.add_argument("--diff", action="store_true",
                           help="增量验收模式（只检查 git 修改的文件）")
+
+    # 🆕 ci — 生成 CI/CD 工作流
+    p_ci = sub.add_parser("ci", help="⚡ 生成 CI/CD 工作流（GitHub Actions / GitLab CI）")
+    _shared_args(p_ci)
+    p_ci.add_argument("--platform", choices=["github", "gitlab"], default=None,
+                      help="CI 平台（默认: 交互选择）")
+
+    # 🆕 notify — 发送通知到 webhook
+    p_notify = sub.add_parser("notify", help="🔔 发送检查结果到 Slack / 飞书 / Discord")
+    _shared_args(p_notify)
+    p_notify.add_argument("--webhook", "-w", default="",
+                          help="Webhook URL（或设置 MOAT_WEBHOOK_URL 环境变量）")
+    p_notify.add_argument("--report", "-r", default="",
+                          help="检查报告 JSON 文件路径")
+    p_notify.add_argument("--fail-on-score", type=int, metavar="SCORE",
+                          help="发送门禁告警（评分低于此值）")
 
     # 🆕 architecture - 架构健康报告
     p_arch = sub.add_parser("architecture", help="生成架构健康报告（L2）")
@@ -700,6 +771,8 @@ def main():
     commands = {
         "check": cmd_check,
         "accept": cmd_accept,
+        "ci": cmd_ci,
+        "notify": cmd_notify,
         "watch": cmd_watch,
         "init": cmd_init,
         "report": cmd_report,

@@ -186,6 +186,16 @@ DEFAULT_RULES = [
         auto_checkable=True,
     ),
     RuleDefinition(
+        id="LEAKAGE_DETECTION",
+        title="代码泄露风险检测",
+        description="检测 AI 工具跨目录读取痕迹、敏感文件暴露、symlink 泄露、硬编码敏感路径。",
+        step=5,
+        type="structure",
+        severity="CRITICAL",
+        operator="leakage_detection",
+        auto_checkable=True,
+    ),
+    RuleDefinition(
         id="TRUTH_DOC",
         title="收口验收结果，输出标准化文档",
         description="汇总所有验收项，明确通过/未通过/未验证，生成后端架构实施真元文档。",

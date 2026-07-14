@@ -617,6 +617,34 @@ def _run_layer_violation_operator(project_root: Path, target_files: list[str] | 
         return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
 
 
+def _run_leakage_detection_operator(project_root: Path, target_files: list[str] | None = None) -> dict:
+    """运行泄露检测算子"""
+    try:
+        from moat.verification.operators import LeakageDetectionOperator
+        from moat.verification.types import VerificationContext
+
+        op = LeakageDetectionOperator()
+        ctx = VerificationContext(project_path=project_root)
+
+        # 增量模式：只检查修改的文件
+        if target_files is not None:
+            ctx.config["target_files"] = target_files
+
+        result = op.verify(ctx)
+
+        return {
+            "passed": result.passed,
+            "violations": [
+                {"message": v.message, "severity": v.severity.value, "file": v.file_path, "line": v.line}
+                for v in result.violations
+            ],
+            "evidence": [f"{k}: {v}" for k, v in result.evidence.items()],
+            "suggestion": result.suggestions[0] if result.suggestions else None,
+        }
+    except Exception as e:
+        return {"passed": False, "violations": [{"message": f"算子执行异常: {e}"}], "evidence": [], "suggestion": None}
+
+
 # operator 名称 → 执行函数映射
 OPERATOR_MAP = {
     "directory_responsibility": _run_directory_operator,
@@ -627,4 +655,5 @@ OPERATOR_MAP = {
     "truth_document": _run_truth_document_operator,
     "git_baseline": _run_git_baseline_operator,
     "layer_violation": _run_layer_violation_operator,
+    "leakage_detection": _run_leakage_detection_operator,
 }

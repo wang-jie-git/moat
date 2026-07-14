@@ -10,6 +10,7 @@ from .runtime_evidence import RuntimeEvidenceOperator
 from .architecture_health_score import ArchitectureHealthScoreOperator
 from .truth_document import TruthDocumentGeneratorOperator
 from .layer_violation import LayerViolationOperator
+from .leakage_detection import LeakageDetectionOperator
 
 __all__ = [
     "DirectoryResponsibilityOperator",
@@ -20,4 +21,5 @@ __all__ = [
     "ArchitectureHealthScoreOperator",
     "TruthDocumentGeneratorOperator",
     "LayerViolationOperator",
+    "LeakageDetectionOperator",
 ]

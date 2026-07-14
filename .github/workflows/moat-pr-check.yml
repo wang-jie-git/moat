@@ -1,0 +1,108 @@
+# Moat PR 自动检查
+# 在 .github/workflows/ 下创建此文件即可启用
+# 或运行: moat ci --platform github
+#
+# 功能：
+# - PR 创建/更新时自动执行架构检查
+# - 泄露风险检测 (moat check --leak)
+# - 增量架构验收 (moat accept --diff)
+# - 通过 PR Comment 展示检查结果
+
+name: Moat PR Check
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master]
+
+jobs:
+  moat-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Moat
+        run: pip install moat-ai
+
+      - name: ⚡ 快速检查
+        id: quick
+        run: moat check --quick
+        continue-on-error: true
+
+      - name: 🔒 泄露风险检测
+        id: leak
+        run: moat check --leak
+        continue-on-error: true
+
+      - name: 🏗 架构验收
+        id: accept
+        run: |
+          moat accept --diff --fail-on-score 60 --json > .moat-report.json 2>&1 || true
+        continue-on-error: true
+
+      - name: 📋 PR 评论
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '## 🛡️ Moat Architecture Check\n\n';
+
+            const steps = ['quick', 'leak', 'accept'];
+            const icons = { 'true': '✅', 'false': '❌', 'skipped': '⏭️' };
+
+            body += '| Check | Status |\n|------|--------|\n';
+
+            try {
+              const report = JSON.parse(fs.readFileSync('.moat-report.json', 'utf8'));
+              const score = report.overall_score || 0;
+              const passed = report.passed || false;
+              body += `| **Architecture Acceptance** | ${passed ? '✅' : '❌'} ${score}/100 |\n`;
+              body += `| **Leak Detection** | ${{ steps.leak.outcome === 'success' ? '✅' : '❌' }} |\n`;
+              body += `| **Quick Check** | ${{ steps.quick.outcome === 'success' ? '✅' : '❌' }} |\n`;
+
+              if (report.rules) {
+                body += '\n### Rule Details\n\n';
+                body += '| Rule | Status |\n|------|--------|\n';
+                report.rules.forEach(r => {
+                  body += `| ${r.title} | ${r.passed ? '✅' : '❌'} |\n`;
+                });
+              }
+            } catch (e) {
+              body += '| Architecture Acceptance | ⚠️ Report not available |\n';
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body && c.body.includes('Moat Architecture Check'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
