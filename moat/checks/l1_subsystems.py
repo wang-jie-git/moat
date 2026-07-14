@@ -161,7 +161,7 @@ def _discover_subsystems(project_root: Path) -> list[tuple[str, str, str, Path |
     for f in project_root.rglob("*.py"):
         rel = f.relative_to(project_root)
         parts = rel.parts
-        if any(p in (".venv", "venv", "__pycache__", ".git", "node_modules",
+        if any(p.startswith(".venv") or p == "venv" or p in ("__pycache__", ".git", "node_modules",
                       "build", "dist") for p in parts):
             continue
         if f.name.startswith("_"):

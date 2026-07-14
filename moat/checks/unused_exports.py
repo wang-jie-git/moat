@@ -115,9 +115,12 @@ class UnusedExportsCheck(Check):
     def _should_skip(self, file_path: Path) -> bool:
         """判断是否跳过文件"""
         # 跳过常见目录
-        skip_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".next", ".nuxt"}
-        if any(part in skip_dirs for part in file_path.parts):
-            return True
+        skip_dirs = {"__pycache__", ".git", "node_modules", ".next", ".nuxt"}
+        for part in file_path.parts:
+            if part.startswith(".venv") or part == "venv":
+                return True
+            if part in skip_dirs:
+                return True
 
         # 跳过测试文件（只匹配文件名，不匹配路径中的 test_）
         file_name = file_path.name

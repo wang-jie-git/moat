@@ -90,8 +90,13 @@ class Check(ABC):
 
     def _should_skip(self, file: Path) -> bool:
         """检查文件是否应该跳过"""
-        skip_patterns = {
-            ".venv", "venv", "__pycache__", ".git", "node_modules",
-            ".pytest_cache", "dist", "build", ".next", ".nuxt",
-        }
-        return any(part in file.parts for part in skip_patterns)
+        skip_exact = {"__pycache__", ".git", "node_modules",
+                       ".pytest_cache", "dist", "build", ".next", ".nuxt",
+                       "target", "vendor", ".mypy_cache", ".ruff_cache"}
+        for part in file.parts:
+            # 虚拟环境目录（.venv, .venv.prod, venv, venv_prod 等）
+            if part.startswith(".venv") or part == "venv":
+                return True
+            if part in skip_exact:
+                return True
+        return False

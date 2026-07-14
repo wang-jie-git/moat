@@ -98,7 +98,7 @@ def _discover_core_modules(project_root: Path) -> list[tuple[str, str | None]]:
     for f in py_files:
         rel = f.relative_to(project_root)
         parts = rel.parts
-        if any(p in (".venv", "venv", "__pycache__", ".git", "node_modules",
+        if any(p.startswith(".venv") or p == "venv" or p in ("__pycache__", ".git", "node_modules",
                       "build", "dist", "tests", "moat/checks") for p in parts):
             continue
         if f.name.startswith("_"):

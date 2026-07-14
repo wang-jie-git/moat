@@ -214,7 +214,7 @@ def _count_imports(project_root: Path) -> dict[str, int]:
         parts = rel_path.parts
 
         # 跳过虚拟环境、测试文件等
-        if any(p in (".venv", "venv", "__pycache__", ".git", "node_modules",
+        if any(p.startswith(".venv") or p == "venv" or p in ("__pycache__", ".git", "node_modules",
                      "build", "dist", "tests", "test") for p in parts):
             continue
 

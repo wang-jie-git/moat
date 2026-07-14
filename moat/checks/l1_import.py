@@ -12,10 +12,10 @@ def run_import_check(project_root: Path) -> list[dict]:
     py_files = list(project_root.rglob("*.py"))
 
     for f in py_files:
-        # 跳过 venv / .venv / __pycache__ / tests / examples
+        # 跳过虚拟环境 / __pycache__ / tests / examples
         rel = f.relative_to(project_root)
         parts = rel.parts
-        if any(p in (".venv", "venv", "env", "__pycache__", "node_modules",
+        if any(p.startswith(".venv") or p in ("venv", "env", "__pycache__", "node_modules",
                       ".git", ".tox", "build", "dist", ".egg-info",
                       "tests", "test", "examples") for p in parts):
             continue
@@ -61,7 +61,7 @@ def run_syntax_check(project_root: Path) -> list[dict]:
     for f in py_files:
         rel = f.relative_to(project_root)
         parts = rel.parts
-        if any(p in (".venv", "venv", "env", "__pycache__", "node_modules",
+        if any(p.startswith(".venv") or p in ("venv", "env", "__pycache__", "node_modules",
                       ".git", ".tox", "build", "dist", ".egg-info") for p in parts):
             continue
 

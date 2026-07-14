@@ -25,6 +25,7 @@ from ..types import (
     Severity,
     VerificationContext,
     Violation,
+    iter_python_files,
 )
 
 if TYPE_CHECKING:
@@ -181,12 +182,12 @@ class LayerViolationOperator:
         """将项目文件按层级归类"""
         result = [[] for _ in self.layers]
 
-        for py_file in project_path.rglob("*.py"):
+        for py_file in iter_python_files(project_path):
             rel = py_file.relative_to(project_path)
             rel_str = str(rel.as_posix())
 
-            # 跳过测试、缓存等
-            if "/test" in rel_str or rel_str.startswith("test") or "/__pycache__" in rel_str:
+            # 跳过测试目录
+            if "/test" in rel_str or rel_str.startswith("test"):
                 continue
 
             for idx, layer in enumerate(self.layers):

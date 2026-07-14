@@ -97,7 +97,9 @@ def _discover_endpoints(project_root: Path) -> list[dict]:
     """从路由文件中发现端点"""
     endpoints = []
     for f in project_root.rglob("*.py"):
-        if any(p in f.parts for p in (".venv", "venv", "__pycache__", ".git")):
+        # 跳过虚拟环境（.venv* / venv*）和常见系统目录
+        if any(p.startswith(".venv") or p == "venv" or p in ("__pycache__", ".git")
+               for p in f.parts):
             continue
         text = f.read_text(errors="ignore")
         # FastAPI router decorators

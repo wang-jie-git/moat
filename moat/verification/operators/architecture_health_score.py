@@ -19,6 +19,7 @@ from ..types import (
     Severity,
     VerificationContext,
     Violation,
+    iter_python_files,
 )
 
 if TYPE_CHECKING:
@@ -175,13 +176,13 @@ class ArchitectureHealthScoreOperator:
 
         # 检查分层是否清晰（通过文件命名）
         if has_api:
-            api_files = list((project_path / "api").rglob("*.py"))
+            api_files = list(iter_python_files(project_path / "api"))
             router_count = sum(1 for f in api_files if "router" in f.name.lower())
             if router_count > 0:
                 score += 2.5
 
         if has_services:
-            service_files = list((project_path / "services").rglob("*.py"))
+            service_files = list(iter_python_files(project_path / "services"))
             service_count = sum(1 for f in service_files if "service" in f.name.lower())
             if service_count > 0:
                 score += 2.5

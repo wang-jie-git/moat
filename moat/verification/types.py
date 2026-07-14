@@ -9,6 +9,32 @@ from pathlib import Path
 from typing import Any
 
 
+# 默认排除的目录 — 避免扫描虚拟环境 / 第三方依赖
+DEFAULT_EXCLUDE_DIRS = {".venv", "venv", ".venv.prod", ".venv.dev",
+                        "__pycache__", ".git", "node_modules",
+                        "dist", "build", ".tox", ".eggs", "egg-info"}
+
+
+def iter_python_files(project_path: Path, *, exclude_dirs: set[str] | None = None) -> list[Path]:
+    """遍历 Python 文件，自动排除虚拟环境等目录
+
+    Args:
+        project_path: 项目根路径
+        exclude_dirs: 要排除的目录名集合（默认 DEFAULT_EXCLUDE_DIRS）
+
+    Returns:
+        Python 文件列表
+    """
+    exclude = exclude_dirs or DEFAULT_EXCLUDE_DIRS
+    files: list[Path] = []
+    for py_file in project_path.rglob("*.py"):
+        # 跳过排除目录中的文件
+        if any(part in exclude for part in py_file.parts):
+            continue
+        files.append(py_file)
+    return files
+
+
 class Severity(str, Enum):
     """违规严重程度"""
 

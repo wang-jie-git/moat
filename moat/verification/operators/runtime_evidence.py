@@ -20,6 +20,7 @@ from ..types import (
     Severity,
     VerificationContext,
     Violation,
+    iter_python_files,
 )
 
 if TYPE_CHECKING:
@@ -94,7 +95,7 @@ class RuntimeEvidenceOperator:
         health_check_locations = []
 
         # 方式1：检查代码中是否有/health路径
-        py_files = list(project_path.rglob("*.py"))
+        py_files = list(iter_python_files(project_path))
         for py_file in py_files[:20]:  # 限制检查数量
             try:
                 content = py_file.read_text(encoding="utf-8", errors="ignore")

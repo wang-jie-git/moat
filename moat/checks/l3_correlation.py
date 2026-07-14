@@ -53,7 +53,7 @@ def _build_import_graph(project_root: Path) -> dict[str, list[str]]:
     for f in project_root.rglob("*.py"):
         rel = f.relative_to(project_root)
         parts = rel.parts
-        if any(p in (".venv", "venv", "__pycache__", ".git", "node_modules",
+        if any(p.startswith(".venv") or p == "venv" or p in ("__pycache__", ".git", "node_modules",
                       "build", "dist") for p in parts):
             continue
 

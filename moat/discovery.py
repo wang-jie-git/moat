@@ -75,10 +75,16 @@ def _detect_framework(root: Path) -> str | None:
     return None
 
 
+def _is_skip_path(f: Path) -> bool:
+    """检查路径是否应跳过（虚拟环境、缓存目录等）"""
+    return any(p.startswith(".venv") or p == "venv" or p in ("__pycache__", ".git")
+               for p in f.parts)
+
+
 def _count_py_files(root: Path) -> int:
     count = 0
     for f in root.rglob("*.py"):
-        if any(p in f.parts for p in (".venv", "venv", "__pycache__", ".git")):
+        if _is_skip_path(f):
             continue
         count += 1
     return count
@@ -87,7 +93,7 @@ def _count_py_files(root: Path) -> int:
 def _count_lines(root: Path) -> int:
     total = 0
     for f in root.rglob("*.py"):
-        if any(p in f.parts for p in (".venv", "venv", "__pycache__", ".git")):
+        if _is_skip_path(f):
             continue
         try:
             total += len(f.read_text().split("\n"))
@@ -107,7 +113,7 @@ def _find_log(root: Path) -> str | None:
 def _find_entry_points(root: Path) -> list[str]:
     entries = []
     for f in root.rglob("server.py"):
-        if any(p in f.parts for p in (".venv", "venv", "__pycache__", ".git")):
+        if _is_skip_path(f):
             continue
         text = f.read_text(errors="ignore")
         if "app" in text and ("FastAPI" in text or "Flask" in text):
@@ -128,7 +134,7 @@ def _detect_project_types(root: Path) -> dict[str, bool]:
 def _detect_python_framework(root: Path) -> str | None:
     """检测 Python 框架"""
     for f in root.rglob("*.py"):
-        if any(p in f.parts for p in (".venv", "venv", "__pycache__", ".git")):
+        if _is_skip_path(f):
             continue
         try:
             text = f.read_text(errors="ignore").lower()

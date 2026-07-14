@@ -18,6 +18,7 @@ from ..types import (
     Severity,
     VerificationContext,
     Violation,
+    iter_python_files,
 )
 
 if TYPE_CHECKING:
@@ -95,7 +96,7 @@ class FrameworkUsageOperator:
         """
         # 策略1：扫描源码 import 语句
         frameworks_from_imports = set()
-        py_files = list(project_path.rglob("*.py"))
+        py_files = list(iter_python_files(project_path))
         for py_file in py_files[:200]:  # 限制扫描数量
             try:
                 # 只检查前 50 行（import 通常在文件顶部）
@@ -237,11 +238,11 @@ class FrameworkUsageOperator:
         for source_dir in source_dirs:
             dir_path = project_path / source_dir
             if dir_path.exists() and dir_path.is_dir():
-                python_files.extend(dir_path.rglob("*.py"))
+                python_files.extend(iter_python_files(dir_path))
 
         # 如果没找到源代码，扫描所有Python文件但过滤测试
         if not python_files:
-            all_py_files = list(project_path.rglob("*.py"))
+            all_py_files = list(iter_python_files(project_path))
             python_files = [
                 f for f in all_py_files
                 if not any(exempt in str(f) for exempt in exempt_patterns)

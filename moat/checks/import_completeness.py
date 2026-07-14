@@ -159,11 +159,15 @@ class ImportCompletenessCheck(Check):
     def _should_skip(self, file_path: Path) -> bool:
         """判断是否跳过文件"""
         # 跳过常见目录
-        skip_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules",
+        skip_dirs = {"__pycache__", ".git", "node_modules",
                      "build", "dist", ".next", ".nuxt", "target", "vendor",
                      ".pytest_cache", ".mypy_cache", ".ruff_cache"}
-        if any(part in file_path.parts for part in skip_dirs):
-            return True
+        for part in file_path.parts:
+            # 虚拟环境目录（.venv, .venv.prod, venv 等）
+            if part.startswith(".venv") or part == "venv":
+                return True
+            if part in skip_dirs:
+                return True
 
         # 跳过忽略模块
         if file_path.stem in self.ignore_modules:
