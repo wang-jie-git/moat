@@ -117,9 +117,10 @@ def _build_slack_message(report: dict[str, Any] | None, fail_on_score: int | Non
     if report and report.get("suggestions"):
         suggestions = report.get("suggestions", [])
         if isinstance(suggestions, list):
+            sug_text = "\n".join(suggestions[:3])
             blocks.append({
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*建议:*\n{'\\n'.join(suggestions[:3])}"}
+                "text": {"type": "mrkdwn", "text": f"*建议:*\n{sug_text}"}
             })
 
     return json.dumps({"blocks": blocks})

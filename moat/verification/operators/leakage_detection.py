@@ -101,6 +101,38 @@ class LeakageDetectionOperator:
         evidence: dict[str, Any] = {}
         suggestions: list[str] = []
 
+        # AI 工具系统配置扫描模式
+        scan_ai = context.config.get("scan_ai", False)
+        if scan_ai:
+            print(f"   🕵️ 扫描 AI 工具系统配置...")
+            ai_violations = self._scan_ai_configs()
+            violations.extend(ai_violations)
+
+            # 聚合系统扫描结果
+            critical_count = sum(1 for v in violations if v.severity == Severity.CRITICAL)
+            warning_count = sum(1 for v in violations if v.severity == Severity.WARNING)
+
+            if ai_violations:
+                evidence["scan_ai_summary"] = {
+                    "total_findings": len(ai_violations),
+                    "critical": critical_count,
+                    "warning": warning_count,
+                }
+                suggestions.append(f"AI 工具审计: 发现 {len(ai_violations)} 项")
+                if critical_count > 0:
+                    suggestions.append(f"  🔴 {critical_count} 项严重风险")
+            else:
+                suggestions.append("未发现已知 AI 工具配置")
+
+            passed = critical_count == 0
+            return OperatorResult(
+                operator_name=self.name,
+                passed=passed,
+                evidence=evidence,
+                violations=violations,
+                suggestions=suggestions,
+            )
+
         print(f"   🔍 扫描泄露风险...")
 
         # 1. 检测项目内是否存在 AI 工具配置引用
@@ -254,6 +286,153 @@ class LeakageDetectionOperator:
                         pass
 
         return findings
+
+    def _scan_ai_configs(self, home_dir: Path | None = None) -> list[Violation]:
+        """扫描 AI 工具系统配置目录 — 检测数据窃取风险
+
+        扫描 ~/.claude/, ~/.grok/, ~/.codex/ 等目录，检查：
+        - telemetry / 遥测配置
+        - 敏感命令授权（sshpass, scp, tar czf 等）
+        - 会话日志大小和内容
+        - 项目索引覆盖范围
+        """
+        if home_dir is None:
+            home_dir = Path.home()
+
+        violations: list[Violation] = []
+        total_data_size = 0
+
+        # ── 1. Claude Code ──
+        claude_dir = home_dir / ".claude"
+        if claude_dir.exists():
+            print(f"   📋 发现 Claude Code 配置: {claude_dir}")
+
+            # 检查 telemetry 目录
+            telemetry_dir = claude_dir / "telemetry"
+            if telemetry_dir.exists():
+                telemetry_files = list(telemetry_dir.rglob("*"))
+                telemetry_size = sum(f.stat().st_size for f in telemetry_files if f.is_file())
+                total_data_size += telemetry_size
+                violations.append(
+                    Violation(
+                        rule="ai_agent_audit",
+                        message=f"Claude Code 遥测数据: {len(telemetry_files)} 个文件, {telemetry_size / 1024:.1f} KB",
+                        severity=Severity.WARNING,
+                        file_path=str(telemetry_dir),
+                        suggestion="检查 telemetry 目录内容。如需关闭遥测，检查 settings.json 中的 telemetry_enabled 配置。",
+                    )
+                )
+
+            # 检查会话日志
+            history_file = claude_dir / "history.jsonl"
+            if history_file.exists():
+                history_size = history_file.stat().st_size
+                total_data_size += history_size
+                # 检查会话日志中是否包含敏感信息
+                try:
+                    sample = history_file.read_text(encoding="utf-8", errors="ignore")[:2000]
+                    # 检测 API keys
+                    if re.search(r'[Ss][Kk]-[a-zA-Z0-9]{20,}', sample):
+                        violations.append(
+                            Violation(
+                                rule="ai_agent_audit",
+                                message="Claude Code 会话日志包含疑似 API Key",
+                                severity=Severity.CRITICAL,
+                                file_path=str(history_file),
+                                suggestion="立即检查并清理 history.jsonl 中的 API Key。考虑使用环境变量而非明文配置。",
+                            )
+                        )
+                except Exception:
+                    pass
+                violations.append(
+                    Violation(
+                        rule="ai_agent_audit",
+                        message=f"Claude Code 会话历史: {history_size / 1024:.1f} KB",
+                        severity=Severity.INFO,
+                        file_path=str(history_file),
+                        suggestion=f"会话日志包含所有对话历史。如涉及敏感信息，建议定期清理。",
+                    )
+                )
+
+            # 检查 settings.local.json 中的危险命令授权
+            settings_local = claude_dir / "settings.local.json"
+            if settings_local.exists():
+                try:
+                    import json
+                    settings = json.loads(settings_local.read_text(encoding="utf-8", errors="ignore"))
+                    allowed = settings.get("permissions", {}).get("allow", [])
+                    dangerous_commands = ["sshpass", "scp ", "tar czf", "curl ", "rm -rf", "chmod"]
+                    found_dangerous = []
+                    for cmd in dangerous_commands:
+                        for entry in allowed:
+                            if cmd in entry:
+                                found_dangerous.append(entry[:80])
+                    if found_dangerous:
+                        violations.append(
+                            Violation(
+                                rule="ai_agent_audit",
+                                message=f"Claude Code 已授权 {len(found_dangerous)} 个敏感命令",
+                                severity=Severity.WARNING,
+                                file_path=str(settings_local),
+                                suggestion="检查授权列表中的敏感命令（sshpass, scp, tar czf 等）。如需撤销，编辑 settings.local.json 移除对应条目。",
+                                evidence={"dangerous_commands": found_dangerous},
+                            )
+                        )
+                except Exception:
+                    pass
+
+            # 检查 sessions 目录
+            sessions_dir = claude_dir / "sessions"
+            if sessions_dir.exists():
+                session_files = list(sessions_dir.rglob("*"))
+                session_size = sum(f.stat().st_size for f in session_files if f.is_file())
+                total_data_size += session_size
+                if session_size > 1024 * 100:  # > 100KB
+                    violations.append(
+                        Violation(
+                            rule="ai_agent_audit",
+                            message=f"Claude Code 会话数据: {session_size / 1024:.1f} KB",
+                            severity=Severity.INFO,
+                            file_path=str(sessions_dir),
+                            suggestion="会话数据包含 AI 交互历史，涉及项目代码和决策记录。",
+                        )
+                    )
+
+        # ── 2. Grok CLI ──
+        grok_dir = home_dir / ".grok"
+        if grok_dir.exists():
+            grok_size = sum(f.stat().st_size for f in grok_dir.rglob("*") if f.is_file())
+            total_data_size += grok_size
+            violations.append(
+                Violation(
+                    rule="ai_agent_audit",
+                    message=f"Grok CLI 配置存在: {grok_size / 1024:.1f} KB 数据",
+                    severity=Severity.CRITICAL,
+                    file_path=str(grok_dir),
+                    suggestion="Grok CLI 已被曝自动打包上传代码库。建议立即卸载: npm uninstall -g @xai-official/grok",
+                )
+            )
+
+        # ── 3. Codex CLI ──
+        codex_dir = home_dir / ".codex"
+        if codex_dir.exists():
+            codex_size = sum(f.stat().st_size for f in codex_dir.rglob("*") if f.is_file())
+            total_data_size += codex_size
+            violations.append(
+                Violation(
+                    rule="ai_agent_audit",
+                    message=f"Codex CLI 配置存在: {codex_size / 1024:.1f} KB 数据",
+                    severity=Severity.WARNING,
+                    file_path=str(codex_dir),
+                    suggestion="Codex CLI 会记录会话数据。请确认其隐私政策。",
+                )
+            )
+
+        # ── 聚合报告 ──
+        if violations:
+            print(f"   📊 AI 工具数据总量: {total_data_size / 1024:.1f} KB")
+
+        return violations
 
     def _check_env_exposure(self, project_path: Path) -> list[dict]:
         """检测 .env 文件暴露"""

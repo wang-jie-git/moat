@@ -6,6 +6,7 @@ Moat CLI — 护城河命令行工具
   moat check --full   完整检查（所有文件，可能很慢）
   moat check --diff   增量检查（AST 对比 + 影响域分析 < 10 秒）
   moat check --leak   泄露风险检测（AI 工具跨目录读取、敏感文件暴露）
+  moat check --scan-ai  🕵️ 扫描 AI 工具系统配置（~/.claude/ ~/.grok/ ~/.codex/）
   moat accept         8 步架构验收
   moat ci             自动生成 CI/CD 工作流
   moat notify         发送检查结果到 Slack / 飞书
@@ -34,6 +35,40 @@ def cmd_check(args):
     - moat check --leak：代码泄露风险检测 < 3 秒
     """
     from moat.runner import run_all_checks
+
+    # AI 工具系统配置扫描模式
+    if args.scan_ai:
+        print(f"\n🕵️  AI 工具系统配置安全审计...")
+        from moat.verification.operators.leakage_detection import LeakageDetectionOperator
+        from moat.verification.types import VerificationContext
+
+        op = LeakageDetectionOperator()
+        ctx = VerificationContext(project_path=Path(args.project))
+        ctx.config["scan_ai"] = True
+        result = op.verify(ctx)
+
+        print(f"\n{'=' * 55}")
+        print(f"  🛡️  AI 工具审计报告")
+        print(f"{'=' * 55}")
+        for v in result.violations:
+            sev = "🔴" if v.severity.value == "critical" else "🟡" if v.severity.value == "warning" else "ℹ️"
+            print(f"  {sev} [{v.severity.value.upper()}] {v.message}")
+            if v.file_path:
+                print(f"     📍 {v.file_path}")
+            if v.suggestion:
+                print(f"     💡 {v.suggestion}")
+            if v.evidence and "dangerous_commands" in v.evidence:
+                for cmd in v.evidence["dangerous_commands"]:
+                    print(f"        ⚠️  {cmd}")
+            print()
+
+        if result.suggestions:
+            print("📋 建议:")
+            for s in result.suggestions:
+                print(f"  {s}")
+        print()
+
+        return 0 if result.passed else 1
 
     # 泄露检测模式
     if args.leak:
@@ -603,6 +638,8 @@ def build_parser() -> argparse.ArgumentParser:
                          help="启用代码优化检查（Ponytail 集成：YAGNI、复杂度、标准库优先）")
     p_check.add_argument("--leak", action="store_true",
                          help="🔒 代码泄露风险检测 — 检测 AI 工具跨目录读取、敏感文件暴露")
+    p_check.add_argument("--scan-ai", action="store_true",
+                         help="🕵️ 扫描 AI 工具系统配置（~/.claude/ ~/.grok/）— 检测数据窃取风险")
 
     # watch
     p_watch = sub.add_parser("watch", help="实时监控日志错误")
