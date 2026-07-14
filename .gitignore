@@ -24,3 +24,4 @@ coverage.json
 tests/.coverage
 tests/coverage.json
 tests/critical_path_coverage*.json
+.github/workflows/moat.yml
