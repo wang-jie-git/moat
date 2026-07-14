@@ -577,6 +577,12 @@ def cmd_ci(args) -> int:
     return cmd_ci(args)
 
 
+def cmd_audit(args) -> int:
+    """🔐 AI 工具权限审计 — 检测权限过载、生成瘦身建议"""
+    from moat.audit import cmd_audit
+    return cmd_audit(args)
+
+
 def cmd_notify(args) -> int:
     """发送通知到 webhook"""
     from moat.notifier import cmd_notify
@@ -696,6 +702,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_ci.add_argument("--platform", choices=["github", "gitlab"], default=None,
                       help="CI 平台（默认: 交互选择）")
 
+    # 🆕 audit — AI 工具权限审计
+    p_audit = sub.add_parser("audit", help="🔐 AI 工具权限审计 — 检测权限过载、生成瘦身建议")
+    _shared_args(p_audit)
+    p_audit.add_argument("--permissions", action="store_true",
+                         help="审计 AI 工具权限配置")
+    p_audit.add_argument("--tool", choices=["claude", "codex", "grok"], default=None,
+                         help="指定工具（默认: 全部）")
+    p_audit.add_argument("--fix", action="store_true",
+                         help="生成权限瘦身建议")
+
     # 🆕 notify — 发送通知到 webhook
     p_notify = sub.add_parser("notify", help="🔔 发送检查结果到 Slack / 飞书 / Discord")
     _shared_args(p_notify)
@@ -809,6 +825,7 @@ def main():
         "check": cmd_check,
         "accept": cmd_accept,
         "ci": cmd_ci,
+        "audit": cmd_audit,
         "notify": cmd_notify,
         "watch": cmd_watch,
         "init": cmd_init,
