@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 1125" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#181825"/>
+    </linearGradient>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2a2a3c"/>
+      <stop offset="100%" stop-color="#252535"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="820" height="1125" rx="12" ry="12" fill="url(#bg)" stroke="#333" stroke-width="1"/>
+  <rect x="0" y="0" width="820" height="32" rx="12" ry="12" fill="url(#hd)"/>
+  <rect x="0" y="22" width="820" height="10" fill="url(#hd)"/>
+  <circle cx="18" cy="16" r="5.5" fill="#ff5f56"/>
+  <circle cx="38" cy="16" r="5.5" fill="#ffbd2e"/>
+  <circle cx="58" cy="16" r="5.5" fill="#27c93f"/>
+  <text x="410" y="22" font-family="'SF Pro','-apple-system','Helvetica Neue',sans-serif" font-size="11" fill="#aaa" text-anchor="middle">moat — AI 编码护城河  |  Bug Interception Demo</text>
+  
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="54" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="17" font-weight="normal" fill="#e0e0e0">🛡️  Moat Bug Interception Demo</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.3s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="84" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#555">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.3s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="103" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#444"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.6s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="122" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="bold" fill="#4ec9b0">$ cat src/main.py</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.6s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="141" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.9s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="160" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#6a9955">&quot;&quot;&quot;Bug: 调用了 greet()，但没有从 utils 导入&quot;&quot;&quot;</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="1.2s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="179" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">def run():</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="1.5s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="198" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">    name = &quot;Moat&quot;</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="1.8s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="217" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#f44747">    message = greet(name)  ← ❌ 没导入！</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2.1s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="236" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">    print(message)</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2.1s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="255" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#444"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2.6s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="274" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="bold" fill="#4ec9b0">$ moat check --quick</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2.6s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="293" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="3s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="312" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="3.35s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="331" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">⚡ 快速检查模式（只检查修改的文件）...</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="3.7s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="350" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="4.05s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="369" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">==================================================</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="4.4s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="388" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">  Moat — AI 编码护城河</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="4.75s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="407" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">  /private/var/folders/c6/mh7jsyc16yv12fk16lntcx1h0000gn/T/tmp.ejzARL...</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="5.1s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="426" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">  2026-07-14 16:23:40</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="5.449999999999999s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="445" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">==================================================</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="5.8s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="464" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="6.15s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="483" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">📊 项目类型: python</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="6.8s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="502" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#444"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="7s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="521" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#555">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="7s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="540" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="7.5s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="559" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="17" font-weight="normal" fill="#6a9955">✅ Intercepted: IMPORT-MISSING-001</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="8s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="589" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888">  greet() 被调用但未从 utils 导入，提交前捕获</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="8s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="608" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#444"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="9s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="627" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="bold" fill="#4ec9b0">$ moat check --scan-ai  👁️  AI 工具审计</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="9s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="646" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="9.5s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="665" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="9.85s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="684" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">🕵️  AI 工具系统配置安全审计...</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="10.2s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="703" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">   🕵️ 扫描 AI 工具系统配置...</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="10.55s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="722" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">   📋 发现 Claude Code 配置: /Users/mac/.claude</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="10.9s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="741" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">   📊 AI 工具数据总量: 1354753.8 KB</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="11.25s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="760" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="11.6s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="779" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">=======================================================</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="11.95s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="798" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">  🛡️  AI 工具审计报告</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="12.3s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="817" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">=======================================================</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="12.65s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="836" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#ce9178">  🟡 [WARNING] Claude Code 遥测数据: 24 个文件, 302.3 KB</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="13s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="855" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">     📍 /Users/mac/.claude/telemetry</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="13.35s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="874" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#d4d4d4">     💡 检查 telemetry 目录内容。如需关闭遥测，检查 settings.json 中的 telemetry_enable...</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="13.7s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="893" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#444"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="14s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="912" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#555">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="14s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="931" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="14.5s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="950" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="17" font-weight="normal" fill="#4ec9b0">🛡️  moat v1.1.10 三道防线</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="15s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="980" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888">     🏗️  架构治理  — 门禁拦截 + 增量验收</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="15.5s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="999" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888">     🔒  隐私主权  — 零遥测 + 本地审计</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="16s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="1018" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#888">     🛡️  AI 审计   — 权限扫描 + 泄露检测</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="16s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="1037" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="normal" fill="#444"></text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="16.5s" dur="0.4s" fill="freeze"/>
+    <text x="22" y="1056" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" font-weight="bold" fill="#4ec9b0">  pip install moat-ai &amp;&amp; moat check --quick</text>
+  </g>
+  <g>
+    <rect x="22" y="1061" width="8" height="16" fill="#4ec9b0">
+      <animate attributeName="opacity" values="1;0;1" dur="1.2s" repeatCount="indefinite" begin="17s"/>
+    </rect>
+  </g>
+</svg>
