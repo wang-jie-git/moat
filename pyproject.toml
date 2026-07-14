@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "moat-ai"
-version = "1.1.9"
+version = "1.1.10"
 description = "AI 编码守门员 — 零配置 + 实时拦截 + 处方化提示 + 精准拦截 + 性能飞跃 + 测试覆盖率优化 + Bug 修复"
 readme = "README.md"
 license = {text = "Apache-2.0"}

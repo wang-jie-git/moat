@@ -1,85 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="840" height="581.04">
-<rect width="840" height="581.04" rx="5" ry="5" fill="#282d35"/>
-<circle cx="20" cy="20" r="6" fill="#ff5f58"/>
-<circle cx="40" cy="20" r="6" fill="#ffbd2e"/>
-<circle cx="60" cy="20" r="6" fill="#18c132"/>
-<svg viewBox="0 0 80 52.104" width="800" x="15" y="50" height="521.04">
-<style>
-@keyframes i{
-  0%{transform:translateX(-0px)}
-  16.666666666666668%{transform:translateX(-80px)}
-  33.333333333333336%{transform:translateX(-160px)}
-  50%{transform:translateX(-240px)}
-  66.66666666666667%{transform:translateX(-320px)}
-  83.33333333333334%{transform:translateX(-400px)}
-  to{transform:translateX(-400px)}
-}
-.a{fill:#282d35}.f{fill:#b9c0cb;white-space:pre}.h{fill:#e06c75;white-space:pre}
-.w{fill:#e5c07b;white-space:pre}.e{fill:#98c379;white-space:pre}
-.c{fill:#56b6c2;white-space:pre}.d{fill:#61afef;white-space:pre}
-</style>
-<g font-family="Monaco,Consolas,Menlo,monospace" font-size="1.67">
-<path fill="#282d35" d="M0 0h480v52.104H0z"/>
-<g style="animation-duration:10s;animation-iteration-count:infinite;animation-name:i;animation-timing-function:steps(1,end)">
-<svg width="480">
-<svg x="0">
-<text x="0" y="0" class="f"></text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#181825"/>
+    </linearGradient>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2a2a3c"/>
+      <stop offset="100%" stop-color="#252535"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="800" height="560" rx="10" ry="10" fill="url(#bg)" stroke="#333" stroke-width="1"/>
+  <rect x="0" y="0" width="800" height="30" rx="10" ry="10" fill="url(#hd)"/>
+  <rect x="0" y="20" width="800" height="10" fill="url(#hd)"/>
+  <circle cx="16" cy="15" r="5.5" fill="#ff5f56"/>
+  <circle cx="34" cy="15" r="5.5" fill="#ffbd2e"/>
+  <circle cx="52" cy="15" r="5.5" fill="#27c93f"/>
+  <text x="400" y="20" font-family="'SF Pro','-apple-system','Helvetica Neue',sans-serif" font-size="10.5" fill="#aaa" text-anchor="middle">moat — AI 编码护城河  |  Leak Detection @ macOS</text>
+
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0s" dur="0.4s" fill="freeze"/><text x="20" y="55" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="16" font-weight="bold" fill="#e06c75">🔒 Moat — 代码泄露风险检测</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="0.6s" dur="0.4s" fill="freeze"/><text x="20" y="80" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="14" fill="#b9c0cb">检测 AI 工具跨目录读取、敏感文件暴露</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.2s" dur="0.4s" fill="freeze"/><text x="20" y="115" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" fill="#56b6c2">🔍 扫描泄露风险...</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="1.8s" dur="0.4s" fill="freeze"/><text x="20" y="155" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" fill="#e06c75">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="2.4s" dur="0.4s" fill="freeze"/><text x="20" y="185" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="14" fill="#e5c07b">❌ 发现 1 个泄露风险</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="3s" dur="0.4s" fill="freeze"/><text x="30" y="215" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="14" fill="#e06c75">🔴 [CRITICAL] 敏感文件暴露: .env</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="3.6s" dur="0.4s" fill="freeze"/><text x="50" y="240" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="12.5" fill="#61afef">📍 .env</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="4.2s" dur="0.4s" fill="freeze"/><text x="50" y="265" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="12.5" fill="#61afef">💡 将 .env 加入 .gitignore。使用 .env.example 作为模板提交。</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="4.8s" dur="0.4s" fill="freeze"/><text x="20" y="305" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" fill="#e06c75">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="5.4s" dur="0.4s" fill="freeze"/><text x="20" y="340" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="14" fill="#56b6c2">📋 建议:</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="6s" dur="0.4s" fill="freeze"/><text x="20" y="370" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" fill="#b9c0cb">发现 1 个泄露风险</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="6.6s" dur="0.4s" fill="freeze"/><text x="30" y="395" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" fill="#e5c07b">🔴 1 个 CRITICAL 风险，建议立即修复</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="7.2s" dur="0.4s" fill="freeze"/><text x="50" y="420" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="12.5" fill="#61afef">📍 .env: 敏感文件暴露: .env</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="7.8s" dur="0.4s" fill="freeze"/><text x="20" y="460" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="14" fill="#98c379">✅ 演示完成</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="8.4s" dur="0.4s" fill="freeze"/><text x="20" y="490" font-family="'SF Mono','Menlo','Courier New',monospace" font-size="13" fill="#98c379">📦 pip install moat-ai &amp;&amp; moat check --leak</text></g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="9s" dur="0.4s" fill="freeze"/><rect x="20" y="497" width="8" height="14" rx="1" fill="#b9c0cb"><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/></rect></g>
 </svg>
-<svg x="80">
-<text x="0" y="0" class="h">╔══════════════════════════════════════════════════╗</text>
-<text x="0" y="2.171" class="h">║  🛡️ Moat — AI 编码护城河 演示                     ║</text>
-<text x="0" y="4.342" class="h">╚══════════════════════════════════════════════════╝</text>
-<text x="0" y="6.513" class="f">📄 问题代码: SQL 注入 + 敏感文件暴露</text>
-</svg>
-<svg x="160">
-<text x="0" y="0" class="h">╔══════════════════════════════════════════════════╗</text>
-<text x="0" y="2.171" class="h">║  🛡️ Moat — AI 编码护城河 演示                     ║</text>
-<text x="0" y="4.342" class="h">╚══════════════════════════════════════════════════╝</text>
-<text x="0" y="6.513" class="f">📄 问题代码: SQL 注入 + 敏感文件暴露</text>
-<text x="0" y="8.684" class="c">🔒 代码泄露风险检测...</text>
-</svg>
-<svg x="240">
-<text x="0" y="0" class="h">╔══════════════════════════════════════════════════╗</text>
-<text x="0" y="2.171" class="h">║  🛡️ Moat — AI 编码护城河 演示                     ║</text>
-<text x="0" y="4.342" class="h">╚══════════════════════════════════════════════════╝</text>
-<text x="0" y="6.513" class="f">📄 问题代码: SQL 注入 + 敏感文件暴露</text>
-<text x="0" y="8.684" class="c">🔒 代码泄露风险检测...</text>
-<text x="0" y="10.854999999999999" class="c">🔍 扫描泄露风险...</text>
-</svg>
-<svg x="320">
-<text x="0" y="0" class="h">╔══════════════════════════════════════════════════╗</text>
-<text x="0" y="2.171" class="h">║  🛡️ Moat — AI 编码护城河 演示                     ║</text>
-<text x="0" y="4.342" class="h">╚══════════════════════════════════════════════════╝</text>
-<text x="0" y="6.513" class="f">📄 问题代码: SQL 注入 + 敏感文件暴露</text>
-<text x="0" y="8.684" class="c">🔒 代码泄露风险检测...</text>
-<text x="0" y="10.854999999999999" class="c">🔍 扫描泄露风险...</text>
-<text x="0" y="13.025999999999998" class="h">=======================================================</text>
-<text x="0" y="15.196999999999997" class="w">❌ 发现 1 个泄露风险</text>
-<text x="0" y="17.368" class="w">  🔴 [CRITICAL] 敏感文件暴露: .env</text>
-<text x="0" y="19.538999999999998" class="d">    📍 .env</text>
-<text x="0" y="21.709999999999997" class="d">    💡 将 .env 加入 .gitignore。使用 .env.example 作为模板提交。</text>
-<text x="0" y="23.880999999999997" class="h">=======================================================</text>
-<text x="0" y="26.051999999999996" class="c">📋 建议:</text>
-<text x="0" y="28.222999999999995" class="f">发现 1 个泄露风险</text>
-<text x="0" y="30.393999999999995" class="w">  🔴 1 个 CRITICAL 风险，建议立即修复</text>
-<text x="0" y="32.565" class="d">  📍 .env: 敏感文件暴露: .env</text>
-</svg>
-<svg x="400">
-<text x="0" y="0" class="h">╚══════════════════════════════════════════════════╝</text>
-<text x="0" y="2.171" class="f">📄 问题代码: SQL 注入 + 敏感文件暴露</text>
-<text x="0" y="4.342" class="c">🔒 代码泄露风险检测...</text>
-<text x="0" y="6.513" class="c">🔍 扫描泄露风险...</text>
-<text x="0" y="8.684" class="h">=======================================================</text>
-<text x="0" y="10.854999999999999" class="w">❌ 发现 1 个泄露风险</text>
-<text x="0" y="13.025999999999998" class="w">  🔴 [CRITICAL] 敏感文件暴露: .env</text>
-<text x="0" y="15.196999999999997" class="d">    📍 .env</text>
-<text x="0" y="17.368" class="d">    💡 将 .env 加入 .gitignore。使用 .env.example 作为模板提交。</text>
-<text x="0" y="19.538999999999998" class="h">=======================================================</text>
-<text x="0" y="21.709999999999997" class="c">📋 建议:</text>
-<text x="0" y="23.880999999999997" class="f">发现 1 个泄露风险</text>
-<text x="0" y="26.051999999999996" class="w">  🔴 1 个 CRITICAL 风险，建议立即修复</text>
-<text x="0" y="28.222999999999995" class="d">  📍 .env: 敏感文件暴露: .env</text>
-<text x="0" y="30.393999999999995" class="e">✅ 演示完成</text>
-<text x="0" y="32.565" class="e">📦 pip install moat-ai</text>
-</svg>
-</svg></g></g></svg></svg>
