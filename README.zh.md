@@ -295,6 +295,7 @@ moat adapter precommit              # 安装 pre-commit hook
 ## 📚 文档
 
 - [快速开始](docs/快速开始.md) — 5 分钟上手
+- [安全检测指南](docs/security-detection-guide.md) — 🛡️ AI 工具安全审计
 - [常见问题](docs/常见问题.md) — FAQ
 - [项目地图](docs/项目地图.md) — 功能全景图
 - [CHANGELOG](CHANGELOG.md) — 版本更新日志

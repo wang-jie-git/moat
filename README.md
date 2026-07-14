@@ -295,6 +295,7 @@ moat adapter precommit              # Install pre-commit hook
 ## 📚 Documentation
 
 - [Quick Start](docs/QuickStart.md) — Get started in 5 minutes
+- [Security Detection Guide](docs/security-detection-guide.en.md) — 🛡️ AI tool security audit
 - [FAQ](docs/FAQ.md) — Frequently Asked Questions
 - [Project Map](docs/ProjectMap.md) — Feature overview
 - [CHANGELOG](CHANGELOG.md) — Version history
