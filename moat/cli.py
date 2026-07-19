@@ -1144,6 +1144,16 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
+    # 版本检查（静默，仅在有新版本时打印一行提示）
+    try:
+        from moat.version_check import check_latest_version, format_version_notice
+        latest = check_latest_version(getattr(args, 'project', None))
+        if latest:
+            print(format_version_notice(latest))
+            print()
+    except Exception:
+        pass
+
     commands = {
         "check": cmd_check,
         "accept": cmd_accept,
