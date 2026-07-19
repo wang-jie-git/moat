@@ -1,6 +1,6 @@
 # Moat — AI 编码护城河 🛡️
 
-> **版本**: v1.1.10 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
+> **版本**: v1.2.0 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
 >
 > [![PyPI version](https://img.shields.io/pypi/v/moat-ai.svg?style=flat-square&color=brightgreen)](https://pypi.org/project/moat-ai/)
 > [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
@@ -13,6 +13,8 @@
 **"AI 时代的首席架构官"** — 不是 Linter，不是 SAST，是代码库的自动驾驶防碰撞系统。
 
 AI 改代码很快。AI 搞坏系统也很快。Moat 在改代码前/后各跑一次，几秒内告诉你系统有没有被搞坏。
+
+**v1.2.0 新增: moat-memory** — Moat 会记住每次检查失败和修复的经验。越用越好用。零外部依赖，不调用任何 API。
 
 ---
 
@@ -115,6 +117,51 @@ moat audit --permissions
    📊 闲置率: 62% (96 个未使用的权限)
    💡 建议: 移除 4 个明文密码, 移除 4 个未使用命令
 ```
+
+---
+
+## 🧠 moat-memory — 自学习记忆系统（v1.2.0）
+
+Moat 会记住每次检查失败和修复的经验。越用越好用。
+
+```
+检查失败 → 自动记录踩坑到 .moat/memory.db   ✅
+修复通过 → 自动从 git diff 提取经验模版     ✅
+AI 读取  → moat memory --ai 输出全部记忆   ✅
+```
+
+### 四种记忆类型
+
+| 类型 | 说明 | 自动产生 |
+|------|------|:--------:|
+| **红线** | 架构规则、编码边界 | ✅ `moat init` 预置 5 条 |
+| **踩坑** | 检查失败记录 | ✅ 每次 `moat check` 失败时 |
+| **模版** | 经验模式（从 git commit 提取） | ✅ 检查通过后，若最近提交是修复 |
+| **技能** | AI 工具指令 | ✅ `moat adapter install` |
+
+### CLI 命令
+
+```bash
+# 概览
+moat memory                    # 记忆统计（默认）
+moat memory --ai               # AI 可读格式（全部记忆）
+
+# 红线管理
+moat redline list              # 列出所有红线
+moat redline add "禁止跨层调用" --description "routes/ 不应直接调用 db/" --severity critical
+
+# 模版管理
+moat template list             # 列出所有模版
+moat template extract          # 从最新 git commit 提取（关键词规则）
+moat template extract --llm    # 使用 LLM 语义分析（可选）
+
+# AI 工具适配器
+moat adapter claude            # 注入记忆读取指令到 CLAUDE.md
+```
+
+### 零外部依赖
+
+所有记忆存储在 `.moat/memory.db`（SQLite, WAL 模式）。不调用外部服务、不调 API、数据不离开你的机器。
 
 ---
 
@@ -288,6 +335,13 @@ moat sidecar stop                   # 停止守护进程
 moat adapter claude                 # 安装 Claude Code 适配器
 moat adapter all                    # 安装所有 AI 工具适配器
 moat adapter precommit              # 安装 pre-commit hook
+
+# moat-memory 记忆系统（v1.2.0+）
+moat memory                         # 📊 记忆统计
+moat memory --ai                    # 🤖 AI 可读格式（全部记忆）
+moat redline list                   # 📏 列出红线
+moat template extract               # 📋 从 git commit 提取模版
+moat template extract --llm         # 🤖 使用 LLM 语义分析提取
 ```
 
 ---

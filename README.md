@@ -1,6 +1,6 @@
 # Moat — AI Moat: The Brake for AI Engineering 🛡️
 
-> **Version**: v1.1.10 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
+> **Version**: v1.2.0 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
 >
 > [![PyPI version](https://img.shields.io/pypi/v/moat-ai.svg?style=flat-square&color=brightgreen)](https://pypi.org/project/moat-ai/)
 > [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
@@ -13,6 +13,8 @@
 > **"The Chief Architect for the AI Era"** — Not a linter, not a SAST tool. It's the collision avoidance system for your codebase.
 
 AI writes code fast. AI breaks things fast too. Moat runs before and after every code change, telling you in seconds whether your system is still intact.
+
+**v1.2.0 New: moat-memory** — Moat learns from every check failure and fix. The more you use it, the smarter it gets. No external services, no API calls. Zero dependencies.
 
 ---
 
@@ -115,6 +117,60 @@ moat audit --permissions
    📊 Idle rate: 62% (96 unused permissions)
    💡 Recommended: remove 4 plaintext passwords, remove 4 unused commands
 ```
+
+---
+
+## 🧠 moat-memory — Self-Learning Memory (v1.2.0)
+
+Moat remembers every check failure and every fix. The more you use it, the smarter it gets.
+
+```
+check fails  → auto-record lesson in .moat/memory.db   ✅
+fix passes   → auto-extract template from git diff     ✅
+AI reads     → moat memory --ai outputs all memories   ✅
+```
+
+### Memory Types
+
+| Type | Description | Auto-generated |
+|------|-------------|:--------------:|
+| **Redlines** | Architecture rules & coding boundaries | ✅ `moat init` presets 5 defaults |
+| **Lessons** | Check failure records | ✅ On every `moat check` failure |
+| **Templates** | Experience patterns from git diffs | ✅ On successful `moat check` if last commit is a fix |
+| **Skills** | AI tool instructions | ✅ `moat adapter install` |
+
+### CLI Commands
+
+```bash
+# Overview
+moat memory                    # Memory stats (default)
+moat memory --ai               # AI-readable format (all memories)
+
+# Redlines (architecture rules)
+moat redline list              # List all redlines
+moat redline add "禁止跨层调用" --description "routes/ 不应直接调用 db/" --severity critical
+moat redline remove <id>
+
+# Templates (experience patterns)
+moat template list             # List all templates
+moat template extract          # Extract from latest git commit (keyword)
+moat template extract --llm    # Extract with LLM semantic analysis (optional)
+
+# Adapters (AI tool integration)
+moat adapter claude            # Inject memory reading instructions into CLAUDE.md
+```
+
+### AI Tool Integration
+
+After `moat adapter install`, AI tools automatically read moat-memory before modifying code:
+
+- **Claude Code**: `.claude/skills/moat/SKILL.md` loaded at startup
+- **Codex CLI**: `.codex/skills/moat/SKILL.md` loaded at startup
+- **OpenCode**: `.opencode/skills/moat/SKILL.md` loaded at startup
+
+### Zero External Dependencies
+
+All memory is stored in `.moat/memory.db` (SQLite, WAL mode). No external services, no API calls, no data leaves your machine.
 
 ---
 
@@ -288,6 +344,13 @@ moat sidecar stop                   # Stop daemon
 moat adapter claude                 # Install Claude Code adapter
 moat adapter all                    # Install all AI tool adapters
 moat adapter precommit              # Install pre-commit hook
+
+# moat-memory (v1.2.0+)
+moat memory                         # 📊 Memory stats
+moat memory --ai                    # 🤖 AI-readable format (all memories)
+moat redline list                   # 📏 List redlines
+moat template extract               # 📋 Extract template from git commit
+moat template extract --llm         # 🤖 Extract with LLM semantic analysis
 ```
 
 ---
