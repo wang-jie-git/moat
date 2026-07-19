@@ -163,7 +163,14 @@ class MoatMemory:
 
     # ── 从 git diff 提取模版 ────────────────────────────
 
-    def extract_template_from_git(self, commit: str = "HEAD", repo_path: str | None = None) -> dict | None:
+    def extract_template_from_git(
+        self,
+        commit: str = "HEAD",
+        repo_path: str | None = None,
+        use_llm: bool = False,
+        llm_model: str | None = None,
+        llm_base_url: str | None = None,
+    ) -> dict | None:
         """从 git commit 的 diff 中提取经验模版。
 
         分析最近一次（或指定）commit 的变更：
@@ -174,6 +181,9 @@ class MoatMemory:
         Args:
             commit: git commit 引用（默认 HEAD，即最新一次提交）
             repo_path: git 仓库路径（默认当前项目根目录）
+            use_llm: 是否启用 LLM 语义分析（需配置 OPENAI_API_KEY 环境变量）
+            llm_model: LLM 模型名（覆盖默认值 gpt-4o-mini）
+            llm_base_url: LLM API 地址（覆盖默认值）
 
         Returns:
             生成的模版 dict，或 None（没有变更/出错）
@@ -216,13 +226,18 @@ class MoatMemory:
                 print("⚠️  没有检测到文件变更")
                 return None
 
-            # 4. 从文件路径推断领域
-            domain = self._infer_domain_from_files(changed_files)
+            # 4. 选择提取方式
+            if use_llm:
+                return self._extract_with_llm(
+                    commit=commit, git_dir=git_dir,
+                    msg=full_msg, changed_files=changed_files,
+                    model=llm_model, base_url=llm_base_url,
+                )
 
-            # 5. 从 commit message 和 diff 推断原则
+            # 关键词规则（默认，零依赖）
+            domain = self._infer_domain_from_files(changed_files)
             principles = self._infer_principles(full_msg, changed_files)
 
-            # 6. 组装模版
             template = self.add_template(
                 domain=domain,
                 title=title,
@@ -254,6 +269,151 @@ class MoatMemory:
         except Exception as e:
             print(f"❌ 提取失败: {e}")
             return None
+
+    def _extract_with_llm(
+        self,
+        commit: str,
+        git_dir: str,
+        msg: str,
+        changed_files: list[str],
+        model: str | None = None,
+        base_url: str | None = None,
+    ) -> dict | None:
+        """使用 LLM 语义分析提取模版（降级到关键词规则）。"""
+        import json
+        import os
+        import urllib.request
+        import subprocess
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            print("⚠️  OPENAI_API_KEY 未设置，降级为关键词规则")
+            return self._extract_fallback(msg, changed_files)
+
+        api_base = base_url or os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        llm_model = model or os.environ.get("MOAT_LLM_MODEL", "gpt-4o-mini")
+
+        # 获取完整 diff
+        try:
+            diff_result = subprocess.run(
+                ["git", "diff", f"{commit}~1", "--", *changed_files],
+                capture_output=True, text=True, cwd=git_dir, timeout=15,
+            )
+            diff_content = diff_result.stdout[:8000]  # 截断，防止超长 diff
+        except Exception:
+            diff_content = ""
+
+        prompt = f"""你是一个经验丰富的代码审查专家。请分析以下 git commit 的变更，提取出可复用的经验模版。
+
+## Commit Message
+{msg}
+
+## 变更文件
+{chr(10).join(changed_files)}
+
+## Diff 内容
+{diff_content or "(无详细 diff，仅文件列表)"}
+
+请以 JSON 格式输出分析结果，包含以下字段：
+- domain: 领域分类（api_design / testing / error_handling / security / data_model / data_access / configuration / infrastructure / observability / deployment / general）
+- title: 模版标题（简洁，20 字以内）
+- principles: 应遵守的原则列表（2-4 条，每条一句话）
+- negative_examples: 反模式列表（至少 1 条，每条包含 scenario 和 better_approach）
+- tags: 标签列表（3-5 个）
+
+只输出 JSON，不要其他内容。"""
+
+        print(f"🤖 调用 LLM ({llm_model}) 分析 diff...")
+        try:
+            req = urllib.request.Request(
+                f"{api_base.rstrip('/')}/chat/completions",
+                data=json.dumps({
+                    "model": llm_model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "max_tokens": 1500,
+                }).encode(),
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                result = json.loads(resp.read().decode())
+
+            content = result["choices"][0]["message"]["content"]
+            # 提取 JSON（兼容 markdown 代码块包裹的情况）
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+            parsed = json.loads(content)
+
+            domain = parsed.get("domain", "general")
+            title = parsed.get("title", msg[:80])
+            principles = parsed.get("principles", [])
+            negative_examples = parsed.get("negative_examples", [])
+            tags = parsed.get("tags", [domain, "llm_extracted"])
+
+            template = self.add_template(
+                domain=domain,
+                title=title,
+                elements={
+                    "files_changed": changed_files[:10],
+                    "commit_message": msg,
+                    "total_files": len(changed_files),
+                    "llm_analysis": True,
+                },
+                principles=principles,
+                negative_examples=negative_examples,
+                source="llm_extracted",
+                importance=7,
+                tags=tags,
+            )
+
+            if template:
+                print(f"✅ 模版已提取（LLM）: {template}")
+                print(f"   领域: {domain}")
+                print(f"   标题: {title}")
+                print(f"   原则: {'; '.join(principles)}")
+                if negative_examples:
+                    print(f"   反模式: {len(negative_examples)} 条")
+
+            return {"id": template, "domain": domain, "title": title, "principles": principles}
+
+        except Exception as e:
+            print(f"⚠️  LLM 调用失败: {e}，降级为关键词规则")
+            return self._extract_fallback(msg, changed_files)
+
+    def _extract_fallback(self, msg: str, changed_files: list[str]) -> dict | None:
+        """关键词规则降级。"""
+        domain = self._infer_domain_from_files(changed_files)
+        principles = self._infer_principles(msg, changed_files)
+        title = msg.split("\n")[0][:80]
+
+        template = self.add_template(
+            domain=domain,
+            title=title,
+            elements={
+                "files_changed": changed_files[:10],
+                "commit_message": msg,
+                "total_files": len(changed_files),
+                "llm_fallback": True,
+            },
+            principles=principles,
+            source="auto_extracted",
+            importance=6,
+            tags=[domain, "auto_extracted"],
+        )
+
+        if template:
+            print(f"✅ 模版已提取（降级）: {template}")
+            print(f"   领域: {domain}")
+            print(f"   标题: {title}")
+            print(f"   原则: {'; '.join(principles)}")
+
+        return {"id": template, "domain": domain, "title": title, "principles": principles}
 
     @staticmethod
     def _infer_domain_from_files(files: list[str]) -> str:

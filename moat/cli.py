@@ -590,7 +590,13 @@ def cmd_template(args):
     if args.action == "extract":
         commit = getattr(args, 'commit', 'HEAD')
         repo = getattr(args, 'file', None) or args.project
-        result = memory.extract_template_from_git(commit=commit, repo_path=repo)
+        use_llm = getattr(args, 'llm', False)
+        llm_model = getattr(args, 'llm_model', "") or None
+        llm_base_url = getattr(args, 'llm_base_url', "") or None
+        result = memory.extract_template_from_git(
+            commit=commit, repo_path=repo,
+            use_llm=use_llm, llm_model=llm_model, llm_base_url=llm_base_url,
+        )
         if result:
             return 0
         return 1
@@ -1044,6 +1050,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_template.add_argument("--tags", help="标签（逗号分隔）")
     p_template.add_argument("--file", help="文件路径（import）/ git 仓库路径（extract）")
     p_template.add_argument("--commit", default="HEAD", help="git commit 引用（仅 extract，默认 HEAD）")
+    p_template.add_argument("--llm", action="store_true", help="启用 LLM 语义分析（需配置 OPENAI_API_KEY）")
+    p_template.add_argument("--llm-model", default="", help="LLM 模型名（覆盖默认值）")
+    p_template.add_argument("--llm-base-url", default="", help="LLM API 地址（覆盖默认值）")
     p_template.add_argument("--id", help="模版 ID（仅 show/remove）")
 
     # evolution
