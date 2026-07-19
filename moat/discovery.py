@@ -36,6 +36,9 @@ def init_project(project_root: Path, interactive: bool = False):
     # 6. 预置通用红线
     _init_default_redlines(root)
 
+    # 7. 预置通用模版
+    _init_default_templates(root)
+
     print(f"\n✅ Moat 已初始化到 {root}")
     print(f"   .moat/moat.json — 项目配置（内置默认规则）")
     print(f"\n🚀 立即运行: moat check")
@@ -69,6 +72,44 @@ def _init_default_redlines(root: Path):
             print(f"   .moat/memory.db — 已预置 {len(default_redlines)} 条通用红线")
     except Exception:
         pass  # 红线初始化失败不影响主流程
+
+
+def _init_default_templates(root: Path):
+    """预置通用经验模版。"""
+    try:
+        from moat.memory.moat_memory import MoatMemory
+        with MoatMemory(root) as memory:
+            count = len(memory.list_templates(domain="thinking_method"))
+            if count > 0:
+                return  # 已有模版，不重复添加
+
+            memory.add_template(
+                domain="thinking_method",
+                title="化繁为简 — 改动前分析框架",
+                elements={
+                    "steps": [
+                        "① 还原：用户要求改什么？精确理解问题边界，不要多改",
+                        "② 重构：最小改动路径是什么？在还原的基础上找到最精简的修改方案",
+                        "③ 评估：有没有顺手改了无关代码？提交前自检改动范围是否与修复目标一致",
+                    ],
+                    "usage": "每次修改代码前，先用这三步分析改动范围，避免修一个 bug 引入三个新问题",
+                },
+                principles=[
+                    "只改该改的，不改看着不爽的",
+                    "最小改动优于优雅重构",
+                    "提交前自检 git diff，确认每一行改动都在修复目标范围内",
+                ],
+                negative_examples=[
+                    {"scenario": "修 bug 时顺手重构了同文件里另两个函数的逻辑", "better_approach": "只修 bug，重构另开 PR"},
+                    {"scenario": "看到变量名不统一就顺手改了，导致 diff 膨胀", "better_approach": "变量名统一属于独立重构，与 bug 修复分离"},
+                ],
+                tags=["thinking_method", "surgical_changes", "discipline"],
+                importance=9,
+                source="template",
+            )
+            print(f"   .moat/memory.db — 已预置化繁为简模版（★9）")
+    except Exception:
+        pass  # 模版初始化失败不影响主流程
 
 
 def discover_project(project_root: Path) -> dict:
