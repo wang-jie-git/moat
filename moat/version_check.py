@@ -34,8 +34,8 @@ def check_latest_version(project_root: str | Path | None = None) -> str | None:
         try:
             cache = json.loads(cache_path.read_text())
             if cache.get("version") and cache.get("checked_at"):
-                # 24 小时内不重复检查
-                if time.time() - cache["checked_at"] < 86400:
+                # 2-3 天内不重复检查
+                if time.time() - cache["checked_at"] < 216000:  # 2.5天
                     if cache["version"] != current:
                         return cache["version"]
                     return None
