@@ -226,6 +226,14 @@ class MoatMemory:
                 print("⚠️  没有检测到文件变更")
                 return None
 
+            # 检查去重：已存在相同模版则跳过
+            existing = self.list_templates()
+            for t in existing:
+                existing_title = t.get("title", "").lower()
+                if title.lower() in existing_title or existing_title in title.lower():
+                    print(f"⏭️  模版已存在，跳过: {title}")
+                    return {"id": t.get("id"), "domain": t.get("domain"), "title": title, "principles": t.get("principles", []), "skipped": True}
+
             # 4. 选择提取方式
             if use_llm:
                 return self._extract_with_llm(
@@ -537,6 +545,44 @@ class MoatMemory:
             if tests:
                 lines.append(f"    失败: {'; '.join(t[:60] for t in tests[:3])}")
         return "\n".join(lines)
+
+    def format_all_for_ai(self, redline_limit: int = 20, lesson_limit: int = 5, template_limit: int = 5) -> str:
+        """将所有记忆格式化为 AI 可读的文本块。"""
+        sections = []
+
+        # 红线
+        redlines = self.list_redlines()
+        if redlines:
+            rl_lines = ["📏 项目红线:"]
+            for rl in redlines[:redline_limit]:
+                icon = {"critical": "🔴", "warning": "🟡", "info": "ℹ️"}.get(rl.get("severity", "warning"), "⚠️")
+                rl_lines.append(f"  {icon} {rl['title']}: {rl['description']}")
+            sections.append("\n".join(rl_lines))
+
+        # 踩坑
+        lessons = self.list_lessons(limit=lesson_limit)
+        if lessons:
+            ls_lines = ["📝 项目踩坑记录（最近）:"]
+            for lsn in lessons:
+                tests = json.loads(lsn.get("failed_tests", "[]")) if isinstance(lsn.get("failed_tests"), str) else lsn.get("failed_tests", [])
+                ls_lines.append(f"  • {lsn['title']}")
+                if tests:
+                    ls_lines.append(f"    失败: {'; '.join(t[:60] for t in tests[:3])}")
+            sections.append("\n".join(ls_lines))
+
+        # 模版
+        templates = self.list_templates()
+        if templates:
+            tp_lines = ["📋 经验模版:"]
+            for t in templates[:template_limit]:
+                principles = t.get("principles", [])
+                tp_lines.append(f"  • [{t.get('domain','?')}] {t.get('title','?')}")
+                if principles:
+                    for p in principles[:3]:
+                        tp_lines.append(f"    - {p}")
+            sections.append("\n".join(tp_lines))
+
+        return "\n\n".join(sections)
 
     # ── 生命周期 ──────────────────────────────────────────
 

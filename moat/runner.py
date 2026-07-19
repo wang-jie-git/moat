@@ -161,6 +161,10 @@ def run_all_checks(project_root: str = ".", mode: str = "quick", enable_optimiza
     elif result.warnings > 0:
         _capture_failure_as_lesson(root, result, only_warnings=True)
 
+    # 8. 自动提取模版（仅当全部通过，且最近提交是修复/重构）
+    if result.is_success():
+        _auto_extract_template_on_success(root)
+
     return result
 
 
@@ -199,6 +203,45 @@ def _capture_failure_as_lesson(root: Path, result: "MoatResult", only_warnings: 
             )
     except Exception:
         pass  # 记忆写入失败不影响主流程
+
+
+def _auto_extract_template_on_success(root: Path):
+    """检查通过后自动提取模版（如果最近提交是修复/重构）。"""
+    import subprocess
+
+    try:
+        # 获取最近一条 commit message
+        msg_result = subprocess.run(
+            ["git", "log", "-1", "--format=%s"],
+            capture_output=True, text=True, cwd=root, timeout=5,
+        )
+        if msg_result.returncode != 0:
+            return  # 不是 git 仓库，跳过
+        msg = msg_result.stdout.strip().lower()
+        if not msg:
+            return
+
+        # 只对 fix/refactor 类型的提交自动提取
+        fix_keywords = ["fix", "bug", "修复", "hotfix", "refactor", "重构", "clean"]
+        if not any(k in msg for k in fix_keywords):
+            return
+
+        from moat.memory.moat_memory import MoatMemory
+
+        with MoatMemory(root) as memory:
+            # 检查是否已存在相同模版（去重）
+            existing = memory.list_templates()
+            for t in existing:
+                existing_title = t.get("title", "").lower()
+                if msg in existing_title or existing_title in msg:
+                    return  # 已存在，跳过
+
+            # 自动提取
+            result = memory.extract_template_from_git(repo_path=str(root))
+            if result:
+                print(f"📝 自动提取经验模版: {result['title']}")
+    except Exception:
+        pass  # 提取失败不影响主流程
 
 
 def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: bool = False) -> list[tuple[str, Any]]:

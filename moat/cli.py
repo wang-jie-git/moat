@@ -398,7 +398,19 @@ def cmd_memory(args):
     """📖 项目记忆管理。"""
     memory = _get_memory(args)
 
-    if args.action == "stats":
+    # 默认 action 为 stats（nargs="?" 时 action 可能为 None）
+    action = getattr(args, 'action', None) or 'stats'
+
+    # --ai 模式：输出全部记忆，AI 可读格式
+    if getattr(args, 'ai', False) or action == 'ai':
+        output = memory.format_all_for_ai()
+        if output:
+            print(output)
+        else:
+            print("📭 项目还没有任何记忆。")
+        return 0
+
+    if action == "stats":
         stats = memory.stats()
         if getattr(args, 'json', False):
             import json
@@ -411,7 +423,7 @@ def cmd_memory(args):
             print(f"  技能 (skills):     {stats.get('skills', 0)}")
         return 0
 
-    if args.action == "list":
+    if action == "list":
         if not args.type:
             print("请指定记忆类型: redlines / lessons / templates / skills")
             return 1
@@ -456,7 +468,7 @@ def cmd_memory(args):
                 print(f"  [{tool}] {str(item.get('instruction', ''))[:80]}")
         return 0
 
-    if args.action == "show":
+    if action == "show":
         if not args.id:
             print("请指定 --id")
             return 1
@@ -474,7 +486,7 @@ def cmd_memory(args):
         print(f"未找到 ID 包含 '{args.id}' 的记忆")
         return 1
 
-    if args.action == "delete":
+    if action == "delete":
         if not args.type or not args.id:
             print("请指定记忆类型和 --id")
             return 1
@@ -1012,8 +1024,9 @@ def build_parser() -> argparse.ArgumentParser:
     # memory
     p_memory = sub.add_parser("memory", help="📖 项目记忆管理（红线/踩坑/模版）")
     _shared_args(p_memory)
-    p_memory.add_argument("action", choices=["list", "show", "delete", "stats"],
-                          help="操作")
+    p_memory.add_argument("action", nargs="?", default="stats",
+                          choices=["list", "show", "delete", "stats"],
+                          help="操作（默认: stats）")
     p_memory.add_argument("type", nargs="?",
                           choices=["redlines", "lessons", "templates", "skills"],
                           help="记忆类型（仅 list/delete）")
@@ -1023,6 +1036,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_memory.add_argument("--domain", help="按领域过滤（仅 templates）")
     p_memory.add_argument("--tool", help="按工具过滤（仅 skills）")
     p_memory.add_argument("--json", action="store_true", help="JSON 格式输出")
+    p_memory.add_argument("--ai", action="store_true", help="AI 可读格式输出（全部记忆）")
 
     # redline
     p_redline = sub.add_parser("redline", help="📏 管理项目红线")
