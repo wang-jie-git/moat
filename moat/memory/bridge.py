@@ -685,14 +685,39 @@ class SharedStorageBridge:
     # ── moat-memory: 踩坑 CRUD ─────────────────────────────
 
     def write_lesson(self, lesson: dict[str, Any]) -> str | None:
-        """写入一条踩坑记录。"""
+        """写入一条踩坑记录（相同 content_hash 自动聚合）。"""
         if not self.conn:
             return None
         import time
-        lid = f"lsn_{int(time.time() * 1000)}"
         now = time.strftime("%Y-%m-%d %H:%M:%S")
+        content_hash = lesson.get("content_hash", "")
         try:
             with self.transaction() as cursor:
+                # 检查是否已存在相同 content_hash
+                if content_hash:
+                    cursor.execute(
+                        "SELECT id, failure_count FROM lessons WHERE content_hash=? LIMIT 1",
+                        (content_hash,),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        # 已存在：聚合，增加 failure_count，更新 captured_at
+                        lid = row["id"]
+                        old_count = row["failure_count"]
+                        new_count = old_count + lesson.get("failure_count", 1)
+                        cursor.execute(
+                            "UPDATE lessons SET failure_count=?, captured_at=?, error_summary=? WHERE id=?",
+                            (
+                                new_count,
+                                now,
+                                f"🔴 共 {new_count} 次失败: {lesson.get('error_summary', '')}",
+                                lid,
+                            ),
+                        )
+                        return lid
+
+                # 不存在：插入新记录
+                lid = f"lsn_{int(time.time() * 1000)}"
                 cursor.execute(
                     "INSERT OR IGNORE INTO lessons "
                     "(id, title, failed_tests, error_summary, failure_count, principles, negative_examples, content_hash, captured_at) "
@@ -705,11 +730,11 @@ class SharedStorageBridge:
                         lesson.get("failure_count", 1),
                         json.dumps(lesson.get("principles", [])),
                         json.dumps(lesson.get("negative_examples", [])),
-                        lesson.get("content_hash", ""),
-                        lesson.get("captured_at", now),
+                        content_hash,
+                        now,
                     ),
                 )
-            return lid
+                return lid
         except Exception as e:
             print(f"❌ 写入踩坑失败: {e}")
             return None
@@ -869,7 +894,12 @@ class SharedStorageBridge:
     # ── moat-memory: 统计 ──────────────────────────────────
 
     def get_memory_stats(self) -> dict[str, int]:
-        """获取各类记忆的数量统计。"""
+        """获取各类记忆的数量统计（自动清理过期数据）。"""
+        # 自动清理：删除 90 天前的 lessons
+        self._auto_clean_lessons(days=90)
+        # 自动清理：删除 180 天前 importance < 5 的 templates
+        self._auto_clean_templates(days=180, min_importance=5)
+
         stats = {}
         tables = {"redlines", "lessons", "templates", "skills"}
         for table in tables:
@@ -882,6 +912,78 @@ class SharedStorageBridge:
             except Exception:
                 stats[table] = 0
         return stats
+
+    def _auto_clean_lessons(self, days: int = 90):
+        """自动清理超过 days 天且重要性低的 lessons。"""
+        if not self.conn:
+            return
+        try:
+            with self.transaction() as cursor:
+                cursor.execute(
+                    "DELETE FROM lessons WHERE captured_at < datetime('now', ? || ' days')",
+                    (f"-{days}",),
+                )
+                deleted = cursor.rowcount
+                if deleted:
+                    print(f"🧹 自动清理 {deleted} 条过期踩坑记录")
+        except Exception:
+            pass
+
+    def _auto_clean_templates(self, days: int = 180, min_importance: int = 5):
+        """自动清理超过 days 天且重要性低的模版。"""
+        if not self.conn:
+            return
+        try:
+            with self.transaction() as cursor:
+                cursor.execute(
+                    "DELETE FROM templates WHERE created_at < datetime('now', ? || ' days') AND importance < ?",
+                    (f"-{days}", min_importance),
+                )
+                deleted = cursor.rowcount
+                if deleted:
+                    print(f"🧹 自动清理 {deleted} 条过期低优先级模版")
+        except Exception:
+            pass
+
+    def clean_lessons(self, days: int = 30, dry_run: bool = False) -> int:
+        """手动清理超过 days 天的 lessons。返回清理条数。"""
+        if not self.conn:
+            return 0
+        try:
+            with self.transaction() as cursor:
+                if dry_run:
+                    cursor.execute(
+                        "SELECT COUNT(*) as cnt FROM lessons WHERE captured_at < datetime('now', ? || ' days')",
+                        (f"-{days}",),
+                    )
+                    return cursor.fetchone()["cnt"]
+                cursor.execute(
+                    "DELETE FROM lessons WHERE captured_at < datetime('now', ? || ' days')",
+                    (f"-{days}",),
+                )
+                return cursor.rowcount
+        except Exception:
+            return 0
+
+    def clean_templates(self, days: int = 90, min_importance: int = 3, dry_run: bool = False) -> int:
+        """手动清理超过 days 天且低优先级的模版。返回清理条数。"""
+        if not self.conn:
+            return 0
+        try:
+            with self.transaction() as cursor:
+                if dry_run:
+                    cursor.execute(
+                        "SELECT COUNT(*) as cnt FROM templates WHERE created_at < datetime('now', ? || ' days') AND importance < ?",
+                        (f"-{days}", min_importance),
+                    )
+                    return cursor.fetchone()["cnt"]
+                cursor.execute(
+                    "DELETE FROM templates WHERE created_at < datetime('now', ? || ' days') AND importance < ?",
+                    (f"-{days}", min_importance),
+                )
+                return cursor.rowcount
+        except Exception:
+            return 0
 
     def close(self):
         """关闭连接"""

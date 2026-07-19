@@ -502,6 +502,26 @@ def cmd_memory(args):
         print(f"{'✅' if ok else '❌'} 删除 {'成功' if ok else '失败'}")
         return 0
 
+    if action == "clean":
+        days = getattr(args, 'days', 30)
+        dry_run = getattr(args, 'dry_run', False)
+
+        # 清理 lessons
+        n_lessons = memory.bridge.clean_lessons(days=days, dry_run=dry_run)
+        if n_lessons > 0:
+            print(f"{'🔍 试运行: ' if dry_run else '🧹 '}清理 {days} 天前的踩坑记录: {n_lessons} 条")
+        else:
+            print(f"📭 没有 {days} 天前的踩坑记录需要清理")
+
+        # 清理低优先级模版
+        n_templates = memory.bridge.clean_templates(days=days * 2, min_importance=3, dry_run=dry_run)
+        if n_templates > 0:
+            print(f"{'🔍 试运行: ' if dry_run else '🧹 '}清理 {days * 2} 天前的低优先级模版: {n_templates} 条")
+
+        if not dry_run:
+            print(f"✅ 清理完成")
+        return 0
+
     return 0
 
 
@@ -1025,7 +1045,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_memory = sub.add_parser("memory", help="📖 项目记忆管理（红线/踩坑/模版）")
     _shared_args(p_memory)
     p_memory.add_argument("action", nargs="?", default="stats",
-                          choices=["list", "show", "delete", "stats"],
+                          choices=["list", "show", "delete", "stats", "clean"],
                           help="操作（默认: stats）")
     p_memory.add_argument("type", nargs="?",
                           choices=["redlines", "lessons", "templates", "skills"],
@@ -1037,6 +1057,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_memory.add_argument("--tool", help="按工具过滤（仅 skills）")
     p_memory.add_argument("--json", action="store_true", help="JSON 格式输出")
     p_memory.add_argument("--ai", action="store_true", help="AI 可读格式输出（全部记忆）")
+    p_memory.add_argument("--dry-run", action="store_true", help="试运行（仅 clean）")
+    p_memory.add_argument("--days", type=int, default=30, help="清理天数阈值（仅 clean，默认 30）")
 
     # redline
     p_redline = sub.add_parser("redline", help="📏 管理项目红线")
