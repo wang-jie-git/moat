@@ -33,9 +33,42 @@ def init_project(project_root: Path, interactive: bool = False):
     bm = BaselineManager(root)
     bm.save()
 
+    # 6. 预置通用红线
+    _init_default_redlines(root)
+
     print(f"\n✅ Moat 已初始化到 {root}")
     print(f"   .moat/moat.json — 项目配置（内置默认规则）")
     print(f"\n🚀 立即运行: moat check")
+
+
+def _init_default_redlines(root: Path):
+    """预置通用红线。"""
+    try:
+        from moat.memory.moat_memory import MoatMemory
+        with MoatMemory(root) as memory:
+            count = len(memory.list_redlines())
+            if count > 0:
+                return  # 已有红线，不重复添加
+
+            default_redlines = [
+                ("禁止硬编码密钥", "API Key、密码等敏感信息必须通过环境变量或配置文件注入，不能硬编码在代码中", "critical", "security"),
+                ("禁止跨层调用", "Controller 不能直接调用 Model 层，必须通过 Service 中转", "warning", "architecture"),
+                ("异步函数必须有错误处理", "所有 async 函数必须包含 try/except 或其等价错误处理机制", "warning", "style"),
+                ("修改 API 必须更新测试", "新增或修改 API 端点后，必须同步更新或新增对应的测试", "warning", "general"),
+                ("SQL 操作必须使用参数化查询", "禁止直接拼接 SQL 字符串，必须使用参数化查询或 ORM", "critical", "security"),
+            ]
+
+            for title, desc, severity, category in default_redlines:
+                memory.add_redline(
+                    title=title,
+                    description=desc,
+                    severity=severity,
+                    category=category,
+                    source="template",
+                )
+            print(f"   .moat/memory.db — 已预置 {len(default_redlines)} 条通用红线")
+    except Exception:
+        pass  # 红线初始化失败不影响主流程
 
 
 def discover_project(project_root: Path) -> dict:

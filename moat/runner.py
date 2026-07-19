@@ -155,7 +155,50 @@ def run_all_checks(project_root: str = ".", mode: str = "quick", enable_optimiza
         print(f"\n✅ MOAT 全部通过，系统健康。")
         print(f"⚡ Powered by One — https://one.cloudkey.top")
 
+    # 7. 自动记录踩坑（仅当有失败时）
+    if result.failed > 0:
+        _capture_failure_as_lesson(root, result)
+    elif result.warnings > 0:
+        _capture_failure_as_lesson(root, result, only_warnings=True)
+
     return result
+
+
+def _capture_failure_as_lesson(root: Path, result: "MoatResult", only_warnings: bool = False):
+    """将检查失败/警告自动记录为踩坑记忆。"""
+    try:
+        from moat.memory.moat_memory import MoatMemory
+
+        errors = result.errors
+        if not errors:
+            return
+
+        failed_tests = []
+        for e in errors:
+            file = e.get("file", "?")
+            msg = e.get("message", "")
+            level = e.get("level", "ERROR")
+            if only_warnings and level != "WARN":
+                continue
+            if not only_warnings and level not in ("ERROR", "WARN"):
+                continue
+            test_name = f"{file}: {msg[:80]}" if file != "?" else msg[:80]
+            failed_tests.append(test_name)
+
+        if not failed_tests:
+            return
+
+        summary = "; ".join(t[:100] for t in failed_tests[:3])
+        if len(failed_tests) > 3:
+            summary += f" (以及 {len(failed_tests) - 3} 个其他问题)"
+
+        with MoatMemory(root) as memory:
+            memory.add_lesson(
+                failed_tests=failed_tests,
+                error_summary=f"🔴 {result.failed} 失败, ⚠️ {result.warnings} 警告: {summary}",
+            )
+    except Exception:
+        pass  # 记忆写入失败不影响主流程
 
 
 def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: bool = False) -> list[tuple[str, Any]]:

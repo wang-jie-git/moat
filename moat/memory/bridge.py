@@ -230,6 +230,68 @@ class SharedStorageBridge:
             )
         """)
 
+        # ── moat-memory 表（v1.2.0 新增） ──
+
+        # 红线：项目特定的架构规则
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS redlines (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                severity TEXT DEFAULT 'warning',
+                category TEXT DEFAULT 'general',
+                source TEXT DEFAULT 'auto',
+                file_glob TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # 踩坑：每次 check 失败的结构化记录
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS lessons (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                failed_tests TEXT NOT NULL,
+                error_summary TEXT NOT NULL,
+                failure_count INTEGER DEFAULT 1,
+                principles TEXT,
+                negative_examples TEXT,
+                content_hash TEXT,
+                captured_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # 模版：经验总结 / 思维框架
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS templates (
+                id TEXT PRIMARY KEY,
+                domain TEXT NOT NULL,
+                title TEXT NOT NULL,
+                source TEXT DEFAULT 'manual',
+                elements TEXT,
+                principles TEXT,
+                negative_examples TEXT,
+                tags TEXT,
+                importance INTEGER DEFAULT 5,
+                content_hash TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # AI 工具技能：告诉 AI 如何与 moat 互动
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS skills (
+                id TEXT PRIMARY KEY,
+                tool TEXT NOT NULL,
+                instruction TEXT NOT NULL,
+                priority INTEGER DEFAULT 0,
+                is_active INTEGER DEFAULT 1,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # 索引优化
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_error_type ON bug_memories(error_type)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_bug_file_path ON bug_memories(file_path)")
@@ -241,6 +303,10 @@ class SharedStorageBridge:
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_hint_file_line ON smart_hints(file_path, line)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_contract_service ON contract_baselines(service_name)")
         self.conn.execute("CREATE INDEX IF NOT EXISTS idx_contract_endpoint ON api_contracts(service_name, endpoint, method)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_redline_category ON redlines(category)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_lesson_hash ON lessons(content_hash)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_template_domain ON templates(domain)")
+        self.conn.execute("CREATE INDEX IF NOT EXISTS idx_skill_tool ON skills(tool)")
 
         self.conn.commit()
 
@@ -557,6 +623,255 @@ class SharedStorageBridge:
         except Exception as e:
             print(f"❌ 查询 API 契约失败: {e}")
             return []
+
+    # ── moat-memory: 红线 CRUD ─────────────────────────────
+
+    def write_redline(self, redline: dict[str, Any]) -> str | None:
+        """写入一条红线。"""
+        if not self.conn:
+            return None
+        import time
+        rid = f"rl_{int(time.time() * 1000)}_{hash(redline.get('title', '')) % 10000:04d}"
+        try:
+            with self.transaction() as cursor:
+                cursor.execute(
+                    "INSERT INTO redlines (id, title, description, severity, category, source, file_glob) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        rid,
+                        redline.get("title", ""),
+                        redline.get("description", ""),
+                        redline.get("severity", "warning"),
+                        redline.get("category", "general"),
+                        redline.get("source", "manual"),
+                        redline.get("file_glob"),
+                    ),
+                )
+            return rid
+        except Exception as e:
+            print(f"❌ 写入红线失败: {e}")
+            return None
+
+    def query_redlines(self, category: str | None = None, active_only: bool = True) -> list[dict]:
+        """查询红线。"""
+        if not self.conn:
+            return []
+        try:
+            if category:
+                cursor = self.conn.execute(
+                    "SELECT * FROM redlines WHERE category=? ORDER BY severity DESC, created_at DESC", (category,)
+                )
+            else:
+                cursor = self.conn.execute(
+                    "SELECT * FROM redlines ORDER BY severity DESC, created_at DESC"
+                )
+            return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"❌ 查询红线失败: {e}")
+            return []
+
+    def delete_redline(self, redline_id: str) -> bool:
+        """删除一条红线。"""
+        if not self.conn:
+            return False
+        try:
+            with self.transaction() as cursor:
+                cursor.execute("DELETE FROM redlines WHERE id LIKE ?", (f"%{redline_id}%",))
+                return cursor.rowcount > 0
+        except Exception as e:
+            print(f"❌ 删除红线失败: {e}")
+            return False
+
+    # ── moat-memory: 踩坑 CRUD ─────────────────────────────
+
+    def write_lesson(self, lesson: dict[str, Any]) -> str | None:
+        """写入一条踩坑记录。"""
+        if not self.conn:
+            return None
+        import time
+        lid = f"lsn_{int(time.time() * 1000)}"
+        now = time.strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            with self.transaction() as cursor:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO lessons "
+                    "(id, title, failed_tests, error_summary, failure_count, principles, negative_examples, content_hash, captured_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        lid,
+                        lesson.get("title", "MOAT 门禁失败"),
+                        json.dumps(lesson.get("failed_tests", [])),
+                        lesson.get("error_summary", ""),
+                        lesson.get("failure_count", 1),
+                        json.dumps(lesson.get("principles", [])),
+                        json.dumps(lesson.get("negative_examples", [])),
+                        lesson.get("content_hash", ""),
+                        lesson.get("captured_at", now),
+                    ),
+                )
+            return lid
+        except Exception as e:
+            print(f"❌ 写入踩坑失败: {e}")
+            return None
+
+    def query_lessons(self, limit: int = 20, offset: int = 0) -> list[dict]:
+        """查询踩坑记录。"""
+        if not self.conn:
+            return []
+        try:
+            cursor = self.conn.execute(
+                "SELECT * FROM lessons ORDER BY captured_at DESC LIMIT ? OFFSET ?", (limit, offset)
+            )
+            rows = []
+            for row in cursor.fetchall():
+                d = dict(row)
+                for f in ("failed_tests", "principles", "negative_examples"):
+                    if isinstance(d.get(f), str):
+                        try:
+                            d[f] = json.loads(d[f])
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+                rows.append(d)
+            return rows
+        except Exception as e:
+            print(f"❌ 查询踩坑失败: {e}")
+            return []
+
+    def delete_lesson(self, lesson_id: str) -> bool:
+        """删除一条踩坑记录。"""
+        if not self.conn:
+            return False
+        try:
+            with self.transaction() as cursor:
+                cursor.execute("DELETE FROM lessons WHERE id LIKE ?", (f"%{lesson_id}%",))
+                return cursor.rowcount > 0
+        except Exception as e:
+            print(f"❌ 删除踩坑失败: {e}")
+            return False
+
+    # ── moat-memory: 模版 CRUD ─────────────────────────────
+
+    def write_template_entry(self, template: dict[str, Any]) -> str | None:
+        """写入一条模版。"""
+        if not self.conn:
+            return None
+        import time
+        tid = f"tpl_{int(time.time() * 1000)}"
+        try:
+            with self.transaction() as cursor:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO templates "
+                    "(id, domain, title, source, elements, principles, negative_examples, tags, importance, content_hash) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        tid,
+                        template.get("domain", "general"),
+                        template.get("title", ""),
+                        template.get("source", "manual"),
+                        json.dumps(template.get("elements", {})),
+                        json.dumps(template.get("principles", [])),
+                        json.dumps(template.get("negative_examples", [])),
+                        json.dumps(template.get("tags", [])),
+                        template.get("importance", 5),
+                        template.get("content_hash", ""),
+                    ),
+                )
+            return tid
+        except Exception as e:
+            print(f"❌ 写入模版失败: {e}")
+            return None
+
+    def query_templates(self, domain: str | None = None, limit: int = 20) -> list[dict]:
+        """查询模版。"""
+        if not self.conn:
+            return []
+        try:
+            if domain:
+                cursor = self.conn.execute(
+                    "SELECT * FROM templates WHERE domain=? ORDER BY importance DESC, created_at DESC LIMIT ?",
+                    (domain, limit),
+                )
+            else:
+                cursor = self.conn.execute(
+                    "SELECT * FROM templates ORDER BY importance DESC, created_at DESC LIMIT ?", (limit,)
+                )
+            return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"❌ 查询模版失败: {e}")
+            return []
+
+    def delete_template_entry(self, template_id: str) -> bool:
+        """删除一条模版。"""
+        if not self.conn:
+            return False
+        try:
+            with self.transaction() as cursor:
+                cursor.execute("DELETE FROM templates WHERE id LIKE ?", (f"%{template_id}%",))
+                return cursor.rowcount > 0
+        except Exception as e:
+            print(f"❌ 删除模版失败: {e}")
+            return False
+
+    # ── moat-memory: 技能 CRUD ─────────────────────────────
+
+    def write_skill(self, skill: dict[str, Any]) -> str | None:
+        """写入一条技能指令。"""
+        if not self.conn:
+            return None
+        import time
+        sid = f"sk_{int(time.time() * 1000)}"
+        try:
+            with self.transaction() as cursor:
+                cursor.execute(
+                    "INSERT OR REPLACE INTO skills (id, tool, instruction, priority, is_active) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (
+                        sid,
+                        skill.get("tool", "general"),
+                        skill.get("instruction", ""),
+                        skill.get("priority", 0),
+                        1 if skill.get("is_active", True) else 0,
+                    ),
+                )
+            return sid
+        except Exception as e:
+            print(f"❌ 写入技能失败: {e}")
+            return None
+
+    def query_skills(self, tool: str | None = None) -> list[dict]:
+        """查询技能指令。"""
+        if not self.conn:
+            return []
+        try:
+            if tool:
+                cursor = self.conn.execute(
+                    "SELECT * FROM skills WHERE tool=? AND is_active=1 ORDER BY priority DESC", (tool,)
+                )
+            else:
+                cursor = self.conn.execute(
+                    "SELECT * FROM skills WHERE is_active=1 ORDER BY tool, priority DESC"
+                )
+            return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            print(f"❌ 查询技能失败: {e}")
+            return []
+
+    # ── moat-memory: 统计 ──────────────────────────────────
+
+    def get_memory_stats(self) -> dict[str, int]:
+        """获取各类记忆的数量统计。"""
+        stats = {}
+        tables = {"redlines", "lessons", "templates", "skills"}
+        for table in tables:
+            try:
+                cursor = self.conn.execute(
+                    "SELECT COUNT(*) as cnt FROM " + table  # table 来自硬编码集合，安全
+                )
+                row = cursor.fetchone()
+                stats[table] = row["cnt"] if row else 0
+            except Exception:
+                stats[table] = 0
+        return stats
 
     def close(self):
         """关闭连接"""

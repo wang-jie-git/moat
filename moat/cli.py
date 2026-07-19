@@ -386,6 +386,236 @@ def cmd_adapter(args):
     return 0
 
 
+# ── moat-memory 命令 ──────────────────────────────────
+
+def _get_memory(args):
+    """获取 MoatMemory 实例。"""
+    from moat.memory.moat_memory import MoatMemory
+    return MoatMemory(args.project)
+
+
+def cmd_memory(args):
+    """📖 项目记忆管理。"""
+    memory = _get_memory(args)
+
+    if args.action == "stats":
+        stats = memory.stats()
+        if getattr(args, 'json', False):
+            import json
+            print(json.dumps(stats, indent=2))
+        else:
+            print("📊 moat-memory 统计:")
+            print(f"  红线 (redlines):   {stats.get('redlines', 0)}")
+            print(f"  踩坑 (lessons):    {stats.get('lessons', 0)}")
+            print(f"  模版 (templates):  {stats.get('templates', 0)}")
+            print(f"  技能 (skills):     {stats.get('skills', 0)}")
+        return 0
+
+    if args.action == "list":
+        if not args.type:
+            print("请指定记忆类型: redlines / lessons / templates / skills")
+            return 1
+
+        if args.type == "redlines":
+            items = memory.list_redlines(category=getattr(args, 'category', None))
+        elif args.type == "lessons":
+            items = memory.list_lessons(limit=getattr(args, 'limit', 20))
+        elif args.type == "templates":
+            items = memory.list_templates(domain=getattr(args, 'domain', None))
+        elif args.type == "skills":
+            items = memory.list_skills(tool=getattr(args, 'tool', None))
+        else:
+            items = []
+
+        if getattr(args, 'json', False):
+            import json
+            print(json.dumps(items, indent=2, ensure_ascii=False))
+            return 0
+
+        if not items:
+            print(f"📭 没有 {args.type}")
+            return 0
+
+        print(f"📖 {args.type} ({len(items)} 条):")
+        for item in items:
+            item_id = item.get("id", "?")[:12]
+            title = item.get("title", item.get("domain", "?"))[:60]
+            if args.type == "lessons":
+                summary = str(item.get("error_summary", ""))[:60]
+                print(f"  [{item_id}] {title}")
+                print(f"        {summary}")
+            elif args.type == "redlines":
+                sev = item.get("severity", "?")
+                print(f"  [{sev}] {title}")
+            elif args.type == "templates":
+                dom = item.get("domain", "?")
+                imp = item.get("importance", "?")
+                print(f"  [{item_id}] ({dom}, ★{imp}) {title}")
+            elif args.type == "skills":
+                tool = item.get("tool", "?")
+                print(f"  [{tool}] {str(item.get('instruction', ''))[:80]}")
+        return 0
+
+    if args.action == "show":
+        if not args.id:
+            print("请指定 --id")
+            return 1
+        for list_fn in [
+            lambda: memory.list_redlines(),
+            lambda: memory.list_lessons(limit=999),
+            lambda: memory.list_templates(),
+            lambda: memory.list_skills(),
+        ]:
+            for item in list_fn():
+                if item.get("id", "").startswith(args.id):
+                    import json
+                    print(json.dumps(item, indent=2, ensure_ascii=False))
+                    return 0
+        print(f"未找到 ID 包含 '{args.id}' 的记忆")
+        return 1
+
+    if args.action == "delete":
+        if not args.type or not args.id:
+            print("请指定记忆类型和 --id")
+            return 1
+        if args.type == "redlines":
+            ok = memory.remove_redline(args.id)
+        elif args.type == "lessons":
+            ok = memory.remove_lesson(args.id)
+        elif args.type == "templates":
+            ok = memory.remove_template(args.id)
+        else:
+            print(f"不支持删除 {args.type}")
+            return 1
+        print(f"{'✅' if ok else '❌'} 删除 {'成功' if ok else '失败'}")
+        return 0
+
+    return 0
+
+
+def cmd_redline(args):
+    """📏 管理项目红线。"""
+    memory = _get_memory(args)
+
+    if args.action == "list":
+        items = memory.list_redlines()
+        if not items:
+            print("📭 没有红线")
+            return 0
+        print("📏 项目红线:")
+        for rl in items:
+            icon = {"critical": "🔴", "warning": "🟡", "info": "ℹ️"}.get(rl.get("severity", "warning"), "⚠️")
+            print(f"  {icon} [{rl.get('id', '?')[:12]}] {rl['title']}")
+            print(f"     {rl['description']}")
+        return 0
+
+    if args.action == "add":
+        if not args.title:
+            print("请指定红线标题")
+            return 1
+        rid = memory.add_redline(
+            title=args.title,
+            description=args.description or args.title,
+            severity=args.severity,
+            category=args.category,
+            file_glob=getattr(args, 'file_glob', None),
+        )
+        print(f"✅ 红线已添加: {rid}")
+        return 0
+
+    if args.action == "remove":
+        if not args.id:
+            print("请指定 --id")
+            return 1
+        ok = memory.remove_redline(args.id)
+        print(f"{'✅' if ok else '❌'} 删除{'成功' if ok else '失败'}")
+        return 0
+
+    return 0
+
+
+def cmd_template(args):
+    """📋 管理经验模版。"""
+    memory = _get_memory(args)
+
+    if args.action == "list":
+        items = memory.list_templates(domain=getattr(args, 'domain', None))
+        if not items:
+            print("📭 没有模版")
+            return 0
+        print("📋 经验模版:")
+        for t in items:
+            tid = t.get("id", "?")[:12]
+            dom = t.get("domain", "?")
+            imp = t.get("importance", "?")
+            print(f"  [{tid}] ({dom}, ★{imp}) {t.get('title', '?')}")
+        return 0
+
+    if args.action == "show":
+        if not args.id:
+            print("请指定 --id")
+            return 1
+        items = memory.list_templates()
+        for t in items:
+            if t.get("id", "").startswith(args.id):
+                import json
+                print(json.dumps(t, indent=2, ensure_ascii=False))
+                return 0
+        print(f"未找到 ID 包含 '{args.id}' 的模版")
+        return 1
+
+    if args.action == "add":
+        if not args.title:
+            print("请指定模版标题")
+            return 1
+        tags_list = [t.strip() for t in args.tags.split(",")] if getattr(args, 'tags', None) else []
+        tid = memory.add_template(
+            domain=args.domain,
+            title=args.title,
+            source=args.source,
+            importance=args.importance,
+            tags=tags_list,
+        )
+        print(f"✅ 模版已添加: {tid}")
+        return 0
+
+    if args.action == "remove":
+        if not args.id:
+            print("请指定 --id")
+            return 1
+        ok = memory.remove_template(args.id)
+        print(f"{'✅' if ok else '❌'} 删除{'成功' if ok else '失败'}")
+        return 0
+
+    if args.action == "extract":
+        print("🔍 从项目经验提取模版...")
+        print("   功能开发中，敬请期待。")
+        return 0
+
+    if args.action == "import":
+        if not args.file:
+            print("请指定 --file")
+            return 1
+        import json
+        try:
+            with open(args.file) as f:
+                data = json.load(f)
+            memory.add_template(
+                domain=data.get("domain", "general"),
+                title=data.get("title", ""),
+                source="imported",
+                importance=data.get("importance", 5),
+                tags=data.get("tags", []),
+            )
+            print(f"✅ 模版已导入")
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"❌ 导入失败: {e}")
+            return 1
+        return 0
+
+    return 0
+
+
 def cmd_fix(args):
     """AI 辅助修复"""
     from moat.fixer import generate_fix_report
@@ -768,6 +998,50 @@ def build_parser() -> argparse.ArgumentParser:
                            default="all", nargs="?",
                            help="适配器类型")
 
+    # ── moat-memory 命令 ──
+
+    # memory
+    p_memory = sub.add_parser("memory", help="📖 项目记忆管理（红线/踩坑/模版）")
+    _shared_args(p_memory)
+    p_memory.add_argument("action", choices=["list", "show", "delete", "stats"],
+                          help="操作")
+    p_memory.add_argument("type", nargs="?",
+                          choices=["redlines", "lessons", "templates", "skills"],
+                          help="记忆类型（仅 list/delete）")
+    p_memory.add_argument("--id", help="记忆 ID（仅 show/delete）")
+    p_memory.add_argument("--limit", type=int, default=20, help="返回条数（默认 20）")
+    p_memory.add_argument("--category", help="按分类过滤（仅 redlines）")
+    p_memory.add_argument("--domain", help="按领域过滤（仅 templates）")
+    p_memory.add_argument("--tool", help="按工具过滤（仅 skills）")
+    p_memory.add_argument("--json", action="store_true", help="JSON 格式输出")
+
+    # redline
+    p_redline = sub.add_parser("redline", help="📏 管理项目红线")
+    _shared_args(p_redline)
+    p_redline.add_argument("action", choices=["add", "remove", "list"],
+                           help="操作")
+    p_redline.add_argument("title", nargs="?", help="红线标题（仅 add）")
+    p_redline.add_argument("--description", "-d", help="具体描述")
+    p_redline.add_argument("--severity", choices=["critical", "warning", "info"],
+                           default="warning", help="严重程度")
+    p_redline.add_argument("--category", choices=["architecture", "security", "style", "dependency", "general"],
+                           default="general", help="分类")
+    p_redline.add_argument("--file-glob", help="适用文件（glob 模式）")
+    p_redline.add_argument("--id", help="红线 ID（仅 remove）")
+
+    # template
+    p_template = sub.add_parser("template", help="📋 管理经验模版")
+    _shared_args(p_template)
+    p_template.add_argument("action", choices=["list", "show", "add", "remove", "extract", "import"],
+                            help="操作")
+    p_template.add_argument("title", nargs="?", help="模版标题（仅 add）")
+    p_template.add_argument("--domain", default="general", help="领域分类")
+    p_template.add_argument("--source", default="manual", help="来源")
+    p_template.add_argument("--importance", type=int, default=5, help="重要性 1-10")
+    p_template.add_argument("--tags", help="标签（逗号分隔）")
+    p_template.add_argument("--file", help="文件路径（import/extract）")
+    p_template.add_argument("--id", help="模版 ID（仅 show/remove）")
+
     # evolution
     p_evolution = sub.add_parser("evolution", help="进化指标管理")
     _shared_args(p_evolution)
@@ -839,6 +1113,9 @@ def main():
         "evolution": cmd_evolution,
         "adapter": cmd_adapter,
         "verify": cmd_verify,
+        "memory": cmd_memory,
+        "redline": cmd_redline,
+        "template": cmd_template,
         "gatekeeper": cmd_gatekeeper,
         "immune": cmd_immune,
         "test": cmd_test,

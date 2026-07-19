@@ -72,6 +72,19 @@ Moat 是 AI 编码护城河，防止 AI 改代码时搞坏系统。
 2. 任何 AI 工具接手项目，第一件事就是跑 `moat check`。
 3. 如果 `moat check` 报错，修到通过为止，不许跳过。
 
+### 项目记忆（moat-memory）
+这个项目积累了一些记忆，改代码前先查看：
+```bash
+# 查看项目红线（架构规则、编码边界）
+moat memory list redlines
+
+# 查看踩坑记录（以前 MOAT 检查失败的地方）
+moat memory list lessons
+
+# 查看经验模版
+moat memory list templates
+```
+
 ### 命令
 ```bash
 # 改代码前/后检查（12秒）
@@ -106,6 +119,12 @@ globs: ["**/*.py"]
 - 改代码前跑 `moat check`，改代码后跑 `moat check`
 - 不通过不允许提交
 - `moat watch` 实时监控日志错误
+
+# moat-memory 项目记忆
+改代码前先查看:
+- `moat memory list redlines` — 项目红线
+- `moat memory list lessons` — 踩坑记录
+- `moat memory list templates` — 经验模版
 """
 
 
