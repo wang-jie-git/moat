@@ -795,7 +795,17 @@ class SharedStorageBridge:
                 cursor = self.conn.execute(
                     "SELECT * FROM templates ORDER BY importance DESC, created_at DESC LIMIT ?", (limit,)
                 )
-            return [dict(row) for row in cursor.fetchall()]
+            rows = []
+            for row in cursor.fetchall():
+                d = dict(row)
+                for f in ("principles", "elements", "negative_examples", "tags"):
+                    if isinstance(d.get(f), str):
+                        try:
+                            d[f] = json.loads(d[f])
+                        except (json.JSONDecodeError, TypeError):
+                            pass
+                rows.append(d)
+            return rows
         except Exception as e:
             print(f"❌ 查询模版失败: {e}")
             return []

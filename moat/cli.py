@@ -588,9 +588,12 @@ def cmd_template(args):
         return 0
 
     if args.action == "extract":
-        print("🔍 从项目经验提取模版...")
-        print("   功能开发中，敬请期待。")
-        return 0
+        commit = getattr(args, 'commit', 'HEAD')
+        repo = getattr(args, 'file', None) or args.project
+        result = memory.extract_template_from_git(commit=commit, repo_path=repo)
+        if result:
+            return 0
+        return 1
 
     if args.action == "import":
         if not args.file:
@@ -1039,7 +1042,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_template.add_argument("--source", default="manual", help="来源")
     p_template.add_argument("--importance", type=int, default=5, help="重要性 1-10")
     p_template.add_argument("--tags", help="标签（逗号分隔）")
-    p_template.add_argument("--file", help="文件路径（import/extract）")
+    p_template.add_argument("--file", help="文件路径（import）/ git 仓库路径（extract）")
+    p_template.add_argument("--commit", default="HEAD", help="git commit 引用（仅 extract，默认 HEAD）")
     p_template.add_argument("--id", help="模版 ID（仅 show/remove）")
 
     # evolution
