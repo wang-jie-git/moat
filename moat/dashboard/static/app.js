@@ -4,7 +4,7 @@
  */
 
 // ── State ──────────────────────────────────
-const STATE = { data: null, filter: 'all', search: '', timer: null };
+const STATE = { data: null, filter: 'all', search: '', timer: null, mode: 'normal' };
 
 // ── DOM Shortcuts ──────────────────────────
 const $ = s => document.querySelector(s);
@@ -135,6 +135,10 @@ function renderEvents(events) {
   if (STATE.filter !== 'all') {
     filtered = filtered.filter(e => e.status === STATE.filter.toUpperCase());
   }
+  // 普通模式：只显示非 OK 的事件
+  if (STATE.mode === 'normal') {
+    filtered = filtered.filter(e => e.status !== 'OK');
+  }
   if (STATE.search) {
     const q = STATE.search.toLowerCase();
     filtered = filtered.filter(e =>
@@ -150,7 +154,7 @@ function renderEvents(events) {
       <div class="event-empty">
         <div class="emoji">${events.length === 0 ? '📡' : '🔍'}</div>
         <div class="title">${events.length === 0 ? '暂无传感器事件' : '没有匹配的事件'}</div>
-        <div class="hint">${events.length === 0 ? '运行项目后传感器事件会自动显示在这里' : '试试修改筛选条件'}</div>
+        <div class="hint">${events.length === 0 ? '运行项目后传感器事件会自动显示在这里' : STATE.mode === 'normal' ? '普通模式只显示异常，切换到「详细」查看全部' : '试试修改筛选条件'}</div>
       </div>`;
     return;
   }
@@ -226,6 +230,14 @@ function setFilter(status) {
 function onSearch(val) {
   STATE.search = val;
   renderEvents(STATE.data?.events || []);
+}
+
+// ── Mode Toggle ──────────────────────────
+function toggleMode() {
+  STATE.mode = STATE.mode === 'normal' ? 'detailed' : 'normal';
+  $$('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === STATE.mode));
+  renderEvents(STATE.data?.events || []);
+  toast(STATE.mode === 'normal' ? '🔇 普通模式：只显示异常' : '📡 详细模式：显示所有事件', 'info');
 }
 
 // ── Detail Modal ──────────────────────────
@@ -366,6 +378,7 @@ function showHelp() {
           <h3>🖱️ 交互说明</h3>
           <p>• 点击组件卡片 — 查看详情和历史</p>
           <p>• 🔍 筛选 — 按状态/关键词过滤事件</p>
+          <p>• 🔇/📡 模式切换 — 普通模式只看异常，详细模式看全部</p>
           <p>• 🔄 每 3 秒自动刷新数据</p>
         </div>
       </div>

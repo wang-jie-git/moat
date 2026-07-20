@@ -134,6 +134,30 @@ body {
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+/* ── Mode Toggle ───────────────────── */
+.mode-toggle {
+  display: inline-flex;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.mode-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  user-select: none;
+}
+.mode-btn.active {
+  background: var(--blue);
+  color: #fff;
+}
+.mode-btn:not(.active):hover {
+  color: var(--text-primary);
+}
+
 .btn-primary {
   background: #238636;
   border-color: #2ea043;
