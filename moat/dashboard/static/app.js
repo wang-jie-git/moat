@@ -464,9 +464,10 @@ async function injectSensors() {
           <div style="margin-bottom:16px;max-height:80px;overflow-y:auto;font-size:12px;color:var(--red);">
             ${data.error_details.map(e => `<div>${escapeHtml(e)}</div>`).join('')}
           </div>` : ''}
-        <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+        <!-- ✅ 确认按钮放在顶部 -->
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px;padding:12px 0;border-bottom:1px solid var(--border);">
           <button class="btn" onclick="this.closest('.modal-overlay').remove()">取消</button>
-          <button class="btn btn-primary" onclick="executeInject(this.closest('.modal-overlay'))">✅ 确认注入</button>
+          <button class="btn btn-primary" style="font-size:15px;padding:8px 24px;" onclick="executeInject(this.closest('.modal-overlay'))">✅ 确认注入</button>
         </div>
       </div>`;
   } catch (e) {
