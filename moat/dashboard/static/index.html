@@ -3,150 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moat Dashboard — 传感器看板</title>
+  <title>Moat Dashboard — 传感器监控</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
 
-  <!-- ── Toast 容器 ────────────────── -->
-  <div id="toast-container" class="toast-container"></div>
+<!-- Toast -->
+<div id="toast-container" class="toast-container"></div>
 
-  <!-- ── 头部 ──────────────────────── -->
-  <header>
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
     <div class="header-left">
-      <div class="logo">Moat <span>Dashboard</span></div>
-      <div>
-        <span id="status-dot" class="status-dot green"></span>
-        <span id="status-text" class="header-status">加载中...</span>
+      <div class="logo">🛡️ Moat <span>Dashboard</span></div>
+      <div id="status-badge" class="status-badge green">
+        <span class="status-dot green"></span> 加载中...
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn" onclick="resetSensors()">🔄 清空事件</button>
-      <button class="btn" id="btn-baseline" onclick="saveBaseline()">💾 保存基线</button>
-      <button class="btn btn-primary" id="btn-check" onclick="runCheck()">🔍 运行检查</button>
+    <div class="header-right">
+      <span class="last-updated" id="last-updated"></span>
+      <button class="btn btn-danger" onclick="resetEvents()" title="清空所有传感器事件">🗑️ 清空</button>
+      <button class="btn" id="btn-baseline" onclick="saveBaseline()">💾 基线</button>
+      <button class="btn btn-primary" id="btn-check" onclick="runCheck()">🔍 检查</button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- ── 主内容 ────────────────────── -->
-  <main>
+<!-- Main -->
+<main class="main">
 
-    <!-- 命令提示 -->
-    <div class="cmd-hint">
-      <span style="font-size:20px;">💡</span>
-      <span class="hint-text">项目</span>
-      <code id="project-name">-</code>
-      <span class="hint-text">| 终端命令:</span>
-      <code>moat sensor events</code>
-      <code>moat sensor stats</code>
-    </div>
+  <!-- Stats -->
+  <section class="stats">
+    <div class="stat-card"><div class="icon-bg"></div><div class="label">监控组件</div><div class="value white">-</div><div class="sub">个组件</div></div>
+    <div class="stat-card"><div class="icon-bg"></div><div class="label">运行正常</div><div class="value green">-</div><div class="sub">运行正常</div></div>
+    <div class="stat-card"><div class="icon-bg"></div><div class="label">降级运行</div><div class="value yellow">-</div><div class="sub">降级运行</div></div>
+    <div class="stat-card"><div class="icon-bg"></div><div class="label">近期告警</div><div class="value red">-</div><div class="sub">近期告警</div></div>
+    <div class="stat-card"><div class="icon-bg"></div><div class="label">总事件数</div><div class="value blue">-</div><div class="sub">总事件数</div></div>
+  </section>
 
-    <!-- 统计卡片 -->
-    <section class="stats-grid">
-      <div class="stat-card">
-        <div class="icon-bg">📦</div>
-        <div class="label">监控组件</div>
-        <div id="stat-total" class="value white">-</div>
-        <div class="sub">已安装传感器的组件数</div>
-      </div>
-      <div class="stat-card">
-        <div class="icon-bg">✅</div>
-        <div class="label">运行正常</div>
-        <div id="stat-healthy" class="value green">-</div>
-        <div class="sub">全部正常</div>
-      </div>
-      <div class="stat-card">
-        <div class="icon-bg">⚠️</div>
-        <div class="label">降级运行</div>
-        <div id="stat-degraded" class="value yellow">-</div>
-        <div class="sub">部分功能受影响</div>
-      </div>
-      <div class="stat-card">
-        <div class="icon-bg">🚨</div>
-        <div class="label">异常告警</div>
-        <div id="stat-panics" class="value red">-</div>
-        <div class="sub">需要立即处理</div>
-      </div>
-    </section>
+  <!-- Panels -->
+  <section class="panels">
 
-    <!-- 双栏：事件流 + 热力图 -->
-    <div class="dashboard-grid">
-      
-      <!-- 左栏：实时事件流 -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>📡 实时事件流</h2>
-          <span id="event-badge" class="badge">0</span>
+    <!-- Left: Event Stream -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>📡 实时事件流</h2>
+        <span id="event-badge" class="badge">0</span>
+      </div>
+      <div class="event-filter">
+        <input type="text" placeholder="🔍 搜索组件名或错误..." oninput="onSearch(this.value)" spellcheck="false">
+        <div class="filter-btn-group">
+          <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全部</button>
+          <button class="filter-btn" data-filter="ok" onclick="setFilter('ok')">🟢 正常</button>
+          <button class="filter-btn" data-filter="degraded" onclick="setFilter('degraded')">🟡 降级</button>
+          <button class="filter-btn" data-filter="panic" onclick="setFilter('panic')">🔴 异常</button>
         </div>
-        <div id="event-list" class="panel-body"></div>
       </div>
-
-      <!-- 右栏：健康热力图 -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>🔥 组件健康热力图</h2>
-          <span id="health-badge" class="badge">0</span>
-        </div>
-        <div id="health-grid" class="panel-body no-padding"></div>
-      </div>
-
+      <div id="event-list" class="panel-body event-list"></div>
     </div>
 
-    <!-- 底部操作 -->
-    <div class="actions-panel">
-      <span style="font-weight:600;">🛠️ 快速操作</span>
-      <button class="btn" onclick="showHelp()">📖 使用帮助</button>
-      <span class="action-hint">🔄 自动刷新中（3 秒间隔）</span>
+    <!-- Right: Health Grid -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>🔥 组件健康</h2>
+        <span id="health-badge" class="badge">0</span>
+      </div>
+      <div id="health-grid" class="panel-body health-grid"></div>
     </div>
 
-  </main>
+  </section>
 
-  <script src="/static/app.js"></script>
-  <script>
-    function showHelp() {
-      const overlay = document.createElement('div');
-      overlay.className = 'modal-overlay';
-      overlay.innerHTML = `
-        <div class="modal" style="max-width: 480px;">
-          <div class="modal-header">
-            <h2>📖 使用帮助</h2>
-            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
-          </div>
-          <div class="modal-body" style="line-height:2;">
-            <p><strong>🟢 这个页面是做什么的？</strong></p>
-            <p style="color:#8b949e;font-size:13px;margin-bottom:12px;">
-              实时监控你的项目里哪些函数/组件运行正常，哪些出错了。<br>
-              相当于给你的代码装了"健康监测仪"。
-            </p>
+  <!-- Footer -->
+  <div class="footer">
+    <span class="hint-label">💡 项目</span>
+    <code id="project-name">-</code>
+    <span class="hint-label">|</span>
+    <code>moat sensor events</code>
+    <code>moat sensor stats</code>
+    <span class="right">
+      <a href="#" onclick="showHelp();return false" style="color:var(--blue);text-decoration:none;">📖 帮助</a>
+    </span>
+  </div>
 
-            <p><strong>🔴 颜色代表什么？</strong></p>
-            <p style="color:#8b949e;font-size:13px;margin-bottom:12px;">
-              🟢 <strong style="color:#3fb950;">绿色</strong> = 运行正常<br>
-              🟡 <strong style="color:#d29922;">黄色</strong> = 有异常，但未崩溃（降级）<br>
-              🔴 <strong style="color:#f85149;">红色</strong> = 已崩溃，需要处理（异常）
-            </p>
+</main>
 
-            <p><strong>🔧 怎么添加传感器？</strong></p>
-            <p style="color:#8b949e;font-size:13px;margin-bottom:12px;">
-              在项目目录执行：
-            </p>
-            <pre style="background:#0d1117;padding:8px;border-radius:6px;font-size:12px;">
-moat sensor init              # 初始化配置
-moat sensor inject             # 预览将安装的位置
-moat sensor inject --no-dry-run # 执行注入
-            </pre>
-
-            <p><strong>🖱️ 能操作什么？</strong></p>
-            <p style="color:#8b949e;font-size:13px;">
-              • 点击任意组件卡片 — 查看详情和历史<br>
-              • 🔍 运行检查 — 手动触发完整性检查<br>
-              • 💾 保存基线 — 保存当前状态为基准<br>
-              • 🔄 清空事件 — 重置事件列表
-            </p>
-          </div>
-        </div>`;
-      document.body.appendChild(overlay);
-    }
-  </script>
+<script src="/static/app.js"></script>
 </body>
 </html>
