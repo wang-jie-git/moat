@@ -63,6 +63,34 @@ async function loadData() {
   }
 }
 
+// ── Load Project Info ───────────────────
+async function loadProjectInfo() {
+  const el = document.getElementById('project-info');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);padding:12px;">加载中...</div>';
+  try {
+    const r = await fetch('/api/moat/project-info');
+    const d = await r.json();
+    renderProjectInfo(d);
+  } catch (e) {
+    el.innerHTML = '<div class="mem-unavailable"><div class="emoji">❌</div><div>加载失败</div></div>';
+  }
+}
+
+// ── Load Memory ────────────────────────
+async function loadMemory() {
+  const el = document.getElementById('memory-info');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);padding:12px;">加载中...</div>';
+  try {
+    const r = await fetch('/api/moat/memory');
+    const d = await r.json();
+    renderMemory(d);
+  } catch (e) {
+    el.innerHTML = '<div class="mem-unavailable"><div class="emoji">❌</div><div>加载失败</div></div>';
+  }
+}
+
 // ── Render All ────────────────────────────
 function render() {
   const d = STATE.data;
@@ -596,9 +624,237 @@ function copyCmd() {
   }).catch(() => {});
 }
 
+// ── Project Info ───────────────────────
+function renderProjectInfo(d) {
+  const el = document.getElementById('project-info');
+  if (!el) return;
+
+  const git = d.git || {};
+  const langs = d.languages || [];
+
+  // 语言条形图数据
+  const langColors = {
+    Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#3178c6',
+    TSX: '#3178c6', JSX: '#61dafb', JSON: '#40d47e', YAML: '#cb171e',
+    Markdown: '#083fa1', CSS: '#563d7c', HTML: '#e34c26', Shell: '#89e051',
+    SQL: '#e38c00', Go: '#00ADD8', Rust: '#dea584', Java: '#b07219', Ruby: '#701516',
+  };
+  const totalLang = langs.reduce((s, l) => s + l.count, 0);
+  const langBarHtml = langs.length > 0
+    ? `<div class="lang-bar">${langs.map(l => {
+        const pct = (l.count / totalLang * 100).toFixed(1);
+        const color = langColors[l.name] || '#8b949e';
+        return `<div class="lang-bar-seg" style="width:${pct}%;background:${color};" title="${l.name}: ${l.count} files"></div>`;
+      }).join('')}</div>
+      <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;">
+        ${langs.map(l => {
+          const color = langColors[l.name] || '#8b949e';
+          return `<span style="font-size:11px;color:${color};">● ${l.name} (${l.count})</span>`;
+        }).join('')}
+      </div>`
+    : '<div style="font-size:12px;color:var(--text-muted);">未检测到代码文件</div>';
+
+  el.innerHTML = `
+    <div class="pi-row">
+      <span class="pi-label">项目名</span>
+      <span class="pi-value mono">${escapeHtml(d.name)}</span>
+    </div>
+    <div class="pi-row">
+      <span class="pi-label">路径</span>
+      <span class="pi-value mono" style="font-size:11px;word-break:break-all;">${escapeHtml(d.path)}</span>
+    </div>
+    <div class="pi-row">
+      <span class="pi-label">类型</span>
+      <span class="pi-value"><span class="pi-tag">${escapeHtml(d.project_type)}</span></span>
+    </div>
+    <div class="pi-row">
+      <span class="pi-label">文件数</span>
+      <span class="pi-value">${d.total_files} 个文件</span>
+    </div>
+    <div class="pi-row">
+      <span class="pi-label">代码行数</span>
+      <span class="pi-value">${d.total_lines > 0 ? d.total_lines.toLocaleString() + ' 行' : '统计中...'}</span>
+    </div>
+    <div class="pi-row">
+      <span class="pi-label">项目大小</span>
+      <span class="pi-value">${escapeHtml(d.size)}</span>
+    </div>
+    <div class="pi-row">
+      <span class="pi-label">语言分布</span>
+      <span class="pi-value" style="flex:1;">${langBarHtml}</span>
+    </div>
+    ${git.has_git ? `
+    <div class="pi-row">
+      <span class="pi-label">Git</span>
+      <span class="pi-value">
+        <span class="pi-tag git">🌿 ${escapeHtml(git.branch)}</span>
+        ${git.dirty ? '<span class="pi-tag dirty">⚠️ 有未提交改动</span>' : '<span class="pi-tag git">✅ 干净</span>'}
+      </span>
+    </div>
+    ${git.last_commit ? `<div class="pi-row"><span class="pi-label">最新提交</span><span class="pi-value mono" style="font-size:11px;">${escapeHtml(git.last_commit)}</span></div>` : ''}
+    ` : ''}
+  `;
+}
+
+// ── Memory Detail Modal ─────────────
+function showMemoryDetail(item, type) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  const sev = item.severity || 'info';
+  const cat = item.category || 'general';
+  const src = item.source || 'unknown';
+  const created = item.created_at ? item.created_at.slice(0, 19).replace('T', ' ') : '-';
+  const updated = item.updated_at ? item.updated_at.slice(0, 19).replace('T', ' ') : '-';
+
+  let bodyHtml = '';
+  if (type === 'redline') {
+    bodyHtml = `
+      <div class="mem-detail-section">
+        <h3>📋 基本信息</h3>
+        <div class="mem-detail-row"><span class="dl">标题</span><span class="dv">${escapeHtml(item.title || '未命名')}</span></div>
+        <div class="mem-detail-row"><span class="dl">严重程度</span><span class="dv">${sev === 'critical' ? '🔴 致命' : sev === 'warning' ? '🟡 警告' : '🔵 信息'}</span></div>
+        <div class="mem-detail-row"><span class="dl">分类</span><span class="dv"><span class="mem-badge cat-${cat}">${cat}</span></span></div>
+        <div class="mem-detail-row"><span class="dl">来源</span><span class="dv"><span class="mem-badge source-${src}">${src}</span></span></div>
+        <div class="mem-detail-row"><span class="dl">创建时间</span><span class="dv">${created}</span></div>
+        <div class="mem-detail-row"><span class="dl">更新时间</span><span class="dv">${updated}</span></div>
+      </div>
+      ${item.description ? `
+      <div class="mem-detail-section">
+        <h3>📝 描述</h3>
+        <div style="font-size:13px;color:var(--text-primary);line-height:1.6;">${escapeHtml(item.description)}</div>
+      </div>` : ''}
+      ${item.file_glob ? `
+      <div class="mem-detail-section">
+        <h3>📁 关联文件</h3>
+        <code style="font-size:12px;color:var(--blue);">${escapeHtml(item.file_glob)}</code>
+      </div>` : ''}
+    `;
+  } else {
+    bodyHtml = `
+      <div class="mem-detail-section">
+        <h3>📋 基本信息</h3>
+        <div class="mem-detail-row"><span class="dl">错误</span><span class="dv">${escapeHtml((item.error_summary || item.title || '').slice(0, 100))}</span></div>
+        <div class="mem-detail-row"><span class="dl">时间</span><span class="dv">${created}</span></div>
+      </div>
+      ${item.error_summary ? `
+      <div class="mem-detail-section">
+        <h3>📝 详情</h3>
+        <pre style="font-size:12px;color:var(--text-primary);background:var(--bg-primary);padding:8px;border-radius:4px;overflow-x:auto;white-space:pre-wrap;">${escapeHtml(item.error_summary)}</pre>
+      </div>` : ''}
+    `;
+  }
+
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-header">
+        <h2>${type === 'redline' ? '🔴' : '⚠️'} ${escapeHtml(item.title || item.error_summary || '记忆详情')}</h2>
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+      </div>
+      <div class="modal-body">${bodyHtml}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+// ── Memory ─────────────────────────────
+function renderMemory(d) {
+  const el = document.getElementById('memory-info');
+  if (!el) return;
+
+  if (!d.available) {
+    el.innerHTML = `
+      <div class="mem-unavailable">
+        <div class="emoji">🧠</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text-secondary);margin-bottom:4px;">记忆系统未初始化</div>
+        <div style="font-size:12px;">运行 <code style="background:var(--bg-primary);padding:2px 6px;border-radius:3px;">moat memory init</code> 启用</div>
+      </div>`;
+    return;
+  }
+
+  const s = d.stats;
+  const rStats = d.redline_stats || {};
+
+  // 红线列表
+  const recentRedlines = (d.recent_redlines || []).map(r => {
+    const sev = r.severity || 'info';
+    const icon = sev === 'critical' ? '🔴' : sev === 'warning' ? '🟡' : '🔵';
+    const cat = r.category || 'general';
+    const src = r.source || '';
+    const created = r.created_at ? r.created_at.slice(0, 10) : '';
+    return `<div class="mem-item mem-severity-${sev}" onclick="showMemoryDetail(${JSON.stringify(r).replace(/"/g, '&quot;')}, 'redline')" style="cursor:pointer;">
+      <div class="mem-item-title">
+        ${icon} ${escapeHtml(r.title || '未命名')}
+        ${cat !== 'general' ? `<span class="mem-badge cat-${cat}">${cat}</span>` : ''}
+        ${src ? `<span class="mem-badge source-${src}">${src}</span>` : ''}
+      </div>
+      <div class="mem-item-desc">${escapeHtml((r.description || '').slice(0, 80))}</div>
+      <div class="mem-item-meta">
+        ${created ? `<span>📅 ${created}</span>` : ''}
+        <span>👆 点击查看详情</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 踩坑列表
+  const recentLessons = (d.recent_lessons || []).map(l => {
+    const created = l.created_at ? l.created_at.slice(0, 10) : '';
+    return `<div class="mem-item mem-severity-warning" onclick="showMemoryDetail(${JSON.stringify(l).replace(/"/g, '&quot;')}, 'lesson')" style="cursor:pointer;">
+      <div class="mem-item-title">⚠️ ${escapeHtml((l.error_summary || l.title || '未知错误').slice(0, 60))}</div>
+      <div class="mem-item-desc">${escapeHtml((l.error_summary || '').slice(0, 100))}</div>
+      <div class="mem-item-meta">
+        ${created ? `<span>📅 ${created}</span>` : ''}
+        <span>👆 点击查看详情</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 红线按严重性统计条
+  const severityTotal = (rStats.critical || 0) + (rStats.warning || 0) + (rStats.info || 0);
+  const severityBar = severityTotal > 0 ? `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;height:4px;border-radius:2px;overflow:hidden;gap:2px;">
+        <div style="flex:${rStats.critical || 0};max-width:100%;background:var(--red);border-radius:2px;" title="致命: ${rStats.critical || 0}"></div>
+        <div style="flex:${rStats.warning || 0};max-width:100%;background:var(--yellow);border-radius:2px;" title="警告: ${rStats.warning || 0}"></div>
+        <div style="flex:${rStats.info || 0};max-width:100%;background:var(--blue);border-radius:2px;" title="信息: ${rStats.info || 0}"></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text-muted);">
+        <span>🔴 致命 ${rStats.critical || 0}</span>
+        <span>🟡 警告 ${rStats.warning || 0}</span>
+        <span>🔵 信息 ${rStats.info || 0}</span>
+      </div>
+    </div>` : '';
+
+  el.innerHTML = `
+    <div class="mem-stats">
+      <div class="mem-stat">
+        <div class="num red">${s.redlines}</div>
+        <div class="lbl">🔴 红线</div>
+      </div>
+      <div class="mem-stat">
+        <div class="num yellow">${s.lessons}</div>
+        <div class="lbl">⚠️ 踩坑</div>
+      </div>
+      <div class="mem-stat">
+        <div class="num blue">${s.templates}</div>
+        <div class="lbl">📋 模板</div>
+      </div>
+      <div class="mem-stat">
+        <div class="num green">${s.skills}</div>
+        <div class="lbl">🛠️ 技能</div>
+      </div>
+    </div>
+    ${recentRedlines ? `<div class="mem-section-title">🔴 红线（${s.redlines}）</div>${severityBar}${recentRedlines}` : ''}
+    ${recentLessons ? `<div class="mem-section-title">⚠️ 踩坑（${s.lessons}）</div>${recentLessons}` : ''}
+    ${!recentRedlines && !recentLessons ? '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px;">记忆系统运行正常，暂无记录</div>' : ''}
+  `;
+}
+
 // ── Init ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
+  loadProjectInfo();
+  loadMemory();
   // Load project name
   fetch('/api/moat/status')
     .then(r => r.json())
@@ -615,5 +871,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   // Auto-refresh every 3s
-  STATE.timer = setInterval(() => { if (!STATE.paused) loadData(); }, 3000);
+  STATE.timer = setInterval(() => {
+    if (!STATE.paused) {
+      loadData();
+      // Project info 和 memory 不需要频繁刷新，每 30 秒刷一次
+      if (Date.now() % 30000 < 3100) {
+        loadProjectInfo();
+        loadMemory();
+      }
+    }
+  }, 3000);
 });

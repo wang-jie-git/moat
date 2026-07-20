@@ -550,6 +550,227 @@ body {
   text-align: center;
 }
 
+/* ── Info Panels (Project + Memory) ── */
+.info-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media (max-width: 960px) {
+  .info-panels { grid-template-columns: 1fr; }
+}
+.info-panel .panel-body {
+  min-height: 120px;
+  max-height: 280px;
+}
+
+/* Project Info */
+.project-info-body { padding: 16px; }
+
+.pi-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+}
+.pi-row:last-child { border-bottom: none; }
+.pi-label {
+  color: var(--text-secondary);
+  min-width: 80px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+.pi-value { color: var(--text-primary); font-weight: 500; }
+.pi-value.mono {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+}
+.pi-tag {
+  display: inline-block;
+  background: var(--blue-bg);
+  color: var(--blue);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 4px;
+}
+.pi-tag.git {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.pi-tag.dirty {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+}
+
+/* Language bar */
+.lang-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+  gap: 2px;
+}
+.lang-bar-seg {
+  border-radius: 2px;
+  min-width: 4px;
+  transition: width 0.3s;
+}
+
+/* Memory Info */
+.memory-info-body { padding: 16px; }
+
+.mem-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.mem-stat {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  text-align: center;
+}
+.mem-stat .num {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.mem-stat .num.red { color: var(--red); }
+.mem-stat .num.yellow { color: var(--yellow); }
+.mem-stat .num.blue { color: var(--blue); }
+.mem-stat .num.green { color: var(--green); }
+.mem-stat .lbl {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.mem-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  margin-top: 8px;
+}
+
+.mem-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.mem-item-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mem-item-desc {
+  color: var(--text-secondary);
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.mem-severity-critical { border-left: 3px solid var(--red); }
+.mem-severity-warning { border-left: 3px solid var(--yellow); }
+.mem-severity-info { border-left: 3px solid var(--blue); }
+
+.mem-unavailable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.mem-unavailable .emoji { font-size: 28px; margin-bottom: 6px; }
+
+/* ── Memory Enhancements ───────────── */
+.mem-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.mem-badge.cat-architecture { background: rgba(88,166,255,0.15); color: var(--blue); }
+.mem-badge.cat-style      { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.mem-badge.cat-security   { background: rgba(248,81,73,0.15); color: var(--red); }
+.mem-badge.cat-perf       { background: rgba(63,185,80,0.15); color: var(--green); }
+.mem-badge.cat-general    { background: rgba(139,148,158,0.15); color: var(--text-secondary); }
+.mem-badge.source-template { background: rgba(88,166,255,0.10); color: var(--blue); }
+.mem-badge.source-evolution { background: rgba(210,153,34,0.10); color: var(--yellow); }
+
+.mem-item-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.mem-item-meta span { display: inline-flex; align-items: center; gap: 2px; }
+
+.mem-item-action {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+.mem-item-action a {
+  color: var(--blue);
+  font-size: 11px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.mem-item-action a:hover { text-decoration: underline; }
+
+/* Memory detail modal */
+.mem-detail-section {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+.mem-detail-section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.mem-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-light);
+}
+.mem-detail-row:last-child { border-bottom: none; }
+.mem-detail-row .dl { color: var(--text-secondary); font-size: 12px; }
+.mem-detail-row .dv { color: var(--text-primary); font-weight: 500; font-size: 13px; }
+
+.btn-sm {
+  padding: 3px 10px;
+  font-size: 11px;
+}
+
 /* ── Footer ───────────────────────── */
 .footer {
   background: var(--bg-secondary);

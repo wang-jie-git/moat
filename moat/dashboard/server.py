@@ -113,13 +113,38 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
         component_events = [
             e for e in all_events
             if e.get("component_id") == component_id
-        ][-20:]
+        ]
+
+        # 统计
+        total = len(component_events)
+        ok_count = sum(1 for e in component_events if e.get("status") == "OK")
+        degraded_count = sum(1 for e in component_events if e.get("status") == "DEGRADED")
+        panic_count = sum(1 for e in component_events if e.get("status") == "PANIC")
+        avg_duration = 0.0
+        durations = [e.get("duration_ms", 0) for e in component_events if e.get("duration_ms", 0) > 0]
+        if durations:
+            avg_duration = sum(durations) / len(durations)
+
+        # 解析函数名和文件路径
+        parts = component_id.split(":", 1)
+        file_path = parts[0] if len(parts) > 1 else component_id
+        func_name = parts[1] if len(parts) > 1 else ""
 
         return {
             "component_id": component_id,
+            "file_path": file_path,
+            "func_name": func_name,
             "state": state,
             "is_healthy": health_tracker.is_healthy(component_id),
-            "events": component_events,
+            "stats": {
+                "total_events": total,
+                "ok": ok_count,
+                "degraded": degraded_count,
+                "panic": panic_count,
+                "avg_duration_ms": round(avg_duration, 1),
+                "success_rate": round((ok_count / total * 100) if total > 0 else 0, 1),
+            },
+            "events": component_events[-20:],
         }
 
     @app.post("/api/moat/sensors/reset")
@@ -305,6 +330,133 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
             return result_queue.get(timeout=15)
         except queue.Empty:
             return {"success": False, "restart_cmd": "重启你的项目", "project_type": "未知"}
+
+    @app.get("/api/moat/project-info")
+    async def get_project_info():
+        """项目基本信息：类型、文件数、语言分布、Git 状态"""
+        from moat.pain.config import detect_project_type
+
+        abs_path = project.resolve()
+        ptype = detect_project_type(str(project))
+
+        # 统计文件数和语言分布
+        lang_ext_map = {
+            '.py': 'Python', '.js': 'JavaScript', '.ts': 'TypeScript',
+            '.tsx': 'TSX', '.jsx': 'JSX', '.json': 'JSON', '.yaml': 'YAML',
+            '.yml': 'YAML', '.md': 'Markdown', '.css': 'CSS', '.html': 'HTML',
+            '.sh': 'Shell', '.sql': 'SQL', '.go': 'Go', '.rs': 'Rust',
+            '.java': 'Java', '.rb': 'Ruby',
+        }
+        lang_counts: dict[str, int] = {}
+        total_files = 0
+        total_lines = 0
+        skip_dirs = {'.git', 'node_modules', '__pycache__', '.venv', 'venv',
+                     '.moat', 'dist', 'build', '.next', '.cache'}
+
+        for f in abs_path.rglob('*'):
+            if not f.is_file():
+                continue
+            # 跳过不需要的目录
+            parts = f.relative_to(abs_path).parts
+            if any(p in skip_dirs for p in parts):
+                continue
+            ext = f.suffix.lower()
+            lang = lang_ext_map.get(ext)
+            if lang:
+                total_files += 1
+                lang_counts[lang] = lang_counts.get(lang, 0) + 1
+                # 统计行数（仅代码文件）
+                if lang in ('Python', 'JavaScript', 'TypeScript', 'TSX', 'JSX', 'Go', 'Rust', 'Java', 'Ruby', 'Shell'):
+                    try:
+                        total_lines += sum(1 for _ in f.open(encoding='utf-8', errors='ignore'))
+                    except Exception:
+                        pass
+
+        # 语言排序
+        languages = sorted(lang_counts.items(), key=lambda x: -x[1])
+        top_languages = [{"name": n, "count": c} for n, c in languages[:8]]
+
+        # Git 信息
+        git_info = {"branch": "", "last_commit": "", "dirty": False, "has_git": False}
+        try:
+            import subprocess
+            r = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"],
+                               cwd=str(abs_path), capture_output=True, text=True, timeout=5)
+            if r.returncode == 0 and "true" in r.stdout.lower():
+                git_info["has_git"] = True
+                # 分支
+                br = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                                    cwd=str(abs_path), capture_output=True, text=True, timeout=5)
+                git_info["branch"] = br.stdout.strip() if br.returncode == 0 else ""
+                # 最近 commit
+                cm = subprocess.run(["git", "log", "-1", "--format=%h %s (%cr)"],
+                                    cwd=str(abs_path), capture_output=True, text=True, timeout=5)
+                git_info["last_commit"] = cm.stdout.strip() if cm.returncode == 0 else ""
+                # 是否有未提交改动
+                st = subprocess.run(["git", "status", "--porcelain"],
+                                    cwd=str(abs_path), capture_output=True, text=True, timeout=5)
+                git_info["dirty"] = bool(st.stdout.strip()) if st.returncode == 0 else False
+        except Exception:
+            pass
+
+        # 项目大小
+        try:
+            total_size = sum(f.stat().st_size for f in abs_path.rglob('*') if f.is_file()
+                            and not any(p in skip_dirs for p in f.relative_to(abs_path).parts))
+            size_str = f"{total_size / 1024 / 1024:.1f} MB" if total_size > 1024 * 1024 else f"{total_size / 1024:.0f} KB"
+        except Exception:
+            size_str = "未知"
+
+        return {
+            "name": abs_path.name,
+            "path": str(abs_path),
+            "project_type": ptype,
+            "total_files": total_files,
+            "total_lines": total_lines,
+            "languages": top_languages,
+            "git": git_info,
+            "size": size_str,
+        }
+
+    @app.get("/api/moat/memory")
+    async def get_memory():
+        """Moat 记忆系统状态：红线、踩坑、模板、技能"""
+        try:
+            from moat.memory.moat_memory import MoatMemory
+            mem = MoatMemory(str(project))
+
+            redlines = mem.list_redlines()
+            lessons = mem.bridge.query_lessons()
+            templates = mem.bridge.query_templates()
+            skills = mem.bridge.query_skills()
+
+            # 红线按严重性分组
+            redline_stats = {"critical": 0, "warning": 0, "info": 0}
+            for r in redlines:
+                sev = r.get("severity", "info")
+                if sev in redline_stats:
+                    redline_stats[sev] += 1
+
+            return {
+                "available": True,
+                "db_path": str(project / ".moat" / "memory.db"),
+                "stats": {
+                    "redlines": len(redlines),
+                    "lessons": len(lessons),
+                    "templates": len(templates),
+                    "skills": len(skills),
+                    "total": len(redlines) + len(lessons) + len(templates) + len(skills),
+                },
+                "redline_stats": redline_stats,
+                "recent_lessons": lessons[-5:] if lessons else [],
+                "recent_redlines": redlines[-5:] if redlines else [],
+            }
+        except Exception as e:
+            return {
+                "available": False,
+                "error": str(e),
+                "stats": {"redlines": 0, "lessons": 0, "templates": 0, "skills": 0, "total": 0},
+            }
 
     @app.post("/api/moat/baseline/save")
     async def save_baseline():
