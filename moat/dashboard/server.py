@@ -109,44 +109,6 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
             "events": component_events,
         }
 
-    @app.post("/api/moat/sensors/demo")
-    async def inject_demo_data():
-        """注入演示数据（仅供测试 Dashboard 效果）"""
-        from moat.pain.sensor import health_tracker, SensorEvent, _event_bus, _append_to_file
-
-        demo_events = [
-            (health_tracker.record_failure, ["db.user_query", "Connection pool exhausted"]),
-            (health_tracker.record_success, ["auth.verify_token"]),
-            (health_tracker.record_failure, ["memory_bridge", "Timeout after 5s"]),
-            (health_tracker.record_failure, ["memory_bridge", "Retry failed"]),
-            (health_tracker.record_success, ["secret_sanitization"]),
-            (health_tracker.record_failure, ["person_memory", "OpenAI API 429"]),
-            (health_tracker.record_success, ["cache.get_user_profile"]),
-            (health_tracker.record_failure, ["payment.stripe_charge", "card_declined"]),
-            (health_tracker.record_failure, ["payment.stripe_charge", "insufficient_funds"]),
-            (health_tracker.record_success, ["cache.get_products"]),
-        ]
-        for fn, args in demo_events:
-            fn(*args)
-
-        sensor_events = [
-            SensorEvent("db.user_query", "DEGRADED", 3200, "Connection pool exhausted", "PoolTimeout"),
-            SensorEvent("auth.verify_token", "OK", 12),
-            SensorEvent("memory_bridge", "DEGRADED", 5010, "Timeout after 5s", "TimeoutError"),
-            SensorEvent("memory_bridge", "DEGRADED", 5100, "Retry failed", "TimeoutError"),
-            SensorEvent("secret_sanitization", "OK", 3),
-            SensorEvent("person_memory", "DEGRADED", 4800, "OpenAI API 429", "RateLimitError"),
-            SensorEvent("cache.get_user_profile", "OK", 8),
-            SensorEvent("payment.stripe_charge", "DEGRADED", 2500, "card_declined", "StripeError"),
-            SensorEvent("payment.stripe_charge", "DEGRADED", 3100, "insufficient_funds", "StripeError"),
-            SensorEvent("cache.get_products", "OK", 15),
-        ]
-        for e in sensor_events:
-            _event_bus.append(e)
-            _append_to_file(e)  # 写入共享文件
-
-        return {"success": True, "injected": len(sensor_events)}
-
     @app.post("/api/moat/sensors/reset")
     async def reset_sensors():
         """清空传感器事件（内存 + 共享文件）"""

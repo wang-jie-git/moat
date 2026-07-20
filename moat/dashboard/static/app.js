@@ -285,23 +285,6 @@ function renderModal(data) {
 window.showComponentDetail = showComponentDetail;
 
 // ── 一键操作 ─────────────────────────────
-async function injectDemo() {
-  const btn = document.querySelector('button[onclick="injectDemo()"]');
-  if (!btn) return;
-  btn.disabled = true;
-  btn.textContent = '⏳ 注入中...';
-  try {
-    const res = await fetch('/api/moat/sensors/demo', { method: 'POST' });
-    const data = await res.json();
-    showToast('✅ 已注入 ' + data.injected + ' 条演示事件', 'success');
-    loadSensors();
-  } catch (e) {
-    showToast('注入失败: ' + e.message, 'error');
-  }
-  btn.disabled = false;
-  btn.textContent = '🧪 注入演示数据';
-}
-
 async function runCheck() {
   const btn = document.getElementById('btn-check');
   if (!btn) return;
