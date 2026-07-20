@@ -182,19 +182,20 @@ function renderHealth(health) {
 
   grid.innerHTML = componentIds.map(id => {
     const state = details[id];
-    const failures = state?.consecutive_failures || 0;
-    const hasError = failures >= 2;
-    const hasWarning = failures > 0 && !hasError;
+    // 支持两种格式：新格式有 status，旧格式用 consecutive_failures
+    const status = state.status || 'OK';
+    const hasError = status === 'PANIC' || status === 'DEGRADED';
+    const isPanic = status === 'PANIC';
     
-    const stripClass = hasError ? 'red' : hasWarning ? 'yellow' : 'green';
-    const statusText = hasError ? '🔴 异常' : hasWarning ? '🟡 降级' : '🟢 正常';
-    const statusClass = hasError ? 'red' : hasWarning ? 'yellow' : 'green';
+    const stripClass = isPanic ? 'red' : hasError ? 'yellow' : 'green';
+    const statusText = isPanic ? '🔴 崩溃' : hasError ? '🟡 降级' : '🟢 正常';
+    const statusClass = isPanic ? 'red' : hasError ? 'yellow' : 'green';
     
     let extraInfo = '';
-    if (state?.last_error) {
+    if (state.error) {
+      extraInfo = `<div style="font-size:10px;color:#f85149;margin-top:2px;">${escapeHtml(state.error)}</div>`;
+    } else if (state.last_error) {
       extraInfo = `<div style="font-size:10px;color:#f85149;margin-top:2px;">${escapeHtml(state.last_error)}</div>`;
-    } else if (hasWarning) {
-      extraInfo = `<div style="font-size:10px;color:#d29922;margin-top:2px;">失败 ${failures} 次</div>`;
     }
 
     return `

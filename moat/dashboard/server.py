@@ -55,32 +55,37 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
     @app.get("/api/moat/sensors")
     async def get_sensors():
         """传感器完整数据：统计 + 事件 + 健康"""
-        from moat.pain.sensor import get_health_summary, get_recent_events, health_tracker
-        from moat.pain.sensor import _read_events_from_file
+        from moat.pain.sensor import get_recent_events, _read_events_from_file
 
         events = get_recent_events(limit=50)
-        summary = get_health_summary()
-        tracker_data = health_tracker.get_health_summary()
+        file_events = _read_events_from_file(limit=1000)
 
-        # 统计（使用文件事件，包含跨进程数据）
-        file_events = _read_events_from_file(limit=200)
-        total_events = len(file_events)
-        total = len(tracker_data.get("details", {}))
-        healthy_count = len(tracker_data.get("healthy", []))
-        degraded_count = len(tracker_data.get("degraded", []))
-        recent_panics = [e for e in file_events if e.get("status") == "PANIC"]
+        # 按组件聚合最新状态（基于文件事件）
+        latest: dict[str, dict] = {}
+        for e in file_events:
+            latest[e["component_id"]] = e
+
+        healthy_count = sum(1 for e in latest.values() if e["status"] == "OK")
+        degraded_count = sum(1 for e in latest.values() if e["status"] == "DEGRADED")
+        panic_count = sum(1 for e in latest.values() if e["status"] == "PANIC")
+        panics = [e for e in file_events if e.get("status") == "PANIC"]
 
         return {
             "stats": {
-                "total_components": total,
+                "total_components": len(latest),
                 "healthy": healthy_count,
                 "degraded": degraded_count,
-                "panics_last_hour": len(recent_panics),
-                "events_total": total_events,
+                "panics_last_hour": len(panics),
+                "events_total": len(file_events),
             },
             "events": events,
-            "health": tracker_data,
-            "health_section": health_tracker.build_health_section(include_healthy=True),
+            "health": {
+                "healthy": [cid for cid, e in latest.items() if e["status"] == "OK"],
+                "degraded": [cid for cid, e in latest.items() if e["status"] == "DEGRADED"],
+                "panic": [cid for cid, e in latest.items() if e["status"] == "PANIC"],
+                "details": {cid: e for cid, e in latest.items()},
+            },
+            "health_section": "",
         }
 
     @app.get("/api/moat/sensors/{component_id}")
