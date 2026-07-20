@@ -141,6 +141,13 @@ body {
 }
 .btn-primary:hover { background: #2ea043; }
 
+.btn-inject {
+  background: #1f6feb;
+  border-color: #388bfd;
+  color: #fff;
+}
+.btn-inject:hover { background: #388bfd; }
+
 .btn-danger {
   background: #da3633;
   border-color: #f85149;

@@ -141,6 +141,96 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
         except queue.Empty:
             return {"success": False, "timed_out": True, "message": "检查超时（超过 5 秒），已在后台继续运行"}
 
+    @app.post("/api/moat/inject")
+    async def inject_sensors():
+        """为项目注入传感器（默认 dry-run 预览）"""
+        import threading, queue, json
+
+        result_queue: queue.Queue = queue.Queue()
+
+        def _run():
+            try:
+                from moat.ast.injector import inject_project
+                from moat.pain.config import load_config
+
+                config = load_config(str(project))
+                sensor_cfg = config.get("sensor", {})
+                auto_inject = sensor_cfg.get("auto_inject", False)
+                include = sensor_cfg.get("include", [])
+
+                # 先跑 dry-run
+                dry_results, _, _ = inject_project(str(project), config=config, dry_run=True)
+                total_files = len(dry_results)
+                injected_files = [r for r in dry_results if r.get("injected", 0) > 0]
+                total_injected = sum(r.get("injected", 0) for r in dry_results)
+                skipped_files = [r for r in dry_results if r.get("injected", 0) == 0 and not r.get("error")]
+                errors = [r for r in dry_results if r.get("error")]
+
+                result_queue.put({
+                    "success": True,
+                    "dry_run": True,
+                    "total_files": total_files,
+                    "injected_files": len(injected_files),
+                    "total_injected": total_injected,
+                    "skipped_files": len(skipped_files),
+                    "errors": len(errors),
+                    "error_details": [r["error"] for r in errors[:10]],
+                    "sample_files": [r["file"] for r in injected_files[:20]],
+                    "auto_inject": auto_inject,
+                    "include_patterns": include,
+                    "has_config": bool(include),
+                })
+            except Exception as e:
+                result_queue.put({"success": False, "error": str(e)})
+
+        thread = threading.Thread(target=_run, daemon=True)
+        thread.start()
+
+        try:
+            return result_queue.get(timeout=15)
+        except queue.Empty:
+            return {"success": False, "timed_out": True, "message": "扫描超时，项目文件过多"}
+
+    @app.post("/api/moat/inject/execute")
+    async def inject_sensors_execute():
+        """执行注入（非 dry-run）"""
+        import threading, queue
+
+        result_queue: queue.Queue = queue.Queue()
+
+        def _run():
+            try:
+                from moat.ast.injector import inject_project
+                from moat.pain.config import load_config
+
+                config = load_config(str(project))
+                results, backup_root, backup_count = inject_project(
+                    str(project), config=config, dry_run=False
+                )
+
+                total_injected = sum(r.get("injected", 0) for r in results)
+                errors = [r for r in results if r.get("error")]
+
+                result_queue.put({
+                    "success": True,
+                    "total_files": len(results),
+                    "total_injected": total_injected,
+                    "errors": len(errors),
+                    "error_details": [r["error"] for r in errors[:10]],
+                    "backup_timestamp": backup_root.name if backup_root else "",
+                    "backup_files": backup_count,
+                })
+            except Exception as e:
+                result_queue.put({"success": False, "error": str(e)})
+
+        thread = threading.Thread(target=_run, daemon=True)
+        thread.start()
+
+        try:
+            return result_queue.get(timeout=30)
+        except queue.Empty:
+            return {"success": False, "timed_out": True, "message": "注入超时"}
+
     @app.post("/api/moat/baseline/save")
     async def save_baseline():
         from moat.baseline import BaselineManager

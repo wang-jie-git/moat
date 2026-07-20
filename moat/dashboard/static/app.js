@@ -364,6 +364,180 @@ function showHelp() {
   document.body.appendChild(overlay);
 }
 
+// ── Inject Sensors ────────────────────────
+async function injectSensors() {
+  // Show loading overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h2>📡 传感器注入</h2>
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:40px;">
+        <div style="font-size:24px;margin-bottom:16px;">⏳ 正在扫描项目...</div>
+        <div style="color:var(--text-muted);">分析代码结构，计算可注入的传感器数量</div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  try {
+    const r = await fetch('/api/moat/inject', { method: 'POST' });
+    const data = await r.json();
+
+    if (!data.success) {
+      overlay.querySelector('.modal-body').innerHTML = `
+        <div style="font-size:24px;margin-bottom:16px;">❌ 扫描失败</div>
+        <div style="color:var(--text-muted);">${data.error || data.message || '未知错误'}</div>`;
+      return;
+    }
+
+    if (!data.has_config) {
+      overlay.querySelector('.modal-body').innerHTML = `
+        <div style="font-size:24px;margin-bottom:16px;">⚠️ 未配置传感器</div>
+        <div style="color:var(--text-muted);margin-bottom:16px;">项目还没有 moat.sensor.yml 配置文件</div>
+        <div style="margin-bottom:16px;">请先在终端运行：</div>
+        <code style="display:block;background:#1c2128;padding:8px;border-radius:4px;margin-bottom:16px;">moat sensor init</code>
+        <div style="color:var(--text-muted);font-size:13px;">初始化后会自动检测项目类型并生成推荐配置</div>`;
+      return;
+    }
+
+    if (data.total_injected === 0) {
+      overlay.querySelector('.modal-body').innerHTML = `
+        <div style="font-size:24px;margin-bottom:16px;">📡 无需注入</div>
+        <div style="color:var(--text-muted);">扫描了 ${data.total_files} 个文件，所有函数已安装传感器或无需注入</div>`;
+      return;
+    }
+
+    // Show preview
+    const sampleHtml = (data.sample_files || []).map(f => {
+      const short = f.split('/').slice(-2).join('/');
+      return `<div style="font-size:13px;color:var(--text-muted);padding:2px 0;">📄 ${escapeHtml(short)}</div>`;
+    }).join('');
+
+    overlay.querySelector('.modal-body').innerHTML = `
+      <div style="text-align:left;">
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--green);">${data.total_injected}</div>
+            <div style="font-size:12px;color:var(--text-muted);">传感器</div>
+          </div>
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--white);">${data.injected_files}</div>
+            <div style="font-size:12px;color:var(--text-muted);">被修改文件</div>
+          </div>
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--text-muted);">${data.total_files}</div>
+            <div style="font-size:12px;color:var(--text-muted);">扫描文件</div>
+          </div>
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:${data.errors > 0 ? 'var(--red)' : 'var(--green)'};">${data.errors}</div>
+            <div style="font-size:12px;color:var(--text-muted);">错误</div>
+          </div>
+        </div>
+
+        <!-- ⚠️ 风险提示 -->
+        <div style="background:rgba(210,153,34,0.08);border:1px solid rgba(210,153,34,0.3);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:600;color:var(--yellow);margin-bottom:8px;">⚠️ 注入前请注意</div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text-secondary);line-height:1.8;">
+            <li>会修改 <strong style="color:var(--yellow);">${data.injected_files}</strong> 个源文件，添加 <strong style="color:var(--yellow);">${data.total_injected}</strong> 个 <code>@moat_sensor</code> 装饰器</li>
+            <li>注入后需要<strong style="color:var(--yellow);">重启项目服务</strong>，传感器才会生效</li>
+            <li>如果不想用了，可以随时通过 <code style="background:#1c2128;padding:1px 5px;border-radius:3px;">moat sensor revert</code> 回退</li>
+          </ul>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;padding:10px 14px;background:var(--bg-tertiary);border-radius:6px;">
+          <span style="font-size:12px;color:var(--text-muted);">🔒 注入前会自动备份文件，随时可回退</span>
+          <span style="font-size:12px;color:var(--blue);margin-left:auto;">
+            <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px;">moat sensor revert &lt;时间戳&gt;</code>
+          </span>
+        </div>
+
+        <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted);">注入范围（来自 moat.sensor.yml）：</div>
+        <div style="margin-bottom:16px;">
+          ${(data.include_patterns || []).map(p => `<code style="background:#1c2128;padding:2px 6px;border-radius:3px;margin:2px;">${escapeHtml(p)}</code>`).join(' ')}
+        </div>
+        ${sampleHtml ? `<div style="margin-bottom:12px;font-size:13px;color:var(--text-muted);">部分文件预览：</div><div style="margin-bottom:16px;max-height:120px;overflow-y:auto;">${sampleHtml}</div>` : ''}
+        ${data.error_details && data.error_details.length > 0 ? `
+          <div style="margin-bottom:12px;font-size:13px;color:var(--red);">⚠️ ${data.error_details.length} 个文件扫描出错：</div>
+          <div style="margin-bottom:16px;max-height:80px;overflow-y:auto;font-size:12px;color:var(--red);">
+            ${data.error_details.map(e => `<div>${escapeHtml(e)}</div>`).join('')}
+          </div>` : ''}
+        <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+          <button class="btn" onclick="this.closest('.modal-overlay').remove()">取消</button>
+          <button class="btn btn-primary" onclick="executeInject(this.closest('.modal-overlay'))">✅ 确认注入</button>
+        </div>
+      </div>`;
+  } catch (e) {
+    overlay.querySelector('.modal-body').innerHTML = `
+      <div style="font-size:24px;margin-bottom:16px;">❌ 连接失败</div>
+      <div style="color:var(--text-muted);">${e.message}</div>`;
+  }
+}
+
+async function executeInject(overlay) {
+  overlay.querySelector('.modal-body').innerHTML = `
+    <div style="text-align:center;padding:20px;">
+      <div style="font-size:24px;margin-bottom:16px;">⏳ 正在注入...</div>
+      <div style="color:var(--text-muted);">先备份文件，再自动添加 @moat_sensor 装饰器</div>
+    </div>`;
+
+  try {
+    const r = await fetch('/api/moat/inject/execute', { method: 'POST' });
+    const data = await r.json();
+
+    if (!data.success) {
+      overlay.querySelector('.modal-body').innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <div style="font-size:24px;margin-bottom:16px;">❌ 注入失败</div>
+          <div style="color:var(--text-muted);">${data.error || data.message || '未知错误'}</div>
+        </div>`;
+      return;
+    }
+
+    overlay.querySelector('.modal-body').innerHTML = `
+      <div style="text-align:left;">
+        <div style="text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">✅</div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:8px;">注入完成</div>
+        </div>
+        <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap;">
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--green);">${data.total_injected}</div>
+            <div style="font-size:12px;color:var(--text-muted);">传感器已安装</div>
+          </div>
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--white);">${data.backup_files}</div>
+            <div style="font-size:12px;color:var(--text-muted);">文件已备份</div>
+          </div>
+          <div class="stat-card" style="flex:1;min-width:80px;padding:12px;text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:var(--white);">${data.total_files}</div>
+            <div style="font-size:12px;color:var(--text-muted);">扫描文件</div>
+          </div>
+        </div>
+        ${data.backup_timestamp ? `
+          <div style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:12px;">
+            备份编号：<code style="background:#1c2128;padding:2px 6px;border-radius:3px;">${data.backup_timestamp}</code>
+            <span style="margin-left:8px;">回退：</span>
+            <code style="background:#1c2128;padding:2px 6px;border-radius:3px;">moat sensor revert ${data.backup_timestamp}</code>
+          </div>` : ''}
+        <div style="font-size:13px;color:var(--text-muted);text-align:center;">
+          💡 重启项目后传感器事件会自动出现在 Dashboard
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+          <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();loadData();">知道了</button>
+        </div>
+      </div>`;
+  } catch (e) {
+    overlay.querySelector('.modal-body').innerHTML = `
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:24px;margin-bottom:16px;">❌ 连接失败</div>
+        <div style="color:var(--text-muted);">${e.message}</div>
+      </div>`;
+  }
+}
+
 // ── Init ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
