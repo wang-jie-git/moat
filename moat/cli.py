@@ -1046,7 +1046,88 @@ def cmd_sensor(args):
                 print(f"💡 如需回退: moat sensor revert {ts}")
         return 0
 
-    elif args.action == "revert":
+    elif args.action == "auto":
+        """一键自动注入（init + inject 二合一）"""
+        from moat.pain.config import (
+            detect_project_type, suggest_include_patterns, save_config,
+            load_config,
+        )
+        from moat.ast.injector import inject_project
+
+        # Step 1: 检测并生成配置
+        project_type = detect_project_type(args.project)
+        include = suggest_include_patterns(project_type)
+
+        print(f"\n📋 检测到项目类型: {project_type}")
+        print(f"\n将安装传感器到以下目录:\n")
+        for p in include:
+            print(f"  □ {p}")
+
+        cfg = {
+            "sensor": {
+                "auto_inject": True,
+                "include": include,
+                "exclude": [
+                    "**/test_*.py", "**/conftest.py", "**/__init__.py",
+                    "**/migrations/**", "**/node_modules/**",
+                    "**/.venv/**", "**/venv/**", "**/site-packages/**",
+                    "**/__pycache__/**", "**/.moat/**",
+                ],
+                "critical_patterns": [
+                    "*payment*", "*auth*", "*login*", "*checkout*",
+                    "*stripe*", "*database*", "*transaction*", "*webhook*",
+                ],
+                "alert": {"webhook": ""},
+            }
+        }
+
+        print(f"\n💡 将执行以下操作:")
+        print(f"   1. 写入 moat.sensor.yml")
+        print(f"   2. 扫描并注入传感器到源文件")
+        print(f"   3. 原始文件自动备份到 .moat/sensor_backups/")
+        print()
+
+        if not args.yes:
+            ans = input("是否继续? [Y/n] ").strip().lower()
+            if ans and ans != "y" and ans != "yes" and ans != "":
+                print("❌ 已取消")
+                return 1
+
+        # 保存配置
+        save_config(cfg, args.project)
+
+        # 执行注入
+        results = inject_project(
+            project_root=args.project, config=cfg, dry_run=False,
+        )
+
+        if isinstance(results, tuple):
+            results, backup_root, _ = results
+        else:
+            backup_root = None
+
+        injected = [r for r in results if r["injected"] > 0]
+        errors = [r for r in results if r.get("error")]
+        total = sum(r["injected"] for r in injected)
+
+        print(f"\n{'='*50}")
+        print(f"  ✅ 传感器安装完成")
+        print(f"  项目类型: {project_type}")
+        print(f"  注入 {total} 个传感器到 {len(injected)} 个文件")
+        if errors:
+            print(f"  ⚠️ {len(errors)} 个文件跳过")
+
+        if injected:
+            print(f"\n📄 注入文件（前 10 个）:")
+            for r in injected[:10]:
+                print(f"  +{r['injected']}  {r['file']}")
+            if len(injected) > 10:
+                print(f"  ... 还有 {len(injected) - 10} 个文件")
+
+        ts = str(backup_root).split("/")[-1] if backup_root else "?"
+        print(f"\n📦 备份: moat sensor revert {ts}")
+        print(f"📡 监控: moat sensor stats")
+        return 0
         """回退到指定备份"""
         from moat.ast.injector import revert_backup, list_backups
 
@@ -1591,6 +1672,10 @@ def build_parser() -> argparse.ArgumentParser:
     _shared_args(p_sensor_inject)
     p_sensor_inject.add_argument("--dry-run", action="store_true", default=True, help="预览模式（不改文件，默认开启）")
     p_sensor_inject.add_argument("--no-dry-run", action="store_true", help="执行真实注入（关闭预览）")
+
+    p_sensor_auto = p_sensor_sub.add_parser("auto", help="🚀 一键自动注入（检测+配置+注入，推荐给新用户）")
+    _shared_args(p_sensor_auto)
+    p_sensor_auto.add_argument("-y", "--yes", action="store_true", help="跳过确认")
 
     p_sensor_revert = p_sensor_sub.add_parser("revert", help="回退传感器注入（从备份恢复原始文件）")
     _shared_args(p_sensor_revert)
