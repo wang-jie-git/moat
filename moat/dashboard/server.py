@@ -78,6 +78,17 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
         data = bm.save()
         return {"success": True, "baseline": data}
 
+    @app.get("/api/moat/health")
+    async def get_health():
+        """组件健康热力图数据"""
+        from moat.pain.sensor import get_health_summary, get_recent_events, health_tracker
+        return {
+            "summary": get_health_summary(),
+            "recent_events": get_recent_events(limit=20),
+            "health_tracker": health_tracker.get_health_summary(),
+            "health_section": health_tracker.build_health_section(include_healthy=True),
+        }
+
     print(f"\n  Moat Dashboard 已启动")
     print(f"  http://{host}:{port}")
     print(f"  按 Ctrl+C 停止\n")
@@ -155,6 +166,11 @@ _FRONTEND_HTML = """<!DOCTYPE html>
       </div>
       <div id="error-list" class="error-list"></div>
     </section>
+
+    <section class="health">
+      <h2>🔥 组件健康热力图</h2>
+      <div id="health-grid" class="health-grid"></div>
+    </section>
   </main>
 
   <script src="/static/app.js"></script>
@@ -214,6 +230,27 @@ select {
 .level-ERROR { background: rgba(239,68,68,0.2); color: #ef4444; }
 .level-WARN { background: rgba(234,179,8,0.2); color: #eab308; }
 .empty { color: #666; text-align: center; padding: 40px; }
+.health { margin-top: 25px; }
+.health h2 { font-size: 16px; margin-bottom: 12px; }
+.health-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.health-card {
+  background: #111; border: 1px solid #222; border-radius: 6px; padding: 12px;
+  font-size: 12px; cursor: pointer; transition: background 0.15s;
+}
+.health-card:hover { background: #181818; }
+.health-card strong { display: block; font-size: 13px; margin-bottom: 6px; font-family: 'SFMono-Regular', Menlo, monospace; }
+.health-card span { display: block; color: #888; line-height: 1.6; }
+.health-card .error-text { color: #ef4444; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.health-detail {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: #1a1a1a; border: 1px solid #333; border-radius: 10px;
+  padding: 24px; min-width: 400px; max-width: 600px; max-height: 80vh; overflow-y: auto; z-index: 100;
+}
+.health-detail h3 { font-size: 16px; margin-bottom: 12px; }
+.health-detail pre { background: #111; padding: 12px; border-radius: 6px; font-size: 11px; overflow-x: auto; margin-top: 8px; }
+.health-detail .close { float: right; cursor: pointer; color: #888; font-size: 18px; }
+.health-detail .close:hover { color: #fff; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
 """
 
 _FRONTEND_JS = """let refreshInterval = null;
@@ -310,8 +347,82 @@ function escapeHtml(text) {
   return d.innerHTML;
 }
 
+// ── 健康热力图 ──────────────────────────────────────────
+
+async function loadHealth() {
+  try {
+    const r = await fetch('/api/moat/health');
+    const data = await r.json();
+    renderHealthGrid(data.summary, data.recent_events);
+  } catch(e) {
+    log('loadHealth failed: ' + e);
+  }
+}
+
+function renderHealthGrid(summary, events) {
+  const grid = document.getElementById('health-grid');
+  if (!summary.total_events) {
+    grid.innerHTML = '<div class="empty">✅ 所有组件运行正常，暂无传感器事件</div>';
+    return;
+  }
+
+  const components = [
+    ...(summary.panic_components || []).map(c => ({ ...c, _status: 'PANIC' })),
+    ...(summary.degraded_components || []).map(c => ({ ...c, _status: 'DEGRADED' })),
+    ...(summary.healthy_components || []).map(c => ({ ...c, _status: 'OK' })),
+  ];
+
+  grid.innerHTML = components.map(c => {
+    const color = c._status === 'OK' ? '#22c55e' : c._status === 'DEGRADED' ? '#eab308' : '#ef4444';
+    const icon = c._status === 'OK' ? '✅' : c._status === 'DEGRADED' ? '🟡' : '🔴';
+    return '<div class="health-card" style="border-left: 3px solid ' + color + '" onclick="showDetail(\'' + escapeHtml(c.component_id) + '\')">' +
+      '<strong>' + icon + ' ' + escapeHtml(c.component_id) + '</strong>' +
+      '<span>耗时: ' + (c.last_duration_ms || 0).toFixed(1) + 'ms</span>' +
+      '<span>最后活跃: ' + (c.last_seen || '').slice(11, 19) + '</span>' +
+      (c._status === 'PANIC' ? '<span class="error-text">⛔ 组件已损坏</span>' : '') +
+      (c._status === 'DEGRADED' ? '<span class="error-text">⚠️ 组件降级运行</span>' : '') +
+      '</div>';
+  }).join('');
+}
+
+function showDetail(componentId) {
+  // 创建详情弹窗
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.onclick = closeDetail;
+  document.body.appendChild(overlay);
+
+  const detail = document.createElement('div');
+  detail.className = 'health-detail';
+  detail.innerHTML = '<span class="close" onclick="closeDetail()">✕</span><h3>📡 ' + escapeHtml(componentId) + '</h3><p id="detail-content">加载中...</p>';
+  document.body.appendChild(detail);
+
+  // 从后端获取组件详情
+  fetch('/api/moat/health')
+    .then(r => r.json())
+    .then(data => {
+      const events = (data.recent_events || []).filter(e => e.component_id === componentId);
+      if (events.length === 0) {
+        detail.innerHTML = '<span class="close" onclick="closeDetail()">✕</span><h3>📡 ' + escapeHtml(componentId) + '</h3><p>暂无事件记录</p>';
+        return;
+      }
+      let html = '<span class="close" onclick="closeDetail()">✕</span><h3>📡 ' + escapeHtml(componentId) + '</h3>';
+      html += '<p>共 ' + events.length + ' 条事件</p>';
+      html += '<pre>' + events.map(e => '[' + e.status + '] ' + (e.error || 'OK') + ' (' + e.duration_ms + 'ms)').join('\n') + '</pre>';
+      detail.innerHTML = html;
+    });
+}
+
+function closeDetail() {
+  document.querySelectorAll('.overlay, .health-detail').forEach(el => el.remove());
+}
+
 // 初始化
 loadErrors();
 loadStatus();
-refreshInterval = setInterval(loadErrors, 5000);
+loadHealth();
+refreshInterval = setInterval(() => {
+  loadErrors();
+  loadHealth();
+}, 5000);
 """

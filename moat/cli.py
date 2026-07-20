@@ -893,6 +893,153 @@ def _shared_args(parser: argparse.ArgumentParser):
 # ── preflight — 改代码前安全检查 ──────────────────
 
 
+def cmd_sensor(args):
+    """运行时传感器管理"""
+    from moat.pain.sensor import (
+        get_recent_events, get_component_stats, get_health_summary,
+        reset_event_bus, health_tracker,
+    )
+
+    if args.action == "events":
+        events = get_recent_events(status=args.status, limit=args.limit or 50)
+        if not events:
+            print("📭 暂无传感器事件")
+            return 0
+        print(f"\n📡 最近传感器事件 ({len(events)} 条)\n")
+        print(f"{'状态':<12} {'组件':<36} {'耗时':<8} {'错误'}")
+        print("-" * 100)
+        for e in events:
+            status_icon = {"OK": "✅", "DEGRADED": "🟡", "PANIC": "🔴"}.get(e["status"], "❓")
+            err = e.get("error", "")[:50]
+            print(f"{status_icon} {e['status']:<8} {e['component_id']:<36} {e['duration_ms']:<8.1f} {err}")
+        return 0
+
+    elif args.action == "stats":
+        if args.component:
+            stats = get_component_stats(args.component)
+            print(f"\n📊 组件统计: {args.component}")
+            print(f"  总事件数: {stats['total_events']}")
+            print(f"  PANIC次数: {stats.get('panic_count', 0)}")
+            print(f"  DEGRADED次数: {stats.get('degraded_count', 0)}")
+            if stats.get("last_event"):
+                print(f"  最近事件: {stats['last_event']}")
+        else:
+            summary = get_health_summary()
+            print(f"\n🔥 传感器事件健康摘要\n")
+            print(f"  健康:   {len(summary['healthy_components'])} 个组件")
+            print(f"  降级:   {len(summary['degraded_components'])} 个组件")
+            print(f"  崩溃:   {len(summary['panic_components'])} 个组件")
+            print(f"  总事件: {summary['total_events']} 条")
+            if summary['panic_components']:
+                print(f"\n🔴 崩溃组件:")
+                for c in summary['panic_components']:
+                    print(f"  - {c['component_id']}")
+            if summary['degraded_components']:
+                print(f"\n🟡 降级组件:")
+                for c in summary['degraded_components']:
+                    print(f"  - {c['component_id']}")
+
+            ht = health_tracker.get_health_summary()
+            if ht["healthy"] or ht["degraded"]:
+                print(f"\n📋 ComponentHealthTracker:")
+                print(f"  ✅ 健康:   {', '.join(ht['healthy']) if ht['healthy'] else '-'}")
+                print(f"  ⚠️ 降级:   {', '.join(ht['degraded']) if ht['degraded'] else '-'}")
+                print(f"\n{health_tracker.build_health_section(include_healthy=False)}")
+        return 0
+
+    elif args.action == "reset":
+        reset_event_bus()
+        print("✅ 传感器事件总线已清空")
+        return 0
+
+    elif args.action == "init":
+        from moat.pain.config import detect_project_type, suggest_include_patterns, save_config
+        project_type = detect_project_type(args.project)
+        include = suggest_include_patterns(project_type)
+
+        print(f"\n📋 检测到项目类型: {project_type}")
+        print(f"\n推荐安装传感器到以下目录:\n")
+        for p in include:
+            print(f"  □ {p}")
+        print()
+
+        if not args.yes:
+            ans = input("按以上配置初始化? [Y/n] ").strip().lower()
+            if ans and ans != "y" and ans != "yes":
+                print("❌ 已取消")
+                return 1
+
+        cfg = {
+            "sensor": {
+                "auto_inject": True,
+                "include": include,
+                "exclude": [
+                    "**/test_*.py", "**/conftest.py", "**/__init__.py",
+                    "**/migrations/**", "**/node_modules/**",
+                    "**/.venv/**", "**/venv/**", "**/site-packages/**", "**/__pycache__/**",
+                ],
+                "critical_patterns": [
+                    "*payment*", "*auth*", "*login*", "*checkout*",
+                    "*stripe*", "*database*", "*transaction*", "*webhook*",
+                ],
+                "alert": {"webhook": ""},
+            }
+        }
+        save_config(cfg, args.project)
+        from pathlib import Path
+        moat_dir = Path(args.project) / ".moat"
+        moat_dir.mkdir(parents=True, exist_ok=True)
+        save_config(cfg, str(moat_dir))
+
+        print(f"\n💡 下一步: 运行 `moat sensor inject --dry-run` 预览注入")
+        return 0
+
+    elif args.action == "inject":
+        from moat.pain.config import load_config
+        from moat.ast.injector import inject_project
+
+        config = load_config(args.project)
+        is_dry_run = not getattr(args, "no_dry_run", False)
+
+        results = inject_project(project_root=args.project, config=config, dry_run=is_dry_run)
+        if not results:
+            print("📭 没有发现需要注入的文件")
+            print("   请先运行 `moat sensor init` 生成配置")
+            return 0
+
+        injected = [r for r in results if r["injected"] > 0]
+        errors = [r for r in results if r.get("error")]
+        total = sum(r["injected"] for r in injected)
+
+        mode = "🔍 预览" if is_dry_run else "🔧 执行"
+        print(f"\n{mode} 传感器注入完成\n")
+        print(f"  扫描 {len(results)} 个文件")
+        print(f"  注入 {total} 个传感器到 {len(injected)} 个文件")
+
+        if errors:
+            print(f"\n⚠️  {len(errors)} 个文件解析失败（已跳过）:")
+            for e in errors:
+                print(f"  ⚠️ {e['file']}: {e['error']}")
+
+        if injected:
+            show = injected[:20]
+            print(f"\n📄 注入详情{'（仅显示前 20 个文件）' if len(injected) > 20 else ''}:")
+            for r in show:
+                print(f"  +{r['injected']}  {r['file']}")
+            if len(injected) > 20:
+                print(f"  ... 还有 {len(injected) - 20} 个文件")
+
+            if is_dry_run:
+                print(f"\n💡 执行真实注入: moat sensor inject --no-dry-run")
+            else:
+                print(f"\n✅ 注入完成！运行 `moat sensor stats` 查看状态")
+        return 0
+
+    else:
+        print(f"❌ 未知操作: {args.action}")
+        return 1
+
+
 def cmd_preflight(args):
     """🛩️ 改代码前安全检查 — 分析变更影响域、列出调用方、评估风险
 
@@ -1367,6 +1514,32 @@ def build_parser() -> argparse.ArgumentParser:
     p_preflight.add_argument("--json", action="store_true",
                              help="JSON 格式输出")
 
+    # sensor — 运行时传感器
+    p_sensor = sub.add_parser("sensor", help="📡 运行时传感器 — 查看组件健康状态和告警事件")
+    p_sensor_sub = p_sensor.add_subparsers(dest="action", help="传感器操作")
+    _shared_args(p_sensor)
+
+    p_sensor_events = p_sensor_sub.add_parser("events", help="查看最近传感器事件")
+    _shared_args(p_sensor_events)
+    p_sensor_events.add_argument("--status", choices=["OK", "DEGRADED", "PANIC"], help="按状态筛选")
+    p_sensor_events.add_argument("--limit", type=int, default=50, help="返回条数 (默认: 50)")
+
+    p_sensor_stats = p_sensor_sub.add_parser("stats", help="查看组件健康摘要")
+    _shared_args(p_sensor_stats)
+    p_sensor_stats.add_argument("--component", help="指定组件ID查看详情")
+
+    p_sensor_reset = p_sensor_sub.add_parser("reset", help="清空传感器事件总线")
+    _shared_args(p_sensor_reset)
+
+    p_sensor_init = p_sensor_sub.add_parser("init", help="初始化传感器配置（自动检测项目类型）")
+    _shared_args(p_sensor_init)
+    p_sensor_init.add_argument("-y", "--yes", action="store_true", help="跳过确认")
+
+    p_sensor_inject = p_sensor_sub.add_parser("inject", help="根据配置注入传感器到源文件")
+    _shared_args(p_sensor_inject)
+    p_sensor_inject.add_argument("--dry-run", action="store_true", default=True, help="预览模式（不改文件，默认开启）")
+    p_sensor_inject.add_argument("--no-dry-run", action="store_true", help="执行真实注入（关闭预览）")
+
     return parser
 
 
@@ -1409,6 +1582,7 @@ def main():
         "immune": cmd_immune,
         "test": cmd_test,
         "preflight": cmd_preflight,
+        "sensor": cmd_sensor,
     }
 
     sys.exit(commands[args.command](args))
