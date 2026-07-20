@@ -56,20 +56,19 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
     async def get_sensors():
         """传感器完整数据：统计 + 事件 + 健康"""
         from moat.pain.sensor import get_health_summary, get_recent_events, health_tracker
-        from moat.pain.sensor import _event_bus
+        from moat.pain.sensor import _read_events_from_file
 
         events = get_recent_events(limit=50)
         summary = get_health_summary()
         tracker_data = health_tracker.get_health_summary()
 
-        # 统计
+        # 统计（使用文件事件，包含跨进程数据）
+        file_events = _read_events_from_file(limit=200)
+        total_events = len(file_events)
         total = len(tracker_data.get("details", {}))
         healthy_count = len(tracker_data.get("healthy", []))
         degraded_count = len(tracker_data.get("degraded", []))
-
-        # 最近事件统计
-        recent_panics = [e for e in _event_bus if e.status == "PANIC"]
-        recent_ok = [e for e in _event_bus if e.status == "OK"]
+        recent_panics = [e for e in file_events if e.get("status") == "PANIC"]
 
         return {
             "stats": {
@@ -77,9 +76,9 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
                 "healthy": healthy_count,
                 "degraded": degraded_count,
                 "panics_last_hour": len(recent_panics),
-                "events_total": len(_event_bus),
+                "events_total": total_events,
             },
-            "events": events,  # get_recent_events 已返回 dict 列表
+            "events": events,
             "health": tracker_data,
             "health_section": health_tracker.build_health_section(include_healthy=True),
         }
@@ -87,25 +86,28 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
     @app.get("/api/moat/sensors/{component_id}")
     async def get_component_detail(component_id: str):
         """单个组件详情"""
-        from moat.pain.sensor import health_tracker, _event_bus
+        from moat.pain.sensor import health_tracker, _read_events_from_file
 
         state = health_tracker.get_component_state(component_id)
-        events = [
-            e.to_dict() for e in _event_bus
-            if e.component_id == component_id
-        ][-20:]  # 最近 20 条
+
+        # 从文件读取该组件的事件
+        all_events = _read_events_from_file(limit=500)
+        component_events = [
+            e for e in all_events
+            if e.get("component_id") == component_id
+        ][-20:]
 
         return {
             "component_id": component_id,
             "state": state,
             "is_healthy": health_tracker.is_healthy(component_id),
-            "events": events,
+            "events": component_events,
         }
 
     @app.post("/api/moat/sensors/demo")
     async def inject_demo_data():
         """注入演示数据（仅供测试 Dashboard 效果）"""
-        from moat.pain.sensor import health_tracker, SensorEvent, _event_bus
+        from moat.pain.sensor import health_tracker, SensorEvent, _event_bus, _append_to_file
 
         demo_events = [
             (health_tracker.record_failure, ["db.user_query", "Connection pool exhausted"]),
@@ -136,15 +138,19 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
         ]
         for e in sensor_events:
             _event_bus.append(e)
+            _append_to_file(e)  # 写入共享文件
 
         return {"success": True, "injected": len(sensor_events)}
 
     @app.post("/api/moat/sensors/reset")
     async def reset_sensors():
-        """清空传感器事件"""
-        from moat.pain.sensor import _event_bus, _error_history
+        """清空传感器事件（内存 + 共享文件）"""
+        from moat.pain.sensor import _event_bus, _error_history, EVENT_FILE
+        import os
         _event_bus.clear()
         _error_history.clear()
+        if os.path.exists(EVENT_FILE):
+            os.remove(EVENT_FILE)
         return {"success": True}
 
     @app.post("/api/moat/check")

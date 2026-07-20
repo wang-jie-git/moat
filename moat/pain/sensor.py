@@ -48,6 +48,13 @@ MAX_TRACKED_COMPONENTS = 500
 # 正常事件上报阈值（ms，超过此阈值才写入日志避免高频噪音）
 OK_REPORT_THRESHOLD_MS = 500
 
+# 共享事件文件（跨进程持久化）
+SENSOR_DIR = os.environ.get(
+    "MOAT_SENSOR_DIR",
+    os.path.join(os.path.expanduser("~"), ".moat"),
+)
+EVENT_FILE = os.path.join(SENSOR_DIR, "events.jsonl")
+
 
 # ── 状态枚举 ──────────────────────────────────────────────
 
@@ -433,8 +440,45 @@ def _build_async_wrapper(
 
 # ── 内部函数 ──────────────────────────────────────────────
 
+def _ensure_sensor_dir():
+    """确保传感器目录存在"""
+    os.makedirs(SENSOR_DIR, exist_ok=True)
+
+
+def _append_to_file(event: SensorEvent):
+    """追加事件到共享 JSONL 文件（跨进程持久化）"""
+    try:
+        _ensure_sensor_dir()
+        line = json.dumps(event.to_dict(), ensure_ascii=False) + "\n"
+        # 追加写，不锁文件（单行写入通常原子）
+        with open(EVENT_FILE, "a", encoding="utf-8") as f:
+            f.write(line)
+    except Exception:
+        logger.exception("[SENSOR] 写入事件文件失败")
+
+
+def _read_events_from_file(limit: int = 200) -> list[dict[str, Any]]:
+    """从共享文件读取最近事件"""
+    try:
+        if not os.path.exists(EVENT_FILE):
+            return []
+        events: list[dict[str, Any]] = []
+        with open(EVENT_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        events.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        return events[-limit:]
+    except Exception:
+        logger.exception("[SENSOR] 读取事件文件失败")
+        return []
+
+
 def _emit(event: SensorEvent):
-    """写入日志 + 推入事件总线"""
+    """写入日志 + 推入事件总线 + 写入共享文件"""
     # 1. 结构化日志
     level = logging.ERROR if event.status == SensorStatus.PANIC else logging.WARNING
     logger.log(
@@ -448,9 +492,12 @@ def _emit(event: SensorEvent):
         },
     )
 
-    # 2. 事件总线
+    # 2. 事件总线（内存）
     with _lock:
         _event_bus.append(event)
+
+    # 3. 共享文件（跨进程）
+    _append_to_file(event)
 
 
 def _trigger_alert(event: SensorEvent):
@@ -512,12 +559,33 @@ def get_recent_events(
         事件字典列表
     """
     with _lock:
-        events = list(_event_bus)
+        memory_events = list(_event_bus)
+
+    # 合并文件中的事件（跨进程）
+    file_events = _read_events_from_file(limit=limit)
+
+    # 以文件事件为主（包含其他进程的事件），去重合并
+    seen_ids: set[str] = set()
+    merged: list[dict[str, Any]] = []
+
+    for e in reversed(file_events):
+        uid = e.get("timestamp", "") + e.get("component_id", "")
+        if uid not in seen_ids:
+            seen_ids.add(uid)
+            merged.append(e)
+
+    for e in reversed(memory_events):
+        uid = e.timestamp + e.component_id
+        if uid not in seen_ids:
+            seen_ids.add(uid)
+            merged.append(e.to_dict())
+
+    merged.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
 
     if status:
-        events = [e for e in events if e.status == status]
+        merged = [e for e in merged if e.get("status") == status]
 
-    return [e.to_dict() for e in events[-limit:]]
+    return merged[:limit]
 
 
 def get_component_stats(component_id: str) -> dict[str, Any]:
@@ -605,8 +673,13 @@ def get_health_summary() -> dict[str, Any]:
 
 
 def reset_event_bus():
-    """清空事件总线（测试用）"""
+    """清空事件总线 + 共享文件（测试用）"""
     global _event_bus, _error_history
     with _lock:
         _event_bus = deque(maxlen=EVENT_BUS_MAX)
         _error_history = OrderedDict()
+    try:
+        if os.path.exists(EVENT_FILE):
+            os.remove(EVENT_FILE)
+    except Exception:
+        pass
