@@ -12,11 +12,104 @@ AST 自动注入传感器 — 按目录模式选择性安装 @moat_sensor
 
 import ast
 import fnmatch
+import json
 import logging
+import shutil
+import time
 from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger("moat.injector")
+
+# ── 备份管理 ─────────────────────────────────────────────
+
+BACKUP_DIR_NAME = ".moat/sensor_backups"
+
+
+def _backup_dir(project_root: str) -> Path:
+    """获取当前会话的备份目录"""
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    return Path(project_root) / BACKUP_DIR_NAME / ts
+
+
+def _save_backup(backup_root: Path, file_path: Path, project_root: Path) -> str | None:
+    """备份文件到备份目录，返回备份路径"""
+    try:
+        rel = str(file_path.relative_to(project_root))
+    except ValueError:
+        rel = file_path.name
+    backup_path = backup_root / rel
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(file_path, backup_path)
+    return str(backup_path)
+
+
+def _write_manifest(backup_root: Path, entries: list[dict]):
+    """写入备份清单"""
+    manifest = backup_root / "manifest.json"
+    manifest.write_text(json.dumps(entries, indent=2, ensure_ascii=False))
+
+
+def list_backups(project_root: str = ".") -> list[dict]:
+    """列出所有可用备份"""
+    base = Path(project_root) / BACKUP_DIR_NAME
+    if not base.exists():
+        return []
+
+    backups = []
+    for d in sorted(base.iterdir(), reverse=True):
+        if d.is_dir():
+            manifest = d / "manifest.json"
+            if manifest.exists():
+                try:
+                    data = json.loads(manifest.read_text())
+                except Exception:
+                    data = []
+                backups.append({
+                    "timestamp": d.name,
+                    "files": len(data),
+                    "path": str(d),
+                })
+    return backups
+
+
+def revert_backup(backup_timestamp: str, project_root: str = ".") -> list[dict]:
+    """回退指定备份
+
+    Args:
+        backup_timestamp: 备份时间戳 (YYYYmmdd_HHMMSS)
+        project_root: 项目根目录
+
+    Returns:
+        恢复的文件列表
+    """
+    backup_path = Path(project_root) / BACKUP_DIR_NAME / backup_timestamp
+    manifest_path = backup_path / "manifest.json"
+
+    if not manifest_path.exists():
+        return []
+
+    manifest = json.loads(manifest_path.read_text())
+    root = Path(project_root).resolve()
+
+    restored = []
+    for entry in manifest:
+        rel_path = entry.get("rel_path", "")
+        backup_file = backup_path / rel_path
+        original = root / rel_path
+
+        if backup_file.exists() and original.exists():
+            shutil.copy2(backup_file, original)
+            restored.append({"file": rel_path, "status": "restored"})
+        elif backup_file.exists():
+            # 原文件已被删除，恢复它
+            original.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(backup_file, original)
+            restored.append({"file": rel_path, "status": "restored (recreated)"})
+        else:
+            restored.append({"file": rel_path, "status": "backup missing"})
+
+    return restored
 
 # ── AST 转换器 ───────────────────────────────────────────
 
@@ -187,7 +280,19 @@ def inject_file(
             names=[ast.alias(name=n, asname=None) for n in names],
             level=0,
         )
-        modified_tree.body.insert(0, import_node)
+
+        # 找到插入位置：跳过 __future__ imports（必须留在最前面）
+        insert_pos = 0
+        for i, stmt in enumerate(modified_tree.body):
+            if isinstance(stmt, ast.ImportFrom) and stmt.module == "__future__":
+                insert_pos = i + 1
+            elif isinstance(stmt, ast.Expr) and isinstance(stmt.value, (ast.Constant, ast.Str)):
+                # 模块文档字符串也保留在最前面
+                insert_pos = i + 1
+            else:
+                break
+
+        modified_tree.body.insert(insert_pos, import_node)
 
     new_source = ast.unparse(modified_tree)
 
@@ -244,10 +349,37 @@ def inject_project(
                 matched_files.add(f)
 
     # 剔除 exclude 模式
+    def _match_glob(path_str: str, pattern: str) -> bool:
+        """支持 ** 的 glob 匹配"""
+        import fnmatch as fm
+        if "**" in pattern:
+            import re
+            parts = pattern.split("**")
+            regex = ""
+            for i, part in enumerate(parts):
+                if part:
+                    t = fm.translate(part)
+                    inner = t
+                    for prefix in ["(?s:", "^"]:
+                        if inner.startswith(prefix):
+                            inner = inner[len(prefix):]
+                    for suffix in [")\\Z", "\\Z", "$"]:
+                        if inner.endswith(suffix):
+                            inner = inner[:-len(suffix)]
+                    if inner.startswith("/"):
+                        inner = "/?" + inner[1:]
+                    regex += inner
+                if i < len(parts) - 1:
+                    regex += r".*"
+            return bool(re.search(regex, path_str))
+        return fm.fnmatch(path_str, pattern)
     filtered: list[Path] = []
     for f in sorted(matched_files):
-        rel = str(f.relative_to(root))
-        if any(fnmatch.fnmatch(rel, pat) for pat in exclude_patterns):
+        try:
+            rel = str(f.relative_to(root))
+        except ValueError:
+            rel = f.name
+        if any(_match_glob(rel, pat) for pat in exclude_patterns):
             continue
         # 排除 __init__.py（容易造成循环导入风险）
         if f.name == "__init__.py":
@@ -257,6 +389,26 @@ def inject_project(
     if not filtered:
         return []
 
+    # 非 dry-run 模式：先备份所有待修改文件
+    backup_root: Path | None = None
+    backup_manifest: list[dict] = []
+    if not dry_run:
+        backup_root = _backup_dir(str(root))
+        for py_file in filtered:
+            try:
+                rel = str(py_file.relative_to(root))
+            except ValueError:
+                rel = py_file.name
+            backup_path = _save_backup(backup_root, py_file, root)
+            if backup_path:
+                backup_manifest.append({
+                    "rel_path": rel,
+                    "backup_path": backup_path,
+                    "timestamp": time.time(),
+                })
+        _write_manifest(backup_root, backup_manifest)
+        logger.info("已备份 %d 个文件到 %s", len(backup_manifest), backup_root)
+
     for py_file in filtered:
         result = inject_file(
             py_file, critical_patterns,
@@ -265,4 +417,4 @@ def inject_project(
         )
         results.append(result)
 
-    return results
+    return results, backup_root, len(backup_manifest) if not dry_run else 0

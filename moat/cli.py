@@ -1001,7 +1001,15 @@ def cmd_sensor(args):
         config = load_config(args.project)
         is_dry_run = not getattr(args, "no_dry_run", False)
 
-        results = inject_project(project_root=args.project, config=config, dry_run=is_dry_run)
+        results = inject_project(
+            project_root=args.project, config=config, dry_run=is_dry_run,
+        )
+
+        # inject_project now returns (results, backup_root, backed_up_count)
+        if isinstance(results, tuple):
+            results, backup_root, backed_up_count = results
+        else:
+            backed_up_count = 0
         if not results:
             print("📭 没有发现需要注入的文件")
             print("   请先运行 `moat sensor init` 生成配置")
@@ -1032,7 +1040,51 @@ def cmd_sensor(args):
             if is_dry_run:
                 print(f"\n💡 执行真实注入: moat sensor inject --no-dry-run")
             else:
+                ts = str(backup_root).split("/")[-1] if backup_root else "?"
                 print(f"\n✅ 注入完成！运行 `moat sensor stats` 查看状态")
+                print(f"📦 已备份原始文件到 .moat/sensor_backups/{ts}/")
+                print(f"💡 如需回退: moat sensor revert {ts}")
+        return 0
+
+    elif args.action == "revert":
+        """回退到指定备份"""
+        from moat.ast.injector import revert_backup, list_backups
+
+        if not args.timestamp:
+            backups = list_backups(args.project)
+            if not backups:
+                print("📭 没有可用备份")
+                return 0
+            print(f"\n📦 可用备份:\n")
+            for b in backups:
+                print(f"  {b['timestamp']}  ({b['files']} 个文件)")
+            print(f"\n用法: moat sensor revert <timestamp>")
+            return 0
+
+        restored = revert_backup(args.timestamp, args.project)
+        if not restored:
+            print(f"❌ 未找到备份: {args.timestamp}")
+            return 1
+
+        print(f"\n✅ 已回退 {len(restored)} 个文件\n")
+        for r in restored:
+            icon = "✅" if r["status"] == "restored" else "⚠️"
+            print(f"  {icon} {r['file']}  ({r['status']})")
+        return 0
+
+    elif args.action == "backups":
+        """列出所有备份"""
+        from moat.ast.injector import list_backups
+
+        backups = list_backups(args.project)
+        if not backups:
+            print("📭 没有可用备份")
+            return 0
+
+        print(f"\n📦 传感器注入备份:\n")
+        for b in backups:
+            print(f"  {b['timestamp']}  — {b['files']} 个文件")
+        print(f"\n💡 回退: moat sensor revert <timestamp>")
         return 0
 
     else:
@@ -1539,6 +1591,13 @@ def build_parser() -> argparse.ArgumentParser:
     _shared_args(p_sensor_inject)
     p_sensor_inject.add_argument("--dry-run", action="store_true", default=True, help="预览模式（不改文件，默认开启）")
     p_sensor_inject.add_argument("--no-dry-run", action="store_true", help="执行真实注入（关闭预览）")
+
+    p_sensor_revert = p_sensor_sub.add_parser("revert", help="回退传感器注入（从备份恢复原始文件）")
+    _shared_args(p_sensor_revert)
+    p_sensor_revert.add_argument("timestamp", nargs="?", help="备份时间戳（留空列出所有备份）")
+
+    p_sensor_backups = p_sensor_sub.add_parser("backups", help="列出所有可用备份")
+    _shared_args(p_sensor_backups)
 
     return parser
 
