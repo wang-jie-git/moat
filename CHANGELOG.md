@@ -5,6 +5,25 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.3.0] - 2026-07-20
+
+### 🎯 核心主题：防止 async/sync 边界事故 — 消防水带检测 + 调用方分析 + preflight 检查
+
+#### ✨ 新增功能
+- **消防水带模式检测**（`AsyncSafetyCheck`）：检测 `asyncio.create_task` 返回值被丢弃、同步函数调异步函数不 await、异步函数返回值被丢弃 3 种反模式。
+- **`moat preflight` 命令**：改代码前安全检查，自动分析变更函数、查找调用方、评估风险、生成检查清单。
+- **`moat check` 自动 AST 影响域分析**：每次检查后自动检测 async/sync 签名变更，列出所有调用方。
+- **Pain Score 变更风险维度**：新增 async/sync 签名变更（+40）、消防水带模式（+35）、删除函数（+30）、高调用方影响（+20）4 个权重。
+- **preflight 记忆注入**：自动显示项目红线 + 历史踩坑记录。
+
+#### 🔬 技术改进
+- **AST diff 增强**：新增 `async_signature` 变更类型，grep 自动查找调用方，风险评估（critical/high/medium/low），修复建议生成。
+- **macOS 路径修复**：解决 `/tmp` vs `/private/tmp` 符号链接导致的路径不匹配问题。
+
+#### ✅ 测试覆盖
+- 新增 11 个测试覆盖：消防水带检测、async/sync 边界检测、调用方分析、风险评估、完整事故场景模拟。
+- 总测试数：958 passed, 11 skipped。
+
 ## [1.1.10] - 2026-07-14
 
 ### 🎯 核心主题：ImportCompletenessCheck target_files 修复 + SSH 密钥认证 + 工作流集成
