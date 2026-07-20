@@ -2,7 +2,7 @@
 Moat CLI — 护城河命令行工具
 
 用法:
-  moat check          改代码前/后检查（默认快速模式 < 5 秒）
+  moat check          改代码前/后检查（默认快速模式 + AST 影响域分析 < 5 秒）
   moat check --full   完整检查（所有文件，可能很慢）
   moat check --diff   增量检查（AST 对比 + 影响域分析 < 10 秒）
   moat check --leak   泄露风险检测（AI 工具跨目录读取、敏感文件暴露）
@@ -890,6 +890,189 @@ def _shared_args(parser: argparse.ArgumentParser):
                         help="详细输出")
 
 
+# ── preflight — 改代码前安全检查 ──────────────────
+
+
+def cmd_preflight(args):
+    """🛩️ 改代码前安全检查 — 分析变更影响域、列出调用方、评估风险
+
+    改代码前运行，自动完成：
+    1. 检测修改的文件（git diff）
+    2. 提取所有变更函数
+    3. 自动查找所有调用方（grep）
+    4. 检测 async/sync 边界变更
+    5. 风险评估（critical/high/medium/low）
+    6. 生成检查清单
+
+    用法:
+        moat preflight                    # 分析 git diff 中的变更
+        moat preflight --files a.py b.py  # 分析指定文件
+        moat preflight --json             # JSON 输出
+    """
+    import ast
+    import subprocess
+    import json
+    from pathlib import Path
+    from moat.ast.diff import ASTDiffer, CodeChange
+
+    root = Path(args.project).resolve()
+    files_to_analyze = []
+
+    # 1. 获取文件列表
+    if args.files:
+        # 用户指定文件
+        for f in args.files:
+            fp = root / f
+            if fp.exists():
+                files_to_analyze.append(fp)
+            else:
+                print(f"⚠️  文件不存在: {f}")
+    else:
+        # 从 git diff 检测
+        try:
+            for ref in ["HEAD", "--cached"]:
+                result = subprocess.run(
+                    ["git", "diff", ref, "--name-only", "--diff-filter=ACMR"],
+                    capture_output=True, text=True, cwd=root, timeout=5,
+                )
+                if result.returncode == 0:
+                    for line in result.stdout.strip().split("\n"):
+                        if line:
+                            fp = root / line
+                            if fp.exists() and fp.suffix in (".py", ".ts", ".tsx", ".js"):
+                                files_to_analyze.append(fp)
+            files_to_analyze = list(set(files_to_analyze))
+        except Exception:
+            print("❌ 无法获取 git diff，请先初始化 git 仓库或使用 --files 指定文件")
+            return 1
+
+    if not files_to_analyze:
+        print("✅ 没有检测到变更，无需分析")
+        return 0
+
+    # 2. 分析每个文件
+    differ = ASTDiffer(root)
+    all_impacts = []
+    all_functions = []
+    risk_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+
+    for file_path in files_to_analyze:
+        try:
+            content = file_path.read_text(encoding="utf-8")
+            tree = ast.parse(content)
+        except (SyntaxError, Exception) as e:
+            print(f"⚠️  {file_path.relative_to(root)}: 解析失败 - {e}")
+            continue
+
+        rel_path = str(file_path.relative_to(root))
+
+        # 提取所有函数
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                is_async = isinstance(node, ast.AsyncFunctionDef)
+                func_name = node.name
+
+                # 查找调用方
+                callers = differ._find_callers_by_grep(func_name)
+
+                # 评估风险
+                change = CodeChange(
+                    change_type="modified",
+                    file_path=rel_path,
+                    line=node.lineno,
+                    function=func_name,
+                )
+                risk = differ._assess_risk(change, len(callers))
+                risk_counts[risk] = risk_counts.get(risk, 0) + 1
+
+                func_info = {
+                    "name": func_name,
+                    "file": rel_path,
+                    "line": node.lineno,
+                    "is_async": is_async,
+                    "caller_count": len(callers),
+                    "callers": callers[:10],  # 最多显示 10 个
+                    "risk": risk,
+                    "suggestion": differ._generate_suggestion(change, callers),
+                }
+                all_functions.append(func_info)
+
+                if callers:
+                    all_impacts.append(func_info)
+
+    # 3. 输出
+    if args.json:
+        output = {
+            "files_analyzed": len(files_to_analyze),
+            "functions_found": len(all_functions),
+            "functions_with_callers": len(all_impacts),
+            "risk_summary": risk_counts,
+            "functions": all_functions,
+        }
+        print(json.dumps(output, indent=2, ensure_ascii=False))
+        return 0
+
+    # 文本输出
+    print(f"\n{'=' * 55}")
+    print(f"  🛩️  moat preflight — 改代码前安全检查")
+    print(f"  项目: {root}")
+    print(f"{'=' * 55}\n")
+
+    print(f"📂 待分析文件: {len(files_to_analyze)}")
+    for f in files_to_analyze:
+        print(f"   📄 {f.relative_to(root)}")
+
+    print(f"\n🔍 发现 {len(all_functions)} 个函数:")
+    print()
+
+    # 先显示高风险
+    for func in all_functions:
+        risk_icon = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "⚪"}
+        icon = risk_icon.get(func["risk"], "⚪")
+        async_tag = "async " if func["is_async"] else ""
+
+        print(f"  {icon} [{func['risk'].upper()}] {async_tag}{func['name']}()")
+        print(f"        📍 {func['file']}:{func['line']}")
+
+        if func["caller_count"] > 0:
+            print(f"        👥 调用方: {func['caller_count']} 个")
+            if args.verbose:
+                for c in func["callers"][:5]:
+                    print(f"          - {c}")
+                if len(func["callers"]) > 5:
+                    print(f"          ... 还有 {len(func['callers']) - 5} 个")
+        else:
+            print(f"        👥 无调用方（私有函数或未使用）")
+
+        if func["suggestion"]:
+            print(f"        💡 {func['suggestion']}")
+        print()
+
+    # 风险汇总
+    print(f"{'─' * 55}")
+    print(f"  📊 风险汇总")
+    print(f"     🔴 CRITICAL: {risk_counts.get('critical', 0)}")
+    print(f"     🟠 HIGH:     {risk_counts.get('high', 0)}")
+    print(f"     🟡 MEDIUM:   {risk_counts.get('medium', 0)}")
+    print(f"     ⚪ LOW:      {risk_counts.get('low', 0)}")
+    print(f"{'─' * 55}")
+
+    # 检查清单
+    print(f"\n📋 改代码前检查清单:")
+    print(f"  [ ] 阅读了所有相关文档")
+    print(f"  [ ] 理解了完整逻辑链: 调用方 A → 函数 X → 返回值 Z → 影响 W")
+    print(f"  [ ] 评估了变更风险（如上所示）")
+    print(f"  [ ] 如果有 async/sync 边界变更，确认所有调用方同步更新")
+    print(f"  [ ] 改代码后运行 moat check 验证功能完整性")
+    print()
+
+    if risk_counts.get("critical", 0) > 0:
+        print(f"⚠️  发现 {risk_counts['critical']} 个 CRITICAL 风险变更，请谨慎操作")
+        print()
+
+    return 0 if risk_counts.get("critical", 0) == 0 else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="moat",
@@ -1137,6 +1320,14 @@ def build_parser() -> argparse.ArgumentParser:
     from moat.ai_test.cli import add_test_parser
     add_test_parser(sub)
 
+    # preflight — 改代码前安全检查
+    p_preflight = sub.add_parser("preflight", help="🛩️ 改代码前安全检查 — 分析变更影响域、列出调用方、评估风险")
+    _shared_args(p_preflight)
+    p_preflight.add_argument("--files", nargs="*", default=None,
+                             help="指定要分析的文件（默认从 git diff 检测）")
+    p_preflight.add_argument("--json", action="store_true",
+                             help="JSON 格式输出")
+
     return parser
 
 
@@ -1178,6 +1369,7 @@ def main():
         "gatekeeper": cmd_gatekeeper,
         "immune": cmd_immune,
         "test": cmd_test,
+        "preflight": cmd_preflight,
     }
 
     sys.exit(commands[args.command](args))

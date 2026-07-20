@@ -135,6 +135,10 @@ def run_all_checks(project_root: str = ".", mode: str = "quick", enable_optimiza
 
     result.end_time = time.time()
 
+    # 4.5. AST 影响域分析（自动运行，不阻塞门禁）
+    if mode in ("quick", "full"):
+        _run_diff_impact_analysis(root, result)
+
     # 5. 记录进化指标
     _record_check_metrics(root, result)
 
@@ -277,7 +281,100 @@ def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: b
         opt_config = {**config, "optimization": True}
         checks.append(("优化检查（Ponytail 集成）", OptimizationCheck(root, opt_config)))
 
+    # 异步安全检测（消防水带模式 + async/sync 边界）
+    if modified_files:
+        from moat.checks.async_safety import AsyncSafetyCheck
+        checks.append(("异步安全检测（消防水带模式）", AsyncSafetyCheck(root, config)))
+
     return checks
+
+
+def _run_diff_impact_analysis(root: Path, result: "MoatResult") -> None:
+    """运行 AST 影响域分析（自动检测变更 + 调用方）
+
+    在每个 moat check 后自动运行，不阻塞门禁。
+    发现高风险变更时输出警告，但不影响检查结果。
+    """
+    import subprocess
+    import ast
+    from pathlib import Path
+
+    # 获取修改的文件
+    try:
+        changed_files = []
+        for ref in ["HEAD", "--cached"]:
+            r = subprocess.run(
+                ["git", "diff", ref, "--name-only", "--diff-filter=ACMR"],
+                capture_output=True, text=True, cwd=root, timeout=5,
+            )
+            if r.returncode == 0:
+                for line in r.stdout.strip().split("\n"):
+                    if line:
+                        fp = root / line
+                        if fp.exists() and fp.suffix == ".py":
+                            changed_files.append(fp)
+        changed_files = list(set(changed_files))
+    except Exception:
+        return
+
+    if not changed_files:
+        return
+
+    # 执行 AST 影响域分析
+    try:
+        from moat.ast.diff import ASTDiffer, CodeChange
+
+        differ = ASTDiffer(root)
+        has_async_changes = False
+        total_impacts = 0
+
+        for file_path in changed_files:
+            try:
+                changes = differ.diff_file(file_path)
+            except Exception:
+                continue
+
+            if not changes:
+                continue
+
+            # 分析影响
+            rel_path = str(file_path.relative_to(root))
+            for change in changes:
+                # 对 async_signature 变更添加警告
+                if change.change_type == "async_signature":
+                    has_async_changes = True
+                    callers = differ._find_callers_by_grep(change.function)
+                    msg = (
+                        f"⚠️  {rel_path}:{change.line} 函数 {change.function} "
+                        f"async/sync 签名变更，影响 {len(callers)} 个调用方"
+                    )
+                    result.warnings += 1
+                    result.errors.append({
+                        "type": "warn",
+                        "level": "WARN",
+                        "file": rel_path,
+                        "line": change.line,
+                        "message": msg,
+                    })
+                    print(f"  {msg}")
+
+                    if callers:
+                        print(f"     调用方:")
+                        for c in callers[:5]:
+                            print(f"       - {c}")
+                        if len(callers) > 5:
+                            print(f"       ... 还有 {len(callers) - 5} 个")
+
+                    total_impacts += 1
+
+        if total_impacts > 0:
+            print(f"\n  📊 AST 影响域分析: 发现 {total_impacts} 个高风险变更")
+            if has_async_changes:
+                print(f"  ⚠️  有 async/sync 签名变更，请确认所有调用方同步更新")
+            print()
+
+    except Exception:
+        pass  # 影响域分析失败不影响主流程
 
 
 def _create_full_checks(project_type: dict[str, bool], root: Path, config: dict[str, Any], enable_optimization: bool = False) -> list[tuple[str, Any]]:

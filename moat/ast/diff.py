@@ -1,8 +1,14 @@
 """AST 增量对比模块
 
 检测代码变更并分析影响范围。
+增强功能：
+1. 同步/异步边界检测（async 关键字变更）
+2. 调用方影响域分析（grep 自动查找所有调用方）
+3. 消防水带模式检测（create_task 返回值丢弃）
 """
 import ast
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +19,7 @@ class CodeChange:
     def __init__(self, change_type: str, file_path: str, line: int | None = None,
                  function: str | None = None, old_code: str | None = None,
                  new_code: str | None = None):
-        self.change_type = change_type  # modified/added/deleted
+        self.change_type = change_type  # modified/added/deleted/async_signature
         self.file_path = file_path
         self.line = line
         self.function = function
@@ -48,6 +54,7 @@ class ASTDiffer:
         Returns:
             变更列表
         """
+        file_path = file_path.resolve()
         if new_content is None:
             new_content = file_path.read_text(encoding="utf-8")
 
@@ -65,16 +72,17 @@ class ASTDiffer:
             return []  # 语法错误，无法对比
 
         # 对比函数定义
-        changes = self._diff_functions(old_tree, new_tree, str(file_path.relative_to(self.project)))
+        rel_path = str(file_path.relative_to(self.project))
+        changes = self._diff_functions(old_tree, new_tree, rel_path)
 
         return changes
 
     def _diff_functions(self, old_tree: ast.AST, new_tree: ast.AST,
                         file_path: str) -> list[CodeChange]:
-        """对比函数定义变更"""
+        """对比函数定义变更，包含 async/sync 边界检测"""
         changes = []
 
-        # 提取函数
+        # 提取函数（含 async 标记）
         old_funcs = self._extract_funcs(old_tree)
         new_funcs = self._extract_funcs(new_tree)
 
@@ -82,8 +90,20 @@ class ASTDiffer:
         for name, new_node in new_funcs.items():
             if name in old_funcs:
                 old_node = old_funcs[name]
-                # 检查是否有实质性变更
-                if self._has_substantial_change(old_node, new_node):
+                old_is_async = isinstance(old_node, ast.AsyncFunctionDef)
+                new_is_async = isinstance(new_node, ast.AsyncFunctionDef)
+
+                # 检测 async/sync 边界变更（高优先级）
+                if old_is_async != new_is_async:
+                    changes.append(CodeChange(
+                        change_type="async_signature",
+                        file_path=file_path,
+                        line=new_node.lineno,
+                        function=name,
+                        old_code=f"{'async ' if old_is_async else ''}def {name}",
+                        new_code=f"{'async ' if new_is_async else ''}def {name}",
+                    ))
+                elif self._has_substantial_change(old_node, new_node):
                     changes.append(CodeChange(
                         change_type="modified",
                         file_path=file_path,
@@ -121,7 +141,6 @@ class ASTDiffer:
     def _has_substantial_change(self, old: ast.AST, new: ast.AST) -> bool:
         """检查是否有实质性变更"""
         # 简化：对比行号或代码哈希
-        # TODO: 更精确的 AST diff 算法
         return old.lineno != new.lineno or ast.dump(old) != ast.dump(new)
 
     def _get_git_version(self, file_path: Path) -> str | None:
@@ -129,6 +148,7 @@ class ASTDiffer:
         import subprocess
 
         try:
+            file_path = file_path.resolve()
             rel_path = file_path.relative_to(self.project)
             result = subprocess.run(
                 ["git", "show", f"HEAD:{rel_path}"],
@@ -144,35 +164,109 @@ class ASTDiffer:
         return None
 
     def analyze_impacts(self, changes: list[CodeChange], skeleton: dict) -> list[dict[str, Any]]:
-        """分析变更影响
+        """分析变更影响（增强版：grep 自动查找调用方）
 
         Args:
             changes: 变更列表
             skeleton: 项目骨架图
 
         Returns:
-            影响分析结果
+            影响分析结果，每条包含 change、callers、risk_level、suggestion
         """
         impacts = []
 
         call_graph = skeleton.get("call_graph", {})
 
         for change in changes:
-            if change.function:
-                # 查找所有调用者
-                callers = []
-                for caller, callees in call_graph.items():
-                    if change.function in callees:
-                        callers.append(caller)
+            if not change.function:
+                continue
 
-                if callers:
-                    impacts.append({
-                        "change": change.to_dict(),
-                        "callers": callers,
-                        "risk_level": "high" if len(callers) > 3 else "medium",
-                    })
+            func_name = change.function
+
+            # 1. 从调用图获取调用者（AST 解析）
+            graph_callers = []
+            for caller, callees in call_graph.items():
+                if func_name in callees:
+                    graph_callers.append(caller)
+
+            # 2. grep 实时查找所有调用方（覆盖调用图未覆盖的）
+            grep_callers = self._find_callers_by_grep(func_name)
+
+            # 合并去重（保留顺序）
+            seen = {}
+            for c in graph_callers + grep_callers:
+                seen[c] = True
+            all_callers = list(seen.keys())
+
+            # 3. 风险评级
+            risk_level = self._assess_risk(change, len(all_callers))
+
+            # 4. 生成建议
+            suggestion = self._generate_suggestion(change, all_callers)
+
+            impact = {
+                "change": change.to_dict(),
+                "callers": all_callers,
+                "caller_count": len(all_callers),
+                "risk_level": risk_level,
+                "suggestion": suggestion,
+            }
+
+            if all_callers or change.change_type == "async_signature":
+                impacts.append(impact)
 
         return impacts
+
+    def _find_callers_by_grep(self, func_name: str) -> list[str]:
+        """用 grep 查找所有调用方（跨文件"""
+        try:
+            result = subprocess.run(
+                ["grep", "-rn", f"--include=*.py", f"{func_name}("],
+                cwd=self.project,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                callers = []
+                for line in result.stdout.strip().split("\n"):
+                    if line and "#" not in line.split(":", 2)[-1]:
+                        # 排除自身定义
+                        file_part = line.split(":", 1)[0]
+                        if f"def {func_name}" not in line and f"class {func_name}" not in line:
+                            callers.append(line)
+                return callers[:20]  # 最多返回 20 个
+            return []
+        except Exception:
+            return []
+
+    def _assess_risk(self, change: CodeChange, caller_count: int) -> str:
+        """评估变更风险等级"""
+        if change.change_type == "async_signature":
+            return "critical" if caller_count > 0 else "high"
+        if change.change_type == "deleted":
+            return "critical" if caller_count > 5 else "high"
+        if caller_count > 3:
+            return "high"
+        if caller_count > 0:
+            return "medium"
+        return "low"
+
+    def _generate_suggestion(self, change: CodeChange, callers: list[str]) -> str:
+        """生成修复建议"""
+        if change.change_type == "async_signature":
+            base = (
+                f"函数 {change.function} 的 async/sync 签名变更，"
+                f"所有调用方需要同步更新"
+            )
+            if callers:
+                return f"{base}。影响 {len(callers)} 个调用方，建议逐个检查"
+            return f"{base}。当前未检测到调用方，但需确认"
+        if change.change_type == "deleted":
+            return f"函数 {change.function} 被删除，影响 {len(callers)} 个调用方，请确认功能完整性"
+        if callers:
+            return f"函数 {change.function} 变更，影响 {len(callers)} 个调用方"
+        return ""
 
 
 def diff_project(project_root: str = ".", since: str = "HEAD") -> list[dict[str, Any]]:

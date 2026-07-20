@@ -505,7 +505,7 @@ class TestASTDiffer:
 
         impacts = differ.analyze_impacts(changes, skeleton)
         assert len(impacts) >= 1
-        assert impacts[0]["callers"] == ["main.py::bar", "main.py::baz"]
+        assert set(impacts[0]["callers"]) == {"main.py::bar", "main.py::baz"}
 
     def test_analyze_impacts_risk_level(self, differ: ASTDiffer):
         """风险等级基于调用者数量"""
