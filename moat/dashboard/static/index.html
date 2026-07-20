@@ -35,11 +35,11 @@
 
   <!-- Stats -->
   <section class="stats">
-    <div class="stat-card"><div class="icon-bg"></div><div class="label">监控组件</div><div class="value white">-</div><div class="sub">个组件</div></div>
-    <div class="stat-card"><div class="icon-bg"></div><div class="label">运行正常</div><div class="value green">-</div><div class="sub">运行正常</div></div>
-    <div class="stat-card"><div class="icon-bg"></div><div class="label">降级运行</div><div class="value yellow">-</div><div class="sub">降级运行</div></div>
-    <div class="stat-card"><div class="icon-bg"></div><div class="label">近期告警</div><div class="value red">-</div><div class="sub">近期告警</div></div>
-    <div class="stat-card"><div class="icon-bg"></div><div class="label">总事件数</div><div class="value blue">-</div><div class="sub">总事件数</div></div>
+    <div class="stat-card" id="stat-total"><div class="icon-bg">📦</div><div class="label">监控组件</div><div class="value white">-</div><div class="sub">个组件</div></div>
+    <div class="stat-card" id="stat-ok"><div class="icon-bg">✅</div><div class="label">运行正常</div><div class="value green">-</div><div class="sub">运行正常</div></div>
+    <div class="stat-card" id="stat-degraded"><div class="icon-bg">⚠️</div><div class="label">降级运行</div><div class="value yellow">-</div><div class="sub">降级运行</div></div>
+    <div class="stat-card" id="stat-panics"><div class="icon-bg">🚨</div><div class="label">近期告警</div><div class="value red">-</div><div class="sub">近期告警</div></div>
+    <div class="stat-card" id="stat-events"><div class="icon-bg">📊</div><div class="label">总事件数</div><div class="value blue">-</div><div class="sub">总事件数</div></div>
   </section>
 
   <!-- Panels -->
