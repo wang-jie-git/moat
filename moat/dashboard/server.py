@@ -122,8 +122,24 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
 
     @app.post("/api/moat/check")
     async def run_check():
-        success = run_all_checks(str(project))
-        return {"success": success}
+        """运行代码检查（后台线程 + 5 秒超时）"""
+        import threading, queue
+
+        result_queue: queue.Queue = queue.Queue()
+        check_thread = threading.Thread(
+            target=lambda q: q.put(run_all_checks(str(project))),
+            args=(result_queue,),
+            daemon=True,
+        )
+        check_thread.start()
+
+        # 等 5 秒
+        try:
+            result = result_queue.get(timeout=5)
+            success = bool(result)
+            return {"success": success, "timed_out": False}
+        except queue.Empty:
+            return {"success": False, "timed_out": True, "message": "检查超时（超过 5 秒），已在后台继续运行"}
 
     @app.post("/api/moat/baseline/save")
     async def save_baseline():

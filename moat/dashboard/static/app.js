@@ -294,12 +294,18 @@ function renderModal(data) {
 // ── Actions ───────────────────────────────
 async function runCheck() {
   const btn = document.getElementById('btn-check'); if (!btn) return;
-  btn.disabled = true; btn.innerHTML = '⏳ 运行中...';
+  btn.disabled = true; btn.innerHTML = '⏳ 扫描中...';
   try {
     const r = await fetch('/api/moat/check', { method: 'POST' });
     const d = await r.json();
-    toast(d.success ? '✅ 检查通过' : '❌ 检查发现异常', d.success ? 'success' : 'error');
-  } catch (e) { toast('检查失败: ' + e.message, 'error'); }
+    if (d.timed_out) {
+      toast('⏱️ ' + d.message, 'info');
+    } else if (d.success) {
+      toast('✅ 检查通过，未发现问题', 'success');
+    } else {
+      toast('❌ 检查发现异常', 'error');
+    }
+  } catch (e) { toast('连接失败: ' + e.message, 'error'); }
   btn.disabled = false; btn.innerHTML = '🔍 运行检查';
 }
 
