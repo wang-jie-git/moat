@@ -1002,12 +1002,23 @@ def cmd_preflight(args):
 
     # 3. 输出
     if args.json:
+        # 记忆系统数据
+        memory_data = {"redlines": [], "lessons": []}
+        try:
+            from moat.memory.moat_memory import MoatMemory
+            memory = MoatMemory(root)
+            memory_data["redlines"] = memory.list_redlines()
+            memory_data["lessons"] = memory.list_lessons(limit=5)
+        except Exception:
+            pass
+
         output = {
             "files_analyzed": len(files_to_analyze),
             "functions_found": len(all_functions),
             "functions_with_callers": len(all_impacts),
             "risk_summary": risk_counts,
             "functions": all_functions,
+            "memory": memory_data,
         }
         print(json.dumps(output, indent=2, ensure_ascii=False))
         return 0
@@ -1056,6 +1067,34 @@ def cmd_preflight(args):
     print(f"     🟡 MEDIUM:   {risk_counts.get('medium', 0)}")
     print(f"     ⚪ LOW:      {risk_counts.get('low', 0)}")
     print(f"{'─' * 55}")
+
+    # 记忆系统：显示红线 + 历史踩坑
+    try:
+        from moat.memory.moat_memory import MoatMemory
+        memory = MoatMemory(root)
+        redlines = memory.list_redlines()
+        lessons = memory.list_lessons(limit=5)
+
+        if redlines:
+            print(f"\n📏 项目红线 ({len(redlines)} 条):")
+            for rl in redlines[:5]:
+                sev_icon = {"critical": "🔴", "warning": "🟡", "info": "ℹ️"}
+                icon = sev_icon.get(rl.get("severity", "info"), "ℹ️")
+                print(f"  {icon} {rl.get('title', '?')}")
+                desc = rl.get("description", "")
+                if desc:
+                    print(f"     {desc[:100]}")
+            if len(redlines) > 5:
+                print(f"  ... 还有 {len(redlines) - 5} 条 (moat redline list)")
+
+        if lessons:
+            print(f"\n📕 历史踩坑 ({len(lessons)} 条):")
+            for ls in lessons[:3]:
+                print(f"  📕 {ls.get('title', '?')[:80]}")
+            if len(lessons) > 3:
+                print(f"  ... 还有 {len(lessons) - 3} 条 (moat memory list lessons)")
+    except Exception:
+        pass  # 记忆系统不可用不影响主流程
 
     # 检查清单
     print(f"\n📋 改代码前检查清单:")

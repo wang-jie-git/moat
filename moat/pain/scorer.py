@@ -38,6 +38,12 @@ class PainScorer:
     - 语法错误：+15
     - 文档缺失：+5
     - 第三方代码：-50（降低权重）
+
+    变更风险维度（v1.3.0 新增）：
+    - async/sync 签名变更：+40（影响所有调用方）
+    - 消防水带模式：+35（create_task 返回值丢弃）
+    - 删除函数：+30（影响调用方）
+    - 高调用方影响：+20（>3 个调用方）
     """
 
     # 权重配置
@@ -49,6 +55,11 @@ class PainScorer:
         "syntax_error": 15,
         "missing_doc": 5,
         "third_party": -50,
+        # 变更风险维度（v1.3.0）
+        "async_signature_change": 40,
+        "fire_and_forget": 35,
+        "function_deleted": 30,
+        "high_caller_impact": 20,
     }
 
     # 核心业务关键词
@@ -125,6 +136,23 @@ class PainScorer:
             score += self.WEIGHTS["third_party"]
             factors.append("第三方代码")
 
+        # 8. 变更风险维度（v1.3.0）
+        if self._is_async_signature_change(error_type, message):
+            score += self.WEIGHTS["async_signature_change"]
+            factors.append("async/sync 签名变更")
+
+        if self._is_fire_and_forget(error_type, message):
+            score += self.WEIGHTS["fire_and_forget"]
+            factors.append("消防水带模式")
+
+        if self._is_function_deleted(error_type, message):
+            score += self.WEIGHTS["function_deleted"]
+            factors.append("删除函数")
+
+        if self._is_high_caller_impact(error_type, message):
+            score += self.WEIGHTS["high_caller_impact"]
+            factors.append("高调用方影响")
+
         # 限制在 0-100
         score = max(0.0, min(100.0, score))
 
@@ -177,6 +205,22 @@ class PainScorer:
             "node_modules", ".venv", "venv", "site-packages",
             "third_party", "external",
         ))
+
+    def _is_async_signature_change(self, error_type: str, message: str) -> bool:
+        """是否为 async/sync 签名变更"""
+        return "async_signature" in error_type or "签名变更" in message
+
+    def _is_fire_and_forget(self, error_type: str, message: str) -> bool:
+        """是否为消防水带模式"""
+        return "fire_and_forget" in error_type or "消防水带" in message
+
+    def _is_function_deleted(self, error_type: str, message: str) -> bool:
+        """是否为删除函数"""
+        return "deleted" in error_type or "删除" in error_type or "被删除" in message
+
+    def _is_high_caller_impact(self, error_type: str, message: str) -> bool:
+        """是否为高调用方影响"""
+        return "caller_impact" in error_type or "调用方" in message
 
     def _match_pattern(self, file_path: str, pattern: str) -> bool:
         """简单通配符匹配"""
