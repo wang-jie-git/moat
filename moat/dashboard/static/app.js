@@ -4,7 +4,7 @@
  */
 
 // ── State ──────────────────────────────────
-const STATE = { data: null, filter: 'all', search: '', timer: null, mode: 'normal' };
+const STATE = { data: null, filter: 'all', search: '', timer: null, mode: 'normal', healthSearch: '', paused: false };
 
 // ── DOM Shortcuts ──────────────────────────
 const $ = s => document.querySelector(s);
@@ -187,7 +187,13 @@ function renderHealth(health) {
   if (!grid) return;
 
   const details = health?.details || {};
-  const ids = Object.keys(details);
+  let ids = Object.keys(details);
+
+  // 健康网格搜索
+  if (STATE.healthSearch) {
+    const q = STATE.healthSearch.toLowerCase();
+    ids = ids.filter(id => id.toLowerCase().includes(q));
+  }
 
   if (badge) badge.textContent = ids.length;
 
@@ -230,6 +236,11 @@ function setFilter(status) {
 function onSearch(val) {
   STATE.search = val;
   renderEvents(STATE.data?.events || []);
+}
+
+function onHealthSearch(val) {
+  STATE.healthSearch = val;
+  if (STATE.data?.health) renderHealth(STATE.data.health);
 }
 
 // ── Mode Toggle ──────────────────────────
@@ -593,6 +604,16 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(r => r.json())
     .then(d => { const el = document.getElementById('project-name'); if (el) el.textContent = d.project || '-'; })
     .catch(() => {});
+  // Auto-refresh toggle
+  const rs = document.getElementById('refresh-status');
+  if (rs) {
+    rs.addEventListener('click', () => {
+      STATE.paused = !STATE.paused;
+      rs.classList.toggle('paused', STATE.paused);
+      rs.textContent = STATE.paused ? '⏸ 暂停' : '🔄 3s';
+      if (!STATE.paused) loadData();
+    });
+  }
   // Auto-refresh every 3s
-  STATE.timer = setInterval(loadData, 3000);
+  STATE.timer = setInterval(() => { if (!STATE.paused) loadData(); }, 3000);
 });
