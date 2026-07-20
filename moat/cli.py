@@ -1128,6 +1128,8 @@ def cmd_sensor(args):
         print(f"\n📦 备份: moat sensor revert {ts}")
         print(f"📡 监控: moat sensor stats")
         return 0
+
+    elif args.action == "revert":
         """回退到指定备份"""
         from moat.ast.injector import revert_backup, list_backups
 
