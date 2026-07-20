@@ -924,27 +924,50 @@ def cmd_sensor(args):
             if stats.get("last_event"):
                 print(f"  最近事件: {stats['last_event']}")
         else:
-            summary = get_health_summary()
-            print(f"\n🔥 传感器事件健康摘要\n")
-            print(f"  健康:   {len(summary['healthy_components'])} 个组件")
-            print(f"  降级:   {len(summary['degraded_components'])} 个组件")
-            print(f"  崩溃:   {len(summary['panic_components'])} 个组件")
-            print(f"  总事件: {summary['total_events']} 条")
-            if summary['panic_components']:
-                print(f"\n🔴 崩溃组件:")
-                for c in summary['panic_components']:
-                    print(f"  - {c['component_id']}")
-            if summary['degraded_components']:
-                print(f"\n🟡 降级组件:")
-                for c in summary['degraded_components']:
-                    print(f"  - {c['component_id']}")
+            # 使用文件事件（跨进程）统计
+            from moat.pain.sensor import _read_events_from_file, EVENT_FILE
+            import os
 
+            file_events = _read_events_from_file(limit=500)
+
+            # 按组件聚合最新状态
+            latest: dict[str, dict] = {}
+            for e in file_events:
+                cid = e["component_id"]
+                latest[cid] = e  # 后到的覆盖前面的
+
+            healthy = [cid for cid, e in latest.items() if e["status"] == "OK"]
+            degraded = [cid for cid, e in latest.items() if e["status"] == "DEGRADED"]
+            panics = [cid for cid, e in latest.items() if e["status"] == "PANIC"]
+
+            file_exists = os.path.exists(EVENT_FILE)
+            size = os.path.getsize(EVENT_FILE) if file_exists else 0
+
+            print(f"\n🔥 传感器事件健康摘要（跨进程）\n")
+            print(f"  共享文件: {EVENT_FILE} ({size/1024:.1f}KB)" if file_exists else "  共享文件: ❌ 不存在")
+            print(f"  总事件数: {len(file_events)} 条")
+            print(f"  监控组件: {len(latest)} 个")
+            print(f"  ✅ 健康:   {len(healthy)} 个组件")
+            print(f"  🟡 降级:   {len(degraded)} 个组件")
+            print(f"  🔴 崩溃:   {len(panics)} 个组件")
+
+            if panics:
+                print(f"\n🔴 崩溃组件:")
+                for c in panics:
+                    e = latest[c]
+                    print(f"  - {c}: {e.get('error','')}")
+            if degraded:
+                print(f"\n🟡 降级组件:")
+                for c in degraded:
+                    e = latest[c]
+                    print(f"  - {c}: {e.get('error','')}")
+
+            # 也显示本进程 health_tracker 数据
             ht = health_tracker.get_health_summary()
             if ht["healthy"] or ht["degraded"]:
-                print(f"\n📋 ComponentHealthTracker:")
+                print(f"\n📋 本进程健康追踪:")
                 print(f"  ✅ 健康:   {', '.join(ht['healthy']) if ht['healthy'] else '-'}")
                 print(f"  ⚠️ 降级:   {', '.join(ht['degraded']) if ht['degraded'] else '-'}")
-                print(f"\n{health_tracker.build_health_section(include_healthy=False)}")
         return 0
 
     elif args.action == "reset":
