@@ -497,6 +497,24 @@ async function executeInject(overlay) {
       return;
     }
 
+    // 获取重启建议
+    let restartHtml = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:8px;">检测重启方式...</div>';
+    fetch('/api/moat/inject/restart', { method: 'POST' })
+      .then(r => r.json())
+      .then(rst => {
+        const area = document.getElementById('restart-btn-area');
+        if (!area) return;
+        area.innerHTML = `
+          <div style="padding:12px 14px;background:var(--bg-tertiary);border-radius:6px;margin-top:8px;">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">
+              🔄 重启项目（<code style="background:#1c2128;padding:1px 4px;border-radius:3px;font-size:11px;">${rst.project_type}</code>）
+            </div>
+            <code id="restart-cmd" style="display:block;background:#0d1117;padding:8px 12px;border-radius:4px;font-size:13px;word-break:break-all;border:1px solid var(--border);">${escapeHtml(rst.restart_cmd)}</code>
+            <button class="btn" style="margin-top:6px;font-size:12px;" onclick="copyCmd()">📋 复制命令</button>
+          </div>`;
+      })
+      .catch(() => {});
+
     overlay.querySelector('.modal-body').innerHTML = `
       <div style="text-align:left;">
         <div style="text-align:center;">
@@ -523,9 +541,7 @@ async function executeInject(overlay) {
             <span style="margin-left:8px;">回退：</span>
             <code style="background:#1c2128;padding:2px 6px;border-radius:3px;">moat sensor revert ${data.backup_timestamp}</code>
           </div>` : ''}
-        <div style="font-size:13px;color:var(--text-muted);text-align:center;">
-          💡 重启项目后传感器事件会自动出现在 Dashboard
-        </div>
+        <div id="restart-btn-area" style="margin-bottom:12px;"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
           <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();loadData();">知道了</button>
         </div>
@@ -537,6 +553,14 @@ async function executeInject(overlay) {
         <div style="color:var(--text-muted);">${e.message}</div>
       </div>`;
   }
+}
+
+function copyCmd() {
+  const el = document.getElementById('restart-cmd');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    toast('📋 已复制到剪贴板', 'success');
+  }).catch(() => {});
 }
 
 // ── Init ──────────────────────────────────

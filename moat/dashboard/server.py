@@ -231,6 +231,52 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
         except queue.Empty:
             return {"success": False, "timed_out": True, "message": "注入超时"}
 
+    @app.post("/api/moat/inject/restart")
+    async def inject_restart():
+        """推荐项目重启命令"""
+        import threading, queue
+
+        result_queue: queue.Queue = queue.Queue()
+
+        def _run():
+            try:
+                from moat.pain.config import detect_project_type
+                ptype = detect_project_type(str(project))
+                abs_path = project.resolve()
+                cmd = ""
+
+                if ptype == "FastAPI":
+                    cmd = "pkill -f 'uvicorn' 2>/dev/null; nohup uvicorn app.main:app --reload &"
+                elif ptype == "Django":
+                    cmd = "pkill -f 'manage.py' 2>/dev/null; nohup python manage.py runserver &"
+                elif ptype == "Monorepo":
+                    cmd = f"cd {abs_path} && PYTHONPATH=\"packages/openharness-engine/src:packages/backend/src\" nohup python3 -m one_backend.server &"
+                elif ptype in ("CLI 工具", "Python 项目"):
+                    cmd = "pkill -f 'python3.*main' 2>/dev/null; nohup python3 main.py &"
+                else:
+                    cmd = "重启你的项目"
+
+                result_queue.put({
+                    "success": True,
+                    "project_type": ptype,
+                    "restart_cmd": cmd,
+                })
+            except Exception as e:
+                result_queue.put({
+                    "success": False,
+                    "error": str(e),
+                    "restart_cmd": "重启你的项目",
+                    "project_type": "未知",
+                })
+
+        thread = threading.Thread(target=_run, daemon=True)
+        thread.start()
+
+        try:
+            return result_queue.get(timeout=15)
+        except queue.Empty:
+            return {"success": False, "restart_cmd": "重启你的项目", "project_type": "未知"}
+
     @app.post("/api/moat/baseline/save")
     async def save_baseline():
         from moat.baseline import BaselineManager
