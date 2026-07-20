@@ -1,4 +1,5 @@
 """Moat Dashboard — Web 传感器看板"""
+import time
 from pathlib import Path
 
 
@@ -70,6 +71,17 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
         panic_count = sum(1 for e in latest.values() if e["status"] == "PANIC")
         panics = [e for e in file_events if e.get("status") == "PANIC"]
 
+        # 读取注入元数据
+        injected_count = 0
+        injection_meta_file = Path.home() / ".moat" / "injection_meta.json"
+        if injection_meta_file.exists():
+            try:
+                import json
+                meta = json.loads(injection_meta_file.read_text())
+                injected_count = meta.get("total_injected", 0)
+            except Exception:
+                pass
+
         return {
             "stats": {
                 "total_components": len(latest),
@@ -77,6 +89,7 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
                 "degraded": degraded_count,
                 "panics_last_hour": len(panics),
                 "events_total": len(file_events),
+                "injected_sensors": injected_count,
             },
             "events": events,
             "health": {
@@ -194,7 +207,8 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
     @app.post("/api/moat/inject/execute")
     async def inject_sensors_execute():
         """执行注入（非 dry-run）"""
-        import threading, queue
+        import threading, queue, json
+        from pathlib import Path
 
         result_queue: queue.Queue = queue.Queue()
 
@@ -210,6 +224,21 @@ def start_dashboard(project: Path, host: str = "127.0.0.1",
 
                 total_injected = sum(r.get("injected", 0) for r in results)
                 errors = [r for r in results if r.get("error")]
+
+                # 保存注入元数据到共享文件
+                meta_dir = Path.home() / ".moat"
+                meta_dir.mkdir(parents=True, exist_ok=True)
+                meta_file = meta_dir / "injection_meta.json"
+                meta = {
+                    "total_injected": total_injected,
+                    "injected_files": len([r for r in results if r.get("injected", 0) > 0]),
+                    "project": project.name,
+                    "timestamp": time.time(),
+                }
+                try:
+                    meta_file.write_text(json.dumps(meta, ensure_ascii=False, indent=2))
+                except Exception:
+                    pass
 
                 result_queue.put({
                     "success": True,

@@ -91,6 +91,15 @@ function renderStats(s) {
     el.querySelector('.sub').textContent = sub;
     el.querySelector('.icon-bg').textContent = icon;
   });
+
+  // 显示已注入传感器数量
+  const injected = s.injected_sensors || 0;
+  const statInjected = document.getElementById('stat-injected');
+  if (statInjected) {
+    statInjected.querySelector('.value').textContent = injected;
+    statInjected.querySelector('.value').className = 'value ' + (injected > 0 ? 'blue' : 'white');
+    statInjected.querySelector('.sub').textContent = '个传感器已注入';
+  }
 }
 
 // ── Header Status ─────────────────────────
