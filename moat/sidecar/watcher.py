@@ -17,6 +17,7 @@ except ImportError:
     # watchdog 未安装（可选依赖）
     WATCHDOG_AVAILABLE = False
     FileSystemEventHandler = object  # 占位符
+    FileSystemEvent = object  # 占位符
     Observer = None
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,30 @@ class FileChangeHandler(FileSystemEventHandler if WATCHDOG_AVAILABLE else object
             "*/.venv/*",
         ]
 
+    def _auto_inject_new_file(self, file_path: Path) -> None:
+        """自动为新创建的 Python 文件注入传感器"""
+        try:
+            from moat.pain.config import load_config
+            from moat.ast.injector import inject_project
+
+            config = load_config(str(self.project))
+            sensor_cfg = config.get("sensor", {})
+            if not sensor_cfg.get("auto_inject", False):
+                return
+
+            # 只注入这个新文件
+            results = inject_project(
+                project_root=str(self.project),
+                config=config,
+                dry_run=False,
+            )
+            matched = [r for r in (results if isinstance(results, list) else results[0]) if r.get("injected", 0) > 0 and str(file_path).endswith(r.get("file", ""))]
+            if matched:
+                total = sum(r["injected"] for r in matched)
+                logger.info(f"✅ 自动注入 {total} 个传感器到 {file_path.name}")
+        except Exception as e:
+            logger.debug(f"自动注入失败: {e}")
+
     def on_modified(self, event: FileSystemEvent) -> None:
         """文件修改事件"""
         if event.is_directory:
@@ -82,6 +107,10 @@ class FileChangeHandler(FileSystemEventHandler if WATCHDOG_AVAILABLE else object
         if self._should_ignore(src_path):
             return
 
+        # 新 Python 文件：自动注入传感器
+        if src_path.suffix == ".py":
+            self._auto_inject_new_file(src_path)
+
         self._trigger_check(src_path, "created")
 
     def on_deleted(self, event: FileSystemEvent) -> None:
@@ -106,6 +135,10 @@ class FileChangeHandler(FileSystemEventHandler if WATCHDOG_AVAILABLE else object
 
         if self._should_ignore(src_path) and self._should_ignore(dest_path):
             return
+
+        # 新 Python 文件（重命名/移动）：自动注入传感器
+        if dest_path.suffix == ".py" and not (self._should_ignore(dest_path)):
+            self._auto_inject_new_file(dest_path)
 
         self._trigger_check(dest_path, "moved")
 
