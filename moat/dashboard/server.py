@@ -269,7 +269,11 @@ def start_dashboard(initial_project: Path, host: str = "127.0.0.1",
                 include = sensor_cfg.get("include", [])
 
                 # 先跑 dry-run
-                dry_results, _, _ = inject_project(str(_project_ref[0]), config=config, dry_run=True)
+                inj_result = inject_project(str(_project_ref[0]), config=config, dry_run=True)
+                if isinstance(inj_result, tuple):
+                    dry_results, _, _ = inj_result
+                else:
+                    dry_results = inj_result
                 total_files = len(dry_results)
                 injected_files = [r for r in dry_results if r.get("injected", 0) > 0]
                 total_injected = sum(r.get("injected", 0) for r in dry_results)
@@ -315,9 +319,15 @@ def start_dashboard(initial_project: Path, host: str = "127.0.0.1",
                 from moat.pain.config import load_config
 
                 config = load_config(str(_project_ref[0]))
-                results, backup_root, backup_count = inject_project(
+                exec_result = inject_project(
                     str(_project_ref[0]), config=config, dry_run=False
                 )
+                if isinstance(exec_result, tuple):
+                    results, backup_root, backup_count = exec_result
+                else:
+                    results = exec_result
+                    backup_root = None
+                    backup_count = 0
 
                 total_injected = sum(r.get("injected", 0) for r in results)
                 errors = [r for r in results if r.get("error")]
