@@ -54,7 +54,7 @@ class FrameworkUsageOperator:
         evidence["framework_capabilities"] = framework_capabilities
 
         # 3. 扫描代码，检查框架能力利用情况
-        usage_checks = self._scan_framework_usage(project_path, detected_frameworks)
+        usage_checks = self._scan_framework_usage(project_path, detected_frameworks, target_files=context.target_files)
         evidence["usage_checks"] = usage_checks
 
         # 4. 生成违规和建议
@@ -220,7 +220,7 @@ class FrameworkUsageOperator:
 
         return capabilities
 
-    def _scan_framework_usage(self, project_path: Path, frameworks: list[str]) -> list[dict]:
+    def _scan_framework_usage(self, project_path: Path, frameworks: list[str], target_files: list[str] | None = None) -> list[dict]:
         """扫描代码，检查框架能力利用情况（真实实现）"""
         usage_checks = []
 
@@ -228,25 +228,27 @@ class FrameworkUsageOperator:
         exempt_patterns = {
             "test", "tests", "__pycache__", ".git",
             "venv", ".venv", "node_modules", "dist", "build",
-            "migrations", "alembic"  # 数据库迁移文件通常不遵循业务代码规范
+            "migrations", "alembic"
         }
 
         # 只扫描源代码目录（排除tests等）
         source_dirs = ["moat", "app", "src", "api", "routers", "services", "controllers", "views"]
 
         python_files = []
-        for source_dir in source_dirs:
-            dir_path = project_path / source_dir
-            if dir_path.exists() and dir_path.is_dir():
-                python_files.extend(iter_python_files(dir_path))
+        if target_files is not None:
+            python_files = [project_path / f for f in target_files if (project_path / f).exists() and (project_path / f).suffix == ".py"]
+        else:
+            for source_dir in source_dirs:
+                dir_path = project_path / source_dir
+                if dir_path.exists() and dir_path.is_dir():
+                    python_files.extend(iter_python_files(dir_path))
 
-        # 如果没找到源代码，扫描所有Python文件但过滤测试
-        if not python_files:
-            all_py_files = list(iter_python_files(project_path))
-            python_files = [
-                f for f in all_py_files
-                if not any(exempt in str(f) for exempt in exempt_patterns)
-            ]
+            if not python_files:
+                all_py_files = list(iter_python_files(project_path))
+                python_files = [
+                    f for f in all_py_files
+                    if not any(exempt in str(f) for exempt in exempt_patterns)
+                ]
 
         # 对于每个框架，先找出实际使用该框架的文件
         framework_files: dict[str, list[str]] = {}

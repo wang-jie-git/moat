@@ -15,16 +15,21 @@ DEFAULT_EXCLUDE_DIRS = {".venv", "venv", ".venv.prod", ".venv.dev",
                         "dist", "build", ".tox", ".eggs", "egg-info"}
 
 
-def iter_python_files(project_path: Path, *, exclude_dirs: set[str] | None = None) -> list[Path]:
+def iter_python_files(project_path: Path, *, exclude_dirs: set[str] | None = None, target_files: list[str] | None = None) -> list[Path]:
     """遍历 Python 文件，自动排除虚拟环境等目录
 
     Args:
         project_path: 项目根路径
         exclude_dirs: 要排除的目录名集合（默认 DEFAULT_EXCLUDE_DIRS）
+        target_files: 增量模式 — 只返回这些文件中的 Python 文件
 
     Returns:
         Python 文件列表
     """
+    if target_files is not None:
+        # 增量模式：只返回指定文件中的 Python 文件
+        return [project_path / f for f in target_files if (project_path / f).exists() and (project_path / f).suffix == ".py"]
+
     exclude = exclude_dirs or DEFAULT_EXCLUDE_DIRS
     files: list[Path] = []
     for py_file in project_path.rglob("*.py"):
@@ -122,6 +127,9 @@ class VerificationContext:
 
     project_path: Path
     """项目根路径"""
+
+    target_files: list[str] | None = None
+    """增量模式下限定检查的文件列表（None = 全量检查）"""
 
     config: dict[str, Any] = field(default_factory=dict)
     """配置参数"""

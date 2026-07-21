@@ -389,7 +389,7 @@ def _run_directory_operator(project_root: Path, target_files: list[str] | None =
         from moat.verification.types import VerificationContext
 
         op = DirectoryResponsibilityOperator()
-        ctx = VerificationContext(project_path=project_root)
+        ctx = VerificationContext(project_path=project_root, target_files=target_files)
         result = op.verify(ctx)
 
         return {
@@ -412,7 +412,7 @@ def _run_module_drill_operator(project_root: Path, target_files: list[str] | Non
         from moat.verification.types import VerificationContext
 
         op = MinimalModuleDrillOperator()
-        ctx = VerificationContext(project_path=project_root)
+        ctx = VerificationContext(project_path=project_root, target_files=target_files)
         result = op.verify(ctx)
 
         return {
@@ -435,7 +435,7 @@ def _run_api_spec_operator(project_root: Path, target_files: list[str] | None = 
         from moat.verification.types import VerificationContext
 
         op = APIResponseSpecOperator()
-        ctx = VerificationContext(project_path=project_root)
+        ctx = VerificationContext(project_path=project_root, target_files=target_files)
         result = op.verify(ctx)
 
         return {
@@ -458,7 +458,7 @@ def _run_framework_operator(project_root: Path, target_files: list[str] | None =
         from moat.verification.types import VerificationContext
 
         op = FrameworkUsageOperator()
-        ctx = VerificationContext(project_path=project_root)
+        ctx = VerificationContext(project_path=project_root, target_files=target_files)
         result = op.verify(ctx)
 
         return {
@@ -481,7 +481,7 @@ def _run_runtime_operator(project_root: Path, target_files: list[str] | None = N
         from moat.verification.types import VerificationContext
 
         op = RuntimeEvidenceOperator()
-        ctx = VerificationContext(project_path=project_root)
+        ctx = VerificationContext(project_path=project_root, target_files=target_files)
         result = op.verify(ctx)
 
         return {
@@ -504,7 +504,7 @@ def _run_truth_document_operator(project_root: Path, target_files: list[str] | N
         from moat.verification.types import VerificationContext
 
         op = TruthDocumentGeneratorOperator()
-        ctx = VerificationContext(project_path=project_root)
+        ctx = VerificationContext(project_path=project_root, target_files=target_files)
         result = op.verify(ctx)
 
         return {
