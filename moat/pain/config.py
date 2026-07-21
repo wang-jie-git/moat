@@ -26,6 +26,7 @@ DEFAULT_CONFIG = {
             "**/venv/**",
             "**/site-packages/**",
             "**/__pycache__/**",
+            "**/.moat/**",
         ],
         "critical_patterns": [
             "*payment*",
