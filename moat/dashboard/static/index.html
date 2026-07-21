@@ -12,114 +12,349 @@
 <!-- Toast -->
 <div id="toast-container" class="toast-container"></div>
 
-<!-- Header -->
-<header class="header">
-  <div class="header-inner">
-    <div class="header-left">
-      <div class="logo">🛡️ Moat <span>Dashboard</span></div>
-      <div id="status-badge" class="status-badge green">
-        <span class="status-dot green"></span> 加载中...
-      </div>
+<!-- App Layout -->
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🛡️</div>
+      <div class="sidebar-title">Moat</div>
+      <div class="sidebar-subtitle">Dashboard</div>
     </div>
-    <div class="header-right">
-      <span class="last-updated" id="last-updated"></span>
-      <div class="mode-toggle" id="mode-toggle" onclick="toggleMode()" title="切换监控模式">
-        <span class="mode-btn active" data-mode="normal">🔇 普通</span>
-        <span class="mode-btn" data-mode="detailed">📡 详细</span>
-      </div>
-      <button class="btn btn-inject" onclick="injectSensors()" title="给项目代码安装传感器">📡 注入传感器</button>
-      <button class="btn btn-danger" onclick="resetEvents()" title="清空所有传感器事件">🗑️ 清空</button>
-      <button class="btn" id="btn-baseline" onclick="saveBaseline()">💾 基线</button>
-      <button class="btn btn-primary" id="btn-check" onclick="runCheck()">🔍 检查</button>
-    </div>
-  </div>
-</header>
-
-<!-- Main -->
-<main class="main">
-
-  <!-- Stats -->
-  <section class="stats">
-    <div class="stat-card" id="stat-total"><div class="icon-bg">📦</div><div class="label">监控组件</div><div class="value white">-</div><div class="sub">个组件</div></div>
-    <div class="stat-card" id="stat-ok"><div class="icon-bg">✅</div><div class="label">运行正常</div><div class="value green">-</div><div class="sub">运行正常</div></div>
-    <div class="stat-card" id="stat-degraded"><div class="icon-bg">⚠️</div><div class="label">降级运行</div><div class="value yellow">-</div><div class="sub">降级运行</div></div>
-    <div class="stat-card" id="stat-panics"><div class="icon-bg">🚨</div><div class="label">近期告警</div><div class="value red">-</div><div class="sub">近期告警</div></div>
-    <div class="stat-card" id="stat-events"><div class="icon-bg">📊</div><div class="label">总事件数</div><div class="value blue">-</div><div class="sub">总事件数</div></div>
-    <div class="stat-card" id="stat-injected"><div class="icon-bg">📡</div><div class="label">已注入传感器</div><div class="value white">-</div><div class="sub">个传感器已注入</div></div>
-  </section>
-
-  <!-- Panels -->
-  <section class="panels">
-
-    <!-- Left: Event Stream -->
-    <div class="panel">
-      <div class="panel-header">
-        <h2>📡 实时事件流</h2>
-        <div class="panel-header-right">
-          <span id="refresh-status" class="refresh-status" title="自动刷新状态">🔄 3s</span>
-          <span id="event-badge" class="badge">0</span>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">仪表盘</span>
+      </a>
+      <a class="nav-item" data-view="sensors" onclick="switchView('sensors')">
+        <span class="nav-icon">📡</span>
+        <span class="nav-label">传感器</span>
+      </a>
+      <a class="nav-item" data-view="memory" onclick="switchView('memory')">
+        <span class="nav-icon">🧠</span>
+        <span class="nav-label">记忆系统</span>
+      </a>
+      <a class="nav-item" data-view="evolution" onclick="switchView('evolution')">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">进化提案</span>
+      </a>
+      <a class="nav-item" data-view="leak" onclick="switchView('leak')">
+        <span class="nav-icon">🔒</span>
+        <span class="nav-label">泄漏检测</span>
+      </a>
+      <a class="nav-item" data-view="accept" onclick="switchView('accept')">
+        <span class="nav-icon">🏗️</span>
+        <span class="nav-label">架构验收</span>
+      </a>
+      <a class="nav-item" data-view="project" onclick="switchView('project')">
+        <span class="nav-icon">📂</span>
+        <span class="nav-label">项目信息</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="project-selector" id="project-selector">
+        <div class="project-selector-current" onclick="toggleProjectDropdown()">
+          <span class="project-icon">📂</span>
+          <span class="project-name" id="project-name">加载中...</span>
+          <span class="project-arrow">▼</span>
+        </div>
+        <div class="project-dropdown" id="project-dropdown" style="display:none;">
+          <div class="project-dropdown-header">切换项目</div>
+          <div class="project-dropdown-list" id="project-dropdown-list">
+            <div style="padding:8px;color:var(--text-muted);font-size:11px;">扫描中...</div>
+          </div>
         </div>
       </div>
-      <div class="event-filter">
-        <input type="text" placeholder="🔍 搜索组件名或错误..." oninput="onSearch(this.value)" spellcheck="false">
-        <div class="filter-btn-group">
-          <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全部</button>
-          <button class="filter-btn" data-filter="ok" onclick="setFilter('ok')">🟢 正常</button>
-          <button class="filter-btn" data-filter="degraded" onclick="setFilter('degraded')">🟡 降级</button>
-          <button class="filter-btn" data-filter="panic" onclick="setFilter('panic')">🔴 异常</button>
+      <div class="sidebar-status" id="sidebar-status">
+        <span class="status-dot green"></span> 运行中
+      </div>
+      <div class="sidebar-version" id="sidebar-version"><a href="https://pypi.org/project/moat-ai/" target="_blank" style="color:inherit;text-decoration:none;">v1.3.0</a></div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="top-header-left">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        <h1 id="view-title">📊 仪表盘</h1>
+        <span id="status-badge" class="status-badge green">
+          <span class="status-dot green"></span> 加载中...
+        </span>
+      </div>
+      <div class="top-header-right">
+        <span class="last-updated" id="last-updated"></span>
+        <div class="mode-toggle" id="mode-toggle" onclick="toggleMode()" title="切换监控模式">
+          <span class="mode-btn active" data-mode="normal">🔇 普通</span>
+          <span class="mode-btn" data-mode="detailed">📡 详细</span>
+        </div>
+        <button class="btn btn-inject" onclick="injectSensors()" title="给项目代码安装传感器">📡 注入</button>
+        <button class="btn btn-danger" onclick="resetEvents()" title="清空所有传感器事件">🗑️</button>
+        <button class="btn" id="btn-baseline" onclick="saveBaseline()">💾</button>
+        <button class="btn btn-primary" id="btn-check" onclick="runCheck()">🔍</button>
+      </div>
+    </header>
+
+    <!-- ===== View: Dashboard ===== -->
+    <section id="view-dashboard" class="view-section active">
+
+      <!-- Stats Cards -->
+      <section class="stats">
+        <div class="stat-card" id="stat-total"><div class="icon-bg">📦</div><div class="label">监控组件</div><div class="value white">-</div><div class="sub">个组件</div></div>
+        <div class="stat-card" id="stat-ok"><div class="icon-bg">✅</div><div class="label">运行正常</div><div class="value green">-</div><div class="sub">运行正常</div></div>
+        <div class="stat-card" id="stat-degraded"><div class="icon-bg">⚠️</div><div class="label">降级运行</div><div class="value yellow">-</div><div class="sub">降级运行</div></div>
+        <div class="stat-card" id="stat-panics"><div class="icon-bg">🚨</div><div class="label">近期告警</div><div class="value red">-</div><div class="sub">近期告警</div></div>
+        <div class="stat-card" id="stat-events"><div class="icon-bg">📊</div><div class="label">总事件数</div><div class="value blue">-</div><div class="sub">总事件数</div></div>
+        <div class="stat-card" id="stat-injected"><div class="icon-bg">📡</div><div class="label">已注入传感器</div><div class="value white">-</div><div class="sub">个传感器已注入</div></div>
+      </section>
+      <div id="other-sensors-label" style="display:none;font-size:11px;color:var(--text-muted);padding:4px 0 0 4px;"></div>
+
+      <!-- Panels: Event Stream + Health -->
+      <section class="panels">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>📡 实时事件流</h2>
+            <div class="panel-header-right">
+              <span id="refresh-status" class="refresh-status" title="自动刷新状态">🔄 3s</span>
+              <span id="event-badge" class="badge">0</span>
+            </div>
+          </div>
+          <div class="event-filter">
+            <input type="text" placeholder="🔍 搜索组件名或错误..." oninput="onSearch(this.value)" spellcheck="false">
+            <div class="filter-btn-group">
+              <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">全部</button>
+              <button class="filter-btn" data-filter="ok" onclick="setFilter('ok')">🟢 正常</button>
+              <button class="filter-btn" data-filter="degraded" onclick="setFilter('degraded')">🟡 降级</button>
+              <button class="filter-btn" data-filter="panic" onclick="setFilter('panic')">🔴 异常</button>
+            </div>
+          </div>
+          <div id="event-list" class="panel-body event-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🔥 组件健康</h2>
+            <div class="panel-header-right">
+              <input type="text" class="health-search" placeholder="🔍 搜索组件..." oninput="onHealthSearch(this.value)" spellcheck="false">
+              <span id="health-badge" class="badge">0</span>
+            </div>
+          </div>
+          <div id="health-grid" class="panel-body health-grid"></div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <div class="footer">
+        <span class="hint-label">💡 项目</span>
+        <code id="project-name">-</code>
+        <span class="hint-label">|</span>
+        <code>moat sensor events</code>
+        <code>moat sensor stats</code>
+        <span class="right">
+          <a href="#" onclick="showHelp();return false" style="color:var(--blue);text-decoration:none;">📖 帮助</a>
+        </span>
+      </div>
+    </section>
+
+    <!-- ===== View: Sensors ===== -->
+    <section id="view-sensors" class="view-section">
+      <div class="view-header">
+        <h2>📡 传感器管理</h2>
+        <div class="view-header-actions">
+          <button class="btn btn-inject" onclick="injectSensors()">📡 注入传感器</button>
+          <button class="btn btn-danger" onclick="resetEvents()">🗑️ 清空事件</button>
         </div>
       </div>
-      <div id="event-list" class="panel-body event-list"></div>
-    </div>
-
-    <!-- Right: Health Grid -->
-    <div class="panel">
-      <div class="panel-header">
-        <h2>🔥 组件健康</h2>
-        <div class="panel-header-right">
-          <input type="text" class="health-search" placeholder="🔍 搜索组件..." oninput="onHealthSearch(this.value)" spellcheck="false">
-          <span id="health-badge" class="badge">0</span>
+      <div class="sensor-content">
+        <div class="panel" style="flex:1;">
+          <div class="panel-header">
+            <h2>📊 传感器统计</h2>
+          </div>
+          <div class="panel-body" id="sensor-stats">
+            <div style="color:var(--text-muted);padding:20px;text-align:center;">加载中...</div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1;">
+          <div class="panel-header">
+            <h2>⚙️ 操作</h2>
+          </div>
+          <div class="panel-body" style="padding:16px;">
+            <div style="margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:500;margin-bottom:6px;">📡 注入传感器</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">给项目代码安装 @moat_sensor 装饰器，自动监控函数性能与异常</div>
+              <button class="btn btn-inject" onclick="injectSensors()">📡 开始注入</button>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+            <div style="margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:500;margin-bottom:6px;">🗑️ 清空事件</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">清除所有传感器事件记录，重新开始监控</div>
+              <button class="btn btn-danger" onclick="resetEvents()">🗑️ 清空全部</button>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+            <div>
+              <div style="font-size:13px;font-weight:500;margin-bottom:6px;">💾 保存基线</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">将当前状态保存为基线，用于后续对比</div>
+              <button class="btn" onclick="saveBaseline()">💾 保存基线</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div id="health-grid" class="panel-body health-grid"></div>
-    </div>
+    </section>
 
-  </section>
-
-  <!-- Project Info + Memory -->
-  <section class="info-panels">
-    <!-- 项目信息 -->
-    <div class="panel info-panel">
-      <div class="panel-header">
-        <h2>📂 项目信息</h2>
-        <button class="btn btn-sm" onclick="loadProjectInfo()" title="刷新项目信息">🔄 刷新</button>
-      </div>
-      <div id="project-info" class="panel-body project-info-body">加载中...</div>
-    </div>
-
-    <!-- 记忆系统 -->
-    <div class="panel info-panel">
-      <div class="panel-header">
+    <!-- ===== View: Memory ===== -->
+    <section id="view-memory" class="view-section">
+      <div class="view-header">
         <h2>🧠 记忆系统</h2>
-        <button class="btn btn-sm" onclick="loadMemory()" title="刷新记忆数据">🔄 刷新</button>
+        <div class="view-header-actions">
+          <button class="btn btn-sm" onclick="loadMemoryView()">🔄 刷新</button>
+        </div>
       </div>
-      <div id="memory-info" class="panel-body memory-info-body">加载中...</div>
-    </div>
-  </section>
+      <div class="memory-full-content" id="memory-full-content">
+        <div style="color:var(--text-muted);padding:20px;text-align:center;">加载中...</div>
+      </div>
+    </section>
 
-  <!-- Footer -->
-  <div class="footer">
-    <span class="hint-label">💡 项目</span>
-    <code id="project-name">-</code>
-    <span class="hint-label">|</span>
-    <code>moat sensor events</code>
-    <code>moat sensor stats</code>
-    <span class="right">
-      <a href="#" onclick="showHelp();return false" style="color:var(--blue);text-decoration:none;">📖 帮助</a>
-    </span>
-  </div>
+    <!-- ===== View: Evolution ===== -->
+    <section id="view-evolution" class="view-section">
+      <div class="view-header">
+        <h2>📝 进化提案</h2>
+        <div class="view-header-actions">
+          <button class="btn btn-sm" onclick="loadEvolutionView()">🔄 刷新</button>
+        </div>
+      </div>
+      <div class="evolution-full-content" id="evolution-full-content">
+        <div style="color:var(--text-muted);padding:20px;text-align:center;">加载中...</div>
+      </div>
+    </section>
 
-</main>
+    <!-- ===== View: Project ===== -->
+    <section id="view-project" class="view-section">
+      <div class="view-header">
+        <h2>📂 项目信息</h2>
+        <div class="view-header-actions">
+          <button class="btn btn-sm" onclick="loadProjectInfo()">🔄 刷新</button>
+        </div>
+      </div>
+      <div class="project-full-content" id="project-full-content">
+        <div style="color:var(--text-muted);padding:20px;text-align:center;">加载中...</div>
+      </div>
+    </section>
+
+    <!-- ===== View: Leak Detection ===== -->
+    <section id="view-leak" class="view-section">
+      <div class="view-header">
+        <h2>🔒 泄漏检测</h2>
+        <div class="view-header-actions">
+          <span class="leak-mode-toggle" id="leak-mode-toggle" onclick="toggleLeakMode()" title="切换扫描模式">
+            <span class="leak-mode-btn active" data-mode="project">📁 项目</span>
+            <span class="leak-mode-btn" data-mode="system">🖥️ 系统</span>
+          </span>
+          <button class="btn btn-primary" onclick="runLeakCheck()" id="leak-scan-btn">🔍 开始扫描</button>
+          <button class="btn btn-sm" onclick="exportLeakReport()" id="leak-export-btn" style="display:none;" title="导出报告">📄 导出</button>
+          <button class="btn btn-sm" onclick="loadLeakCheckView()">🔄 刷新</button>
+        </div>
+      </div>
+
+      <!-- 扫描范围说明 -->
+      <div class="leak-scope-panel" id="leak-scope-panel">
+        <div class="leak-scope-header" onclick="toggleLeakScope()">
+          <span>📋 扫描范围说明</span>
+          <span class="leak-scope-toggle" id="leak-scope-toggle">▼</span>
+        </div>
+        <div class="leak-scope-body" id="leak-scope-body">
+          <div class="leak-scope-grid">
+            <div class="leak-scope-item">
+              <div class="lsi-icon">🤖</div>
+              <div class="lsi-content">
+                <div class="lsi-title">AI 工具系统配置</div>
+                <div class="lsi-desc">扫描本机 <code>~/.claude/</code>, <code>~/.grok/</code>, <code>~/.codex/</code> 目录，检测授权命令、会话数据大小</div>
+                <div class="lsi-sev">🔴 严重 · 🟡 警告 · 🔵 信息</div>
+              </div>
+            </div>
+            <div class="leak-scope-item">
+              <div class="lsi-icon">🕵️</div>
+              <div class="lsi-content">
+                <div class="lsi-title">AI 工具项目痕迹</div>
+                <div class="lsi-desc">检测项目内 <code>.grok/</code>, <code>.claude/</code>, <code>.codex/</code>, <code>.openai/</code> 等配置引用</div>
+                <div class="lsi-sev">🔴 严重</div>
+              </div>
+            </div>
+            <div class="leak-scope-item">
+              <div class="lsi-icon">📄</div>
+              <div class="lsi-content">
+                <div class="lsi-title">敏感文件暴露</div>
+                <div class="lsi-desc">检测 <code>.env</code>, <code>credentials.json</code>, <code>service-account.json</code> 等是否被 .gitignore 排除</div>
+                <div class="lsi-sev">🔴 严重</div>
+              </div>
+            </div>
+            <div class="leak-scope-item">
+              <div class="lsi-icon">🔗</div>
+              <div class="lsi-content">
+                <div class="lsi-title">Symlink 泄露</div>
+                <div class="lsi-desc">检测指向项目外 <code>.ssh/</code>, <code>.aws/</code> 等敏感目录的符号链接</div>
+                <div class="lsi-sev">🟡 警告</div>
+              </div>
+            </div>
+            <div class="leak-scope-item">
+              <div class="lsi-icon">📋</div>
+              <div class="lsi-content">
+                <div class="lsi-title">.gitignore 覆盖</div>
+                <div class="lsi-desc">检查 .gitignore 是否遗漏敏感目录（.ssh, .aws, .env 等）</div>
+                <div class="lsi-sev">🟡 警告</div>
+              </div>
+            </div>
+            <div class="leak-scope-item">
+              <div class="lsi-icon">📝</div>
+              <div class="lsi-content">
+                <div class="lsi-title">硬编码路径</div>
+                <div class="lsi-desc">检测代码中 <code>~/</code>, <code>/home/</code>, <code>~/.ssh/</code> 等敏感路径的硬编码引用</div>
+                <div class="lsi-sev">🟡 警告</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:8px;padding:8px;background:var(--bg-primary);border-radius:6px;">
+            ⚠️ 此检测不扫描"所有 AI 工具"，只扫描已知路径的 Grok CLI、Claude Code、Codex CLI。<br>
+            📁 <strong>项目模式</strong>（默认）：扫描项目内 AI 工具痕迹、敏感文件、符号链接、硬编码路径<br>
+            🖥️ <strong>系统模式</strong>：额外扫描本机 <code>~/.claude/</code> <code>~/.grok/</code> <code>~/.codex/</code> 目录<br>
+            点击顶栏「📁 项目 / 🖥️ 系统」切换模式，切换后自动重新扫描。
+          </div>
+        </div>
+      </div>
+
+      <div class="leak-full-content" id="leak-full-content">
+        <div style="color:var(--text-muted);padding:40px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+          <div style="font-size:14px;margin-bottom:8px;">代码泄露风险检测</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">检测 AI 工具痕迹、敏感文件暴露、符号链接泄露、硬编码路径</div>
+          <button class="btn btn-primary" onclick="runLeakCheck()" style="font-size:14px;padding:8px 24px;">🔍 开始扫描</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== View: Accept ===== -->
+    <section id="view-accept" class="view-section">
+      <div class="view-header">
+        <h2>🏗️ 架构验收</h2>
+        <div class="view-header-actions">
+          <button class="btn btn-primary" onclick="runAcceptCheck()" id="accept-scan-btn">🔍 开始验收</button>
+          <button class="btn btn-sm" onclick="exportAcceptReport()" id="accept-export-btn" style="display:none;" title="导出报告">📄 导出</button>
+          <button class="btn btn-sm" onclick="loadAcceptView()">🔄 刷新</button>
+        </div>
+      </div>
+      <div class="accept-full-content" id="accept-full-content">
+        <div style="color:var(--text-muted);padding:40px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">🏗️</div>
+          <div style="font-size:14px;margin-bottom:8px;">架构验收 8 步法</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">规则验收 → 目录责任 → 模块演练 → 接口规范 → 框架利用 → 运行证据 → 文档收口 → 版本基线</div>
+          <button class="btn btn-primary" onclick="runAcceptCheck()" style="font-size:14px;padding:8px 24px;">🔍 开始验收</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
 
 <script src="/static/app.js"></script>
 </body>

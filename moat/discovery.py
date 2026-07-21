@@ -33,10 +33,14 @@ def init_project(project_root: Path, interactive: bool = False):
     bm = BaselineManager(root)
     bm.save()
 
-    # 6. 预置通用红线
+    # 6. 安装所有 AI 适配器（CLAUDE.md / SKILL.md / hooks / 启动检测）
+    from moat.adapters import install_all as install_all_adapters
+    install_all_adapters(root)
+
+    # 7. 预置通用红线
     _init_default_redlines(root)
 
-    # 7. 预置通用模版
+    # 8. 预置通用模版
     _init_default_templates(root)
 
     print(f"\n✅ Moat 已初始化到 {root}")

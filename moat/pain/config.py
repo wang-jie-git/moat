@@ -45,7 +45,7 @@ DEFAULT_CONFIG = {
 
 
 def detect_project_type(project_root: str = ".") -> str:
-    """自动检测项目类型"""
+    """自动检测项目类型（跳过大型目录）"""
     root = Path(project_root).resolve()
 
     clues = {
@@ -71,13 +71,47 @@ def detect_project_type(project_root: str = ".") -> str:
         ],
     }
 
+    def _fast_rglob(pattern: str) -> list:
+        """快速 rglob，跳过大型目录"""
+        skip_names = {'.git', 'node_modules', '__pycache__', '.venv', 'venv',
+                      '.next', 'dist', 'build', '.cache', '.moat', 'site-packages',
+                      'release', 'codegraph', '.codegraph', '.upstream-openharness'}
+        results = []
+        try:
+            for entry in root.iterdir():
+                if entry.name in skip_names or entry.name.startswith('.'):
+                    continue
+                if entry.is_dir():
+                    # 对一级子目录做有限深度搜索（最多 3 层）
+                    results.extend(_fast_rglob_in_dir(entry, pattern, 0, 3, skip_names))
+                elif entry.match(pattern):
+                    results.append(entry)
+        except PermissionError:
+            pass
+        return results
+
+    def _fast_rglob_in_dir(directory: Path, pattern: str, depth: int, max_depth: int, skip_names: set) -> list:
+        if depth > max_depth:
+            return []
+        results = []
+        try:
+            for entry in directory.iterdir():
+                if entry.name in skip_names:
+                    continue
+                if entry.is_dir():
+                    results.extend(_fast_rglob_in_dir(entry, pattern, depth + 1, max_depth, skip_names))
+                elif entry.match(pattern):
+                    results.append(entry)
+        except PermissionError:
+            pass
+        return results
+
     for ptype, paths in clues.items():
         for p in paths:
             if p.exists():
                 return ptype
-            # 递归搜索 manage.py 等标志文件
             if p.name == "manage.py":
-                matches = list(root.rglob("manage.py"))
+                matches = _fast_rglob("manage.py")
                 if matches:
                     return ptype
 

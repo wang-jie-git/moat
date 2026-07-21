@@ -155,15 +155,14 @@ class SensorInjector(ast.NodeTransformer):
         # 跳过魔术方法
         if node.name.startswith("__") and node.name.endswith("__"):
             return False
-        # 跳过已有传感器
+        # 跳过已有传感器（同步 + 异步）
         for dec in node.decorator_list:
             if isinstance(dec, ast.Call):
                 func = dec.func
-                if isinstance(func, ast.Name) and func.id == "moat_sensor":
+                dec_name = func.id if isinstance(func, ast.Name) else (func.attr if isinstance(func, ast.Attribute) else "")
+                if dec_name in ("moat_sensor", "moat_sensor_async"):
                     return False
-                if isinstance(func, ast.Attribute) and func.attr == "moat_sensor":
-                    return False
-            elif isinstance(dec, ast.Name) and dec.id == "moat_sensor":
+            elif isinstance(dec, ast.Name) and dec.id in ("moat_sensor", "moat_sensor_async"):
                 return False
         return True
 

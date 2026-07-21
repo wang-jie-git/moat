@@ -376,12 +376,39 @@ def cmd_architecture(args):
 
 def cmd_adapter(args):
     """安装 AI 适配器"""
-    from moat.adapters import install_claude_adapter, install_precommit_hook
+    from moat.adapters import (
+        install_claude_adapter,
+        install_cursor_adapter,
+        install_codex_adapter,
+        install_agents_adapter,
+        install_openharness_adapter,
+        install_windsurf_adapter,
+        install_precommit_hook,
+        install_git_wrapper,
+        install_startup_check,
+        install_all,
+    )
 
-    if args.type == "claude" or args.type == "all":
+    if args.type == "all":
+        install_all(Path(args.project))
+    elif args.type == "claude":
         install_claude_adapter(Path(args.project))
-    if args.type == "precommit" or args.type == "all":
+    elif args.type == "cursor":
+        install_cursor_adapter(Path(args.project))
+    elif args.type == "codex":
+        install_codex_adapter(Path(args.project))
+    elif args.type == "agents":
+        install_agents_adapter(Path(args.project))
+    elif args.type == "openharness":
+        install_openharness_adapter(Path(args.project))
+    elif args.type == "windsurf":
+        install_windsurf_adapter(Path(args.project))
+    elif args.type == "precommit":
         install_precommit_hook(Path(args.project))
+    elif args.type == "gitwrapper":
+        install_git_wrapper(Path(args.project))
+    elif args.type == "startup":
+        install_startup_check(Path(args.project))
     print("✅ 适配器安装完成")
     return 0
 
@@ -392,6 +419,26 @@ def _get_memory(args):
     """获取 MoatMemory 实例。"""
     from moat.memory.moat_memory import MoatMemory
     return MoatMemory(args.project)
+
+
+def _sync_ai_context(project_root):
+    """生成 .moat/ai_context.md — AI 工具自动读取的项目记忆快照"""
+    from pathlib import Path
+    from moat.memory.moat_memory import MoatMemory
+
+    root = Path(project_root).resolve()
+    md_path = root / ".moat" / "ai_context.md"
+
+    with MoatMemory(root) as memory:
+        content = memory.format_all_for_ai()
+
+    if not content:
+        md_path.write_text("📭 项目还没有任何记忆。\n")
+        print("  📭 项目暂无记忆，已生成空文件")
+        return
+
+    md_path.write_text(content + "\n")
+    print(f"  ✅ .moat/ai_context.md 已同步 ({len(content)} 字符)")
 
 
 def cmd_memory(args):
@@ -408,6 +455,11 @@ def cmd_memory(args):
             print(output)
         else:
             print("📭 项目还没有任何记忆。")
+        return 0
+
+    # sync 模式：生成 .moat/ai_context.md（AI 工具自动读取）
+    if action == "sync":
+        _sync_ai_context(args.project)
         return 0
 
     if action == "stats":
@@ -1562,9 +1614,9 @@ def build_parser() -> argparse.ArgumentParser:
     # adapter
     p_adapter = sub.add_parser("adapter", help="安装 AI 适配器")
     _shared_args(p_adapter)
-    p_adapter.add_argument("type", choices=["claude", "precommit", "all"],
+    p_adapter.add_argument("type", choices=["claude", "cursor", "codex", "agents", "openharness", "windsurf", "precommit", "gitwrapper", "startup", "all"],
                            default="all", nargs="?",
-                           help="适配器类型")
+                           help="适配器类型（all=全部安装）")
 
     # ── moat-memory 命令 ──
 
@@ -1572,8 +1624,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_memory = sub.add_parser("memory", help="📖 项目记忆管理（红线/踩坑/模版）")
     _shared_args(p_memory)
     p_memory.add_argument("action", nargs="?", default="stats",
-                          choices=["list", "show", "delete", "stats", "clean"],
-                          help="操作（默认: stats）")
+                          choices=["list", "show", "delete", "stats", "clean", "sync", "ai"],
+                          help="操作（默认: stats, sync=生成 AI 上下文文件）")
     p_memory.add_argument("type", nargs="?",
                           choices=["redlines", "lessons", "templates", "skills"],
                           help="记忆类型（仅 list/delete）")
