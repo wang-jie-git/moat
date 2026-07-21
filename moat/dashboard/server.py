@@ -140,8 +140,6 @@ def start_dashboard(initial_project: Path, host: str = "127.0.0.1",
         # 读取注入元数据
         injected_count = 0
         injection_meta_file = _project_ref[0] / ".moat" / "injection_meta.json"
-        if not injection_meta_file.exists():
-            injection_meta_file = Path.home() / ".moat" / "injection_meta.json"
         if injection_meta_file.exists():
             try:
                 import json
