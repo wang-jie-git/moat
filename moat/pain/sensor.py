@@ -45,8 +45,13 @@ EVENT_BUS_MAX = 1000
 # 错误去重 / 健康追踪的最大组件数
 MAX_TRACKED_COMPONENTS = 500
 
-# 正常事件上报阈值（ms，超过此阈值才写入日志避免高频噪音）
-OK_REPORT_THRESHOLD_MS = 500
+# 正常事件上报阈值（ms，超过此阈值才写入日志避免高频噪音
+# 可通过环境变量 MOAT_SENSOR_OK_THRESHOLD_MS 覆盖，设为 0 表示上报所有事件）
+# 默认 30000ms（30 秒）：仅异常/错误才上报，正常无感
+OK_REPORT_THRESHOLD_MS = int(os.environ.get(
+    "MOAT_SENSOR_OK_THRESHOLD_MS",
+    "30000"
+))
 
 # 共享事件文件（跨进程持久化）
 SENSOR_DIR = os.environ.get(
