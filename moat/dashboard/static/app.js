@@ -75,13 +75,7 @@ async function loadMemoryView() {
 
 function renderMemoryFullView(el, mem, evo) {
   const ms = mem.available ? mem.stats : { redlines: 0, lessons: 0, templates: 0, skills: 0, total: 0 };
-  const es = evo.available ? evo.stats : { pending: 0, applied: 0, rejected: 0, total: 0 };
-  // 局部兜底：避免引用未定义变量导致 ReferenceError
-  const scoreGate = typeof STATE !== 'undefined' ? (STATE.acceptScoreGate || 0) : 0;
-  const lastAccept = typeof STATE !== 'undefined' ? (STATE.lastAcceptResult || {}) : {};
-  const d = lastAccept || {};
-  const score = d.score ?? d.overall_score ?? 100;
-  const gateFailed = scoreGate > 0 && score < scoreGate;
+  const es = evo.available ? evo.stats : { pending: 0, accepted: 0, rejected: 0, total: 0 };
   // 局部兜底：避免引用未定义变量导致 ReferenceError
   const scoreGate = typeof STATE !== 'undefined' ? (STATE.acceptScoreGate || 0) : 0;
   const lastAccept = typeof STATE !== 'undefined' ? (STATE.lastAcceptResult || {}) : {};
