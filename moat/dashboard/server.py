@@ -744,8 +744,10 @@ def start_dashboard(initial_project: Path, host: str = "127.0.0.1",
     @app.get("/api/moat/version")
     async def check_version():
         """检查当前版本和 PyPI 最新版本"""
+        import importlib, moat
+        importlib.reload(moat)
         import urllib.request, json as jlib
-        current = "1.3.0"
+        current = moat.__version__
         latest = current
         update_available = False
         try:

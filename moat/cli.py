@@ -243,7 +243,7 @@ def cmd_dashboard(args):
     """启动 Web 看板"""
     from moat.dashboard.server import start_dashboard
     start_dashboard(
-        project=Path(args.project),
+        Path(args.project),
         host=args.host,
         port=args.port,
         log_path=args.log or _detect_log_path(args.project),

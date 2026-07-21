@@ -273,7 +273,7 @@ def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: b
         checks.append(("导入完备性检查（修改的文件）", ImportCompletenessCheck(root, import_config)))
 
     # ── 安全检测（SECRETS-001 / DEPS-001 / UNUSED-001 / SQL-002）──
-    _add_security_checks(checks, root, config, modified_files if modified_files else None)
+    _add_security_checks(checks, root, config, modified_files)
 
     # 战术建议 1：异步触发优化检查（默认不跑）
     if enable_optimization:
@@ -449,7 +449,11 @@ def _add_security_checks(checks: list, root: Path, config: dict, target_files: l
     if security_config.get("secrets", True):
         try:
             from moat.checks.secrets import SecretsCheck
-            sc_config = {**config, "target_files": target_files} if target_files else config
+            # 总是传入 target_files，即使为空（空列表 = 无变更，跳过全量扫描）
+            if target_files is not None:
+                sc_config = {**config, "target_files": target_files}
+            else:
+                sc_config = config
             checks.append(("🔑 密钥检测 SECRETS-001", SecretsCheck(root, sc_config)))
         except Exception:
             pass  # fail-open
@@ -458,7 +462,11 @@ def _add_security_checks(checks: list, root: Path, config: dict, target_files: l
     if security_config.get("dependencies", True):
         try:
             from moat.checks.dependency_security import DependencySecurityCheck
-            checks.append(("📦 依赖安全 DEPS-001", DependencySecurityCheck(root, config)))
+            if target_files is not None:
+                deps_config = {**config, "target_files": target_files}
+            else:
+                deps_config = config
+            checks.append(("📦 依赖安全 DEPS-001", DependencySecurityCheck(root, deps_config)))
         except Exception:
             pass
 
@@ -466,7 +474,10 @@ def _add_security_checks(checks: list, root: Path, config: dict, target_files: l
     if security_config.get("unused_exports", True):
         try:
             from moat.checks.unused_exports import UnusedExportsCheck
-            ue_config = {**config, "target_files": target_files} if target_files else config
+            if target_files is not None:
+                ue_config = {**config, "target_files": target_files}
+            else:
+                ue_config = config
             checks.append(("📤 未使用导出 UNUSED-001", UnusedExportsCheck(root, ue_config)))
         except Exception:
             pass
@@ -475,7 +486,10 @@ def _add_security_checks(checks: list, root: Path, config: dict, target_files: l
     if security_config.get("sql_injection", True):
         try:
             from moat.checks.sql_injection import SqlInjectionCheck
-            si_config = {**config, "target_files": target_files} if target_files else config
+            if target_files is not None:
+                si_config = {**config, "target_files": target_files}
+            else:
+                si_config = config
             checks.append(("💉 SQL 注入 SQL-002", SqlInjectionCheck(root, si_config)))
         except Exception:
             pass

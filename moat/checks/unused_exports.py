@@ -54,6 +54,42 @@ class UnusedExportsCheck(Check):
 
         return []
 
+    # 排除目录（不遍历这些目录）
+    EXCLUDED_DIRS = {
+        ".git", "__pycache__", "node_modules", ".next", ".nuxt",
+        "build", "dist", "target", "vendor", ".tox", "htmlcov",
+    }
+
+    def _find_code_files(self) -> list[Path]:
+        """查找代码文件（排除大目录 node_modules/.venv/.git 等）
+
+        使用显式递归遍历，跳过排除目录，避免 rglob 遍历 node_modules 等大目录。
+        """
+        extensions = {".py", ".ts", ".tsx", ".go"}
+        files = []
+
+        def _walk(path: Path):
+            try:
+                for entry in path.iterdir():
+                    if entry.is_dir():
+                        name = entry.name
+                        if name in self.EXCLUDED_DIRS:
+                            continue
+                        if name.startswith(".venv") or name == "venv":
+                            continue
+                        if name == "site-packages":
+                            continue
+                        _walk(entry)
+                    elif entry.suffix in extensions:
+                        files.append(entry)
+            except PermissionError:
+                pass
+            except OSError:
+                pass
+
+        _walk(self.project)
+        return files
+
     def run(self) -> list[CheckResult]:
         """运行未使用导出检测
 
@@ -62,27 +98,15 @@ class UnusedExportsCheck(Check):
         """
         results = []
 
-        # 扫描 Python 文件
-        py_files = list(self.project.rglob("**/*.py"))
-        for file_path in py_files:
-            if self._should_skip(file_path):
-                continue
+        # 快速模式：只检查 target_files（config 传入的修改文件列表）
+        # 即使 target_files 是空列表，也跳过全量扫描（无变更时不扫描）
+        target_files = self.config.get("target_files")
+        if target_files is not None:
+            code_files = [Path(f) if isinstance(f, str) else f for f in target_files]
+        else:
+            code_files = self._find_code_files()
 
-            file_results = self._check_file(file_path)
-            results.extend(file_results)
-
-        # 扫描 TypeScript/JavaScript 文件
-        ts_files = list(self.project.rglob("**/*.ts")) + list(self.project.rglob("**/*.tsx"))
-        for file_path in ts_files:
-            if self._should_skip(file_path):
-                continue
-
-            file_results = self._check_file(file_path)
-            results.extend(file_results)
-
-        # 扫描 Go 文件
-        go_files = list(self.project.rglob("**/*.go"))
-        for file_path in go_files:
+        for file_path in code_files:
             if self._should_skip(file_path):
                 continue
 
