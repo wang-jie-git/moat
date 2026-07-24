@@ -27,9 +27,10 @@ def test_core_file_detection():
         (repo_path / "utils.js").write_text("console.log('test')")
         subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
 
-        check = CoreFileModificationCheck()
-        result = check.run(repo_path)
-        assert result.type == "pass", f"非核心文件不应触发违规: {result.message}"
+        check = CoreFileModificationCheck(repo_path)
+        result_list = check.run()
+        result = result_list[0] if result_list else None
+        assert result and result.type == "pass", f"非核心文件不应触发违规: {result.message if result else 'no result'}"
 
         # 提交
         subprocess.run(["git", "commit", "-m", "update utils"], cwd=repo_path, check=True)
@@ -38,9 +39,10 @@ def test_core_file_detection():
         (repo_path / "App.tsx").write_text("export default function App() {}")
         subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
 
-        check = CoreFileModificationCheck()
-        result = check.run(repo_path)
-        assert result.type == "fail", f"修改 App.tsx 应该触发违规: {result.message}"
+        check = CoreFileModificationCheck(repo_path)
+        result_list = check.run()
+        result = result_list[0] if result_list else None
+        assert result and result.type == "fail", f"修改 App.tsx 应该触发违规: {result.message if result else 'no result'}"
         assert "App.tsx" in result.message
         assert "需要用户明确批准" in result.message
 
@@ -78,9 +80,10 @@ def test_custom_config():
         (repo_path / "App.tsx").write_text("export default function App() {}")
         subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
 
-        check = CoreFileModificationCheck(config)
-        result = check.run(repo_path)
-        assert result.type == "pass", f"App.tsx 不在自定义保护列表中: {result.message}"
+        check = CoreFileModificationCheck(repo_path, config)
+        result_list = check.run()
+        result = result_list[0] if result_list else None
+        assert result and result.type == "pass", f"App.tsx 不在自定义保护列表中: {result.message if result else 'no result'}"
 
         subprocess.run(["git", "commit", "-m", "update App"], cwd=repo_path, check=True)
 
@@ -88,9 +91,10 @@ def test_custom_config():
         (repo_path / "SecretFile.tsx").write_text("export const secret = 'xyz'")
         subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
 
-        check = CoreFileModificationCheck(config)
-        result = check.run(repo_path)
-        assert result.type == "fail", f"SecretFile.tsx 应该触发违规: {result.message}"
+        check = CoreFileModificationCheck(repo_path, config)
+        result_list = check.run()
+        result = result_list[0] if result_list else None
+        assert result and result.type == "fail", f"SecretFile.tsx 应该触发违规: {result.message if result else 'no result'}"
         assert "SecretFile.tsx" in result.message
 
         print("✅ 自定义配置测试通过")
@@ -98,23 +102,25 @@ def test_custom_config():
 
 def test_pattern_matching():
     """测试模式匹配"""
-    check = CoreFileModificationCheck()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_path = Path(tmpdir)
+        check = CoreFileModificationCheck(repo_path)
 
-    # 精确匹配
-    assert check._matches_pattern("App.tsx", "App.tsx") == True
-    assert check._matches_pattern("app.tsx", "App.tsx") == True  # 不区分大小写
-    assert check._matches_pattern("Main.tsx", "App.tsx") == False
+        # 精确匹配
+        assert check._matches_pattern("App.tsx", "App.tsx") == True
+        assert check._matches_pattern("app.tsx", "App.tsx") == True  # 不区分大小写
+        assert check._matches_pattern("Main.tsx", "App.tsx") == False
 
-    # 通配符
-    assert check._matches_pattern("WebSocketHandler.ts", "*websocket*") == True
-    assert check._matches_pattern("my_bridge.py", "*bridge*") == True
-    assert check._matches_pattern("test.js", "*bridge*") == False
+        # 通配符
+        assert check._matches_pattern("WebSocketHandler.ts", "*websocket*") == True
+        assert check._matches_pattern("my_bridge.py", "*bridge*") == True
+        assert check._matches_pattern("test.js", "*bridge*") == False
 
-    # 正则表达式
-    assert check._matches_pattern("test.py", "^test.*") == True
-    assert check._matches_pattern("main.js", "^test.*") == False
+        # 正则表达式
+        assert check._matches_pattern("test.py", "^test.*") == True
+        assert check._matches_pattern("main.js", "^test.*") == False
 
-    print("✅ 模式匹配测试通过")
+        print("✅ 模式匹配测试通过")
 
 
 if __name__ == "__main__":

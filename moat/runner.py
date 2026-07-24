@@ -289,9 +289,10 @@ def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: b
     # 核心文件修改检测（新增）
     if modified_files:
         from moat.checks.core_file_modification import CoreFileModificationCheck
-        core_file_config = config.get("core_file_modification", {})
+        # core_file_modification 配置在 rules 字段下
+        core_file_config = config.get("rules", {}).get("core_file_modification", {})
         checks.append(
-            ("核心文件修改检测", CoreFileModificationCheck(core_file_config))
+            ("核心文件修改检测", CoreFileModificationCheck(root, core_file_config))
         )
 
     return checks

@@ -41,7 +41,7 @@ def create_check_instances(project_type: dict[str, bool], project_root: Path, co
         if core_file_config.get("enabled", True):
             from moat.checks.core_file_modification import CoreFileModificationCheck
             checks.append(
-                ("L0 核心文件修改检测", CoreFileModificationCheck(core_file_config))
+                ("L0 核心文件修改检测", CoreFileModificationCheck(project_root, core_file_config))
             )
 
     # TypeScript 检查（新增，基于 Check 基类）

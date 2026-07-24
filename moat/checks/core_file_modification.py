@@ -90,31 +90,28 @@ class CoreFileModificationCheck(Check):
     检测是否修改了受保护的核心文件，防止未经授权的改动。
 
     使用示例：
-        check = CoreFileModificationCheck()
-        result = check.run(Path.cwd(), diff_files=["App.tsx", "utils.js"])
-        # 如果 App.tsx 在核心文件列表中，result 会是 FAIL
-
-    配置示例（.moat/moat.json）：
-        {
-          "core_file_modification": {
-            "enabled": true,
-            "severity": "critical",
-            "core_files": [
-              {
-                "name": "my_core_file",
-                "patterns": ["CoreFile.tsx"],
-                "description": "我的核心文件"
-              }
-            ]
-          }
-        }
+        check = CoreFileModificationCheck(Path.cwd(), config)
+        result = check.run()
     """
 
     check_type = "core_file_modification"
     description = "检测是否修改了受保护的核心文件"
 
-    def __init__(self, config: Dict[str, Any] = None):
-        self.config = config or {}
+    def __init__(self, project_root: Path = None, config: Dict[str, Any] = None):
+        # 兼容两种初始化方式：
+        # 1. CoreFileModificationCheck(config) — 从 __init__.py 调用（第一个参数是 dict）
+        # 2. CoreFileModificationCheck(project_root, config) — 标准 Check 基类
+
+        # 如果第一个参数是 dict，说明是方式 1
+        if isinstance(project_root, dict):
+            config = project_root
+            project_root = None
+
+        # 如果 project_root 仍然为 None，使用当前目录
+        if project_root is None:
+            project_root = Path.cwd()
+
+        super().__init__(project_root, config or {})
         self.severity = self.config.get("severity", "critical")
         self.core_files = self._load_core_files()
         self.enabled = self.config.get("enabled", True)
@@ -190,32 +187,26 @@ class CoreFileModificationCheck(Check):
             logger.warning(f"Failed to get changed files: {e}")
             return []
 
-    def run(self, repo_path: Path, diff_files: List[str] = None, **kwargs) -> CheckResult:
+    def run(self) -> list[CheckResult]:
         """运行核心文件修改检测
 
-        Args:
-            repo_path: Git 仓库路径
-            diff_files: 待检查的文件列表（如果为 None，自动从 git diff 获取）
-            **kwargs: 额外参数
-
         Returns:
-            CheckResult: 检查结果
+            list[CheckResult]: 检查结果列表
         """
         if not self.enabled:
-            return CheckResult(
+            return [CheckResult(
                 type="pass",
                 message="核心文件修改检测已禁用",
-            )
+            )]
 
         # 获取修改的文件列表
-        if diff_files is None:
-            diff_files = self.get_changed_files(repo_path)
+        diff_files = self.get_changed_files(self.project)
 
         if not diff_files:
-            return CheckResult(
+            return [CheckResult(
                 type="pass",
                 message="没有检测到文件修改",
-            )
+            )]
 
         # 检查是否有核心文件被修改
         violations = []
@@ -231,10 +222,10 @@ class CoreFileModificationCheck(Check):
                 })
 
         if not violations:
-            return CheckResult(
+            return [CheckResult(
                 type="pass",
                 message=f"检查了 {len(diff_files)} 个文件，没有核心文件被修改",
-            )
+            )]
 
         # 生成违规报告
         violation_messages = []
@@ -252,7 +243,7 @@ class CoreFileModificationCheck(Check):
         has_critical = any(v['severity'] == 'critical' for v in violations)
         status = "fail" if has_critical else "warn"
 
-        return CheckResult(
+        return [CheckResult(
             type=status,
             message=message,
             metadata={
@@ -260,7 +251,7 @@ class CoreFileModificationCheck(Check):
                 "total_violations": len(violations),
                 "files_checked": len(diff_files),
             },
-        )
+        )]
 
     def get_core_files(self) -> List[CoreFileConfig]:
         """获取当前保护的核心文件列表"""
