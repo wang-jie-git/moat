@@ -125,9 +125,9 @@ class SecretsCheck(Check):
 
     # 占位符模式（降低误报）
     PLACEHOLDER_PATTERNS = [
-        r"^your[-_]?(api|secret|password|token|key)",
-        r"^(your|my|example|test|demo|sample)[-_]?(api|secret|password|token)",
-        r"^(placeholder|changeme|replace_me|dummy|fake)",
+        r"^your[-_]?(api|secret|password|token|key)",  # your_api_key
+        r"^(?:your|my|example|test|demo|sample)[-_](?:api|secret|password|token|key)",  # my-api-key (必须包含分隔符)
+        r"^(?:placeholder|changeme|replace_me|dummy|fake)",  # placeholder
         r"^<[^>]+>$",  # <your-api-key>
         r"^\{[^}]+\}$",  # {api_key}
         r"^\$\([^)]+\)$",  # $(API_KEY)

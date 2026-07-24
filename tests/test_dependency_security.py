@@ -15,23 +15,43 @@ def check(tmp_path):
     return DependencySecurityCheck(tmp_path, {})
 
 
-def test_vulnerable_requests(check):
+def test_vulnerable_requests(check, monkeypatch):
     """测试检测有漏洞的 requests 库"""
+    # Mock pip-audit 返回漏洞
+    def mock_run_pip_audit(self, package_name, version):
+        if package_name == "requests" and version == "2.19.0":
+            return [CheckResult(
+                type="fail",
+                level="HIGH",
+                file="requests",
+                message=f"[依赖安全] requests@{version} 存在漏洞 (CVE-2018-18074): credential leak。建议升级到 最新版本",
+                metadata={"rule": "dependency_security", "package": "requests", "version": version}
+            )]
+        return []
+
+    monkeypatch.setattr(DependencySecurityCheck, "_run_pip_audit", mock_run_pip_audit)
+
     test_file = Path(check.project) / "requirements.txt"
     test_file.write_text("requests==2.19.0\n")
 
     results = check._check_file(test_file)
     # 应该检测到 requests 的已知漏洞
     print(f"✅ Requests 漏洞检测: 找到 {len(results)} 个问题")
-    if results:
-        assert any("requests" in r.file for r in results)
-        assert any("CVE" in r.message or "vulnerability" in r.message.lower() for r in results)
+    assert len(results) >= 1
+    assert any("requests" in r.file for r in results)
+    assert any("CVE" in r.message or "credential" in r.message.lower() for r in results)
 
 
-def test_safe_requests(check):
+def test_safe_requests(check, monkeypatch):
     """测试安全的 requests 版本不应该报警"""
+    # Mock pip-audit 返回空列表（表示没有漏洞）
+    def mock_run_pip_audit(self, package_name, version):
+        return []
+
+    monkeypatch.setattr(DependencySecurityCheck, "_run_pip_audit", mock_run_pip_audit)
+
     test_file = Path(check.project) / "requirements.txt"
-    test_file.write_text("requests==2.28.0\n")
+    test_file.write_text("requests==2.28.2\n")
 
     results = check._check_file(test_file)
     # 不应该检测到漏洞
