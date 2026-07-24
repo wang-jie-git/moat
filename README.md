@@ -1,11 +1,11 @@
 # Moat — AI Moat: The Brake for AI Engineering 🛡️
 
-> **Version**: v1.2.3 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
+> **Version**: v1.4.2 · **PyPI**: `pip install moat-ai` · **GitHub**: [wang-jie-git/moat](https://github.com/wang-jie-git/moat)
 >
 > [![PyPI version](https://img.shields.io/pypi/v/moat-ai.svg?style=flat-square&color=brightgreen)](https://pypi.org/project/moat-ai/)
 > [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE)
 > [![Python](https://img.shields.io/badge/python-3.10+-blue.svg?style=flat-square)](pyproject.toml)
-> [![Tests](https://img.shields.io/badge/tests-1020%20passed-brightgreen?style=flat-square)](tests/)
+> [![Tests](https://img.shields.io/badge/tests-1054%20passed-brightgreen?style=flat-square)](tests/)
 > [![CI](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml/badge.svg)](https://github.com/wang-jie-git/moat/actions/workflows/ci.yml)
 
 **🌐 [中文版本 🇨🇳](README.zh.md)**
@@ -14,7 +14,7 @@
 
 AI writes code fast. AI breaks things fast too. Moat runs before and after every code change, telling you in seconds whether your system is still intact.
 
-**v1.2.0 New: moat-memory** — Moat learns from every check failure and fix. The more you use it, the smarter it gets. No external services, no API calls. Zero dependencies.
+**v1.4.2 New: Core File Protection** — Moat now protects your core architecture files (App.tsx, server.py, etc.) from unauthorized modifications. Zero-config, zero-fuss.
 
 ---
 
@@ -75,6 +75,8 @@ Scans for:
 ✅ No code leak risks detected
 ```
 
+
+
 ### 👁️ AI Tool System Audit
 
 **`moat check --scan-ai`** — Scan local AI tool configurations for security risks:
@@ -120,15 +122,9 @@ moat audit --permissions
 
 ---
 
-## 🧠 moat-memory — Self-Learning Memory (v1.2.0)
+## 🧠 moat-memory — Self-Learning Memory (v1.2.0+)
 
 Moat remembers every check failure and every fix. The more you use it, the smarter it gets.
-
-```
-check fails  → auto-record lesson in .moat/memory.db   ✅
-fix passes   → auto-extract template from git diff     ✅
-AI reads     → moat memory --ai outputs all memories   ✅
-```
 
 ### Memory Types
 
@@ -138,6 +134,40 @@ AI reads     → moat memory --ai outputs all memories   ✅
 | **Lessons** | Check failure records | ✅ On every `moat check` failure |
 | **Templates** | Experience patterns from git diffs | ✅ On successful `moat check` if last commit is a fix |
 | **Skills** | AI tool instructions | ✅ `moat adapter install` |
+
+### 🏛️ Core File Protection (v1.4.2+)
+
+Protects your core architecture files from unauthorized AI modifications:
+
+```bash
+moat check  # Core files are automatically protected
+```
+
+**Default protected files:**
+- **Application entry points**: `App.tsx`, `App.jsx`, `App.vue`
+- **Critical pages**: `ChatPage.tsx`
+- **Server entry points**: `server.py`, `main.py`, `app.py`
+- **WebSocket logic**: `*websocket*`, `*ws*handler*`, `*bridge*`
+- **Auth configs**: `*auth*`, `*permission*`
+
+Customize in `.moat/moat.json`:
+
+```json
+{
+  "rules": {
+    "core_file_modification": {
+      "enabled": true,
+      "core_files": [
+        {
+          "name": "my_core",
+          "patterns": ["SecretFile.tsx"],
+          "description": "My confidential files"
+        }
+      ]
+    }
+  }
+}
+```
 
 ### CLI Commands
 
@@ -190,7 +220,7 @@ All memory is stored in `.moat/memory.db` (SQLite, WAL mode). No external servic
 | **Security Injection** | ✅ Zero false positives | ❌ High noise | ✅ |
 | **AI Context Integration** | ✅ MCP / Claude Code Hook | ❌ | ❌ |
 | **Performance** | **< 0.2s/run** | Medium | Slow (full scan) |
-| **Test Coverage** | **99.8%+** (1020 tests) | ❌ | ❌ |
+| **Test Coverage** | **99.8%+** (1054 tests) | ❌ | ❌ |
 | **Configuration** | Zero config | Requires config | Requires config |
 
 ---
@@ -245,6 +275,7 @@ moat init
 # Basic checks
 moat check --quick        # Second-level check
 moat check --full         # Full check (includes architecture audit)
+moat check                # Core file protection (v1.4.2+)
 moat check --leak         # 🔒 Leak detection (2s)
 moat check --scan-ai      # 👁️ AI tool config audit
 
