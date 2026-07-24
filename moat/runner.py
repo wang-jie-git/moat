@@ -286,6 +286,14 @@ def _run_quick_checks(root: Path, config: dict[str, Any], enable_optimization: b
         from moat.checks.async_safety import AsyncSafetyCheck
         checks.append(("异步安全检测（消防水带模式）", AsyncSafetyCheck(root, config)))
 
+    # 核心文件修改检测（新增）
+    if modified_files:
+        from moat.checks.core_file_modification import CoreFileModificationCheck
+        core_file_config = config.get("core_file_modification", {})
+        checks.append(
+            ("核心文件修改检测", CoreFileModificationCheck(core_file_config))
+        )
+
     return checks
 
 

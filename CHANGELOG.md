@@ -5,6 +5,43 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并且本项目遵循 [语义化](https://semver.org/zh-CN/)。
 
+## [1.4.2] - 2026-07-24
+
+### 🎯 核心主题：核心文件保护 — 防止未经授权的核心架构改动
+
+#### ✨ 新增功能
+- **核心文件修改检测**（`CoreFileModificationCheck`）：检测是否修改了受保护的核心文件，防止未经授权的改动
+  - 默认保护：App.tsx、ChatPage.tsx、server.py、WebSocket 逻辑、OpenHarness 桥接层、认证权限配置
+  - 支持自定义配置（.moat/moat.json）
+  - 支持文件名精确匹配、通配符、正则表达式
+  - 自动从 git diff 获取修改列表
+  - Critical 级别违规会阻止提交
+
+#### 🔧 技术实现
+- 新增 `moat/checks/core_file_modification.py`（272 行）
+- 集成到 `create_check_instances()` 自动注册
+- 完整的单元测试覆盖（3/3 通过）
+
+#### 📋 使用示例
+```bash
+# 检查是否有核心文件被修改
+moat check
+
+# 配置自定义核心文件（.moat/moat.json）
+{
+  "core_file_modification": {
+    "enabled": true,
+    "core_files": [
+      {
+        "name": "my_core",
+        "patterns": ["SecretFile.tsx"],
+        "description": "我的机密文件"
+      }
+    ]
+  }
+}
+```
+
 ## [1.3.0] - 2026-07-20
 
 ### 🎯 核心主题：防止 async/sync 边界事故 — 消防水带检测 + 调用方分析 + preflight 检查

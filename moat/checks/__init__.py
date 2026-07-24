@@ -36,6 +36,14 @@ def create_check_instances(project_type: dict[str, bool], project_root: Path, co
             ("L1 行为验证", l1_behavior),
         ])
 
+        # 核心文件修改检测（新增）
+        core_file_config = (config or {}).get("core_file_modification", {})
+        if core_file_config.get("enabled", True):
+            from moat.checks.core_file_modification import CoreFileModificationCheck
+            checks.append(
+                ("L0 核心文件修改检测", CoreFileModificationCheck(core_file_config))
+            )
+
     # TypeScript 检查（新增，基于 Check 基类）
     if project_type.get("typescript"):
         from moat.checks.typescript import (

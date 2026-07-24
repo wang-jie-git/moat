@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "moat-ai"
-version = "1.4.0"
+version = "1.4.1"
 description = "AI 编码护城河 — 零配置 + 多工具适配器 + 记忆系统 + 可视化 Dashboard + 实时拦截"
 readme = "README.md"
 license = {text = "Apache-2.0"}
